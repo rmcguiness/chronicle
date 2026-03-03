@@ -48,7 +48,7 @@ target_metadata = Base.metadata
 def get_url() -> str:
     url = os.getenv(
         "DATABASE_URL",
-        "postgresql+asyncpg://chronicle:chronicle@localhost:5432/chronicle",
+        "postgresql+asyncpg://chronicle:chronicle@localhost:5433/chronicle",
     )
     return url
 

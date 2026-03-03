@@ -33,8 +33,10 @@ def get_meili_client():
         url = os.getenv("MEILI_URL", "http://localhost:7700")
         key = os.getenv("MEILI_MASTER_KEY", "")
         _meili_client = meilisearch.Client(url, key)
-        # Quick health check
+        # Quick health check (doesn't require auth)
         _meili_client.health()
+        # Verify the key works by listing indexes
+        _meili_client.get_indexes()
         logger.info("Meilisearch client connected at %s", url)
     except Exception as exc:
         logger.warning("Meilisearch unavailable (%s), using PostgreSQL FTS fallback", exc)

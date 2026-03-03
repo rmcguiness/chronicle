@@ -21,7 +21,7 @@ import asyncpg
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://chronicle:chronicle@localhost:5432/chronicle",
+    "postgresql+asyncpg://chronicle:chronicle@localhost:5433/chronicle",
 )
 # Strip SQLAlchemy prefix for asyncpg
 PG_DSN = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
@@ -1413,4 +1413,1545 @@ EVENTS: list[dict[str, Any]] = [
         "slug": "paris-peace-conference-arab-betrayal-1919",
         "title": "Paris Peace Conference — Arab Aspirations Betrayed",
         "year": 1919, "lat": 48.8566, "lng": 2.3522,
-        "geo_modern": "Paris, France", "geo_era_label": "
+        "geo_modern": "Paris, France", "geo_era_label": "Post-WWI Middle East",
+        "category": "political", "importance_score": 0.87, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Arab/Middle Eastern perspective", "culture_code": "sa", "viewpoint_type": "nationalist",
+             "narrative": "Arab leaders who had supported the Allied war effort based on promises of independence — the Hussein-McMahon Correspondence — were betrayed. Instead, Britain and France divided the Arab world under the secret Sykes-Picot Agreement. Faisal's pleas at Paris were ignored.",
+             "summary": "Allied betrayal of Arab independence promises, laying roots for a century of Middle Eastern conflict.", "evidence_score": 0.89,
+             "sources": [
+                 {"title": "The Arab Awakening", "author": "George Antonius", "publication": "Hamish Hamilton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1938},
+             ]},
+            {"label": "British/French colonial perspective", "culture_code": "gb", "viewpoint_type": "colonial",
+             "narrative": "Britain and France had legitimate strategic interests in the Middle East. The Mandate system was intended to prepare Arab territories for eventual self-government under League of Nations supervision.",
+             "summary": "Mandates as responsible preparation for eventual Arab self-governance.", "evidence_score": 0.60,
+             "sources": [
+                 {"title": "A Peace to End All Peace", "author": "David Fromkin", "publication": "Holt", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1989},
+             ]},
+        ],
+    },
+    {
+        "slug": "balfour-declaration-1917",
+        "title": "Balfour Declaration — British Promise of Jewish Homeland",
+        "year": 1917, "lat": 51.5074, "lng": -0.1278,
+        "geo_modern": "London, England", "geo_era_label": "British Empire",
+        "category": "political", "importance_score": 0.90, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Zionist/Jewish perspective", "culture_code": "il", "viewpoint_type": "nationalist",
+             "narrative": "The Balfour Declaration of November 2, 1917 was a crucial step toward Jewish statehood after 2,000 years of exile. Britain's formal recognition of Zionist aspirations gave the movement international legitimacy.",
+             "summary": "The first international recognition of the Jewish people's right to a homeland in Palestine.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Balfour Declaration, November 2, 1917", "source_type": "primary", "reliability_tier": 1, "year": 1917},
+             ]},
+            {"label": "Palestinian Arab perspective", "culture_code": "ps", "viewpoint_type": "indigenous",
+             "narrative": "The Balfour Declaration promised the homeland of the Arab majority of Palestine to a Jewish minority, without consulting the existing 90% Arab population. It was a colonial act disposing of a territory Britain did not own.",
+             "summary": "Britain promised Arab land to a third party without consent, planting the seeds of the Israeli-Palestinian conflict.", "evidence_score": 0.87,
+             "sources": [
+                 {"title": "The Ethnic Cleansing of Palestine", "author": "Ilan Pappé", "publication": "Oneworld", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2006},
+             ]},
+        ],
+    },
+    {
+        "slug": "weimar-republic-hyperinflation-1923",
+        "title": "Weimar Republic Hyperinflation Crisis",
+        "year": 1923, "lat": 52.5200, "lng": 13.4050,
+        "geo_modern": "Berlin, Germany", "geo_era_label": "Weimar Republic",
+        "category": "political", "importance_score": 0.87, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "German civilian perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "By November 1923, one US dollar was worth 4.2 trillion marks. Middle-class savings were wiped out overnight. The hyperinflation, caused partly by reparations payments and French occupation of the Ruhr, destroyed faith in democratic institutions.",
+             "summary": "Economic catastrophe that destroyed the German middle class and destabilized Weimar democracy.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "When Money Dies", "author": "Adam Fergusson", "publication": "William Kimber", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1975},
+             ]},
+            {"label": "Economic/historical perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "The hyperinflation was caused by Germany printing money to buy foreign currency to pay reparations and fund the passive resistance in the Ruhr. It was a deliberate choice with consequences the German government did not fully anticipate.",
+             "summary": "A policy failure rooted in reparations and the Ruhr crisis that created the conditions for political extremism.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "The German Inflation, 1914-1923", "author": "Carl-Ludwig Holtfrerich", "publication": "De Gruyter", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1986},
+             ]},
+        ],
+    },
+    {
+        "slug": "hitler-beer-hall-putsch-1923",
+        "title": "Beer Hall Putsch — Hitler's First Attempt at Power",
+        "year": 1923, "lat": 48.1351, "lng": 11.5820,
+        "geo_modern": "Munich, Germany", "geo_era_label": "Weimar Republic",
+        "category": "political", "importance_score": 0.85, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Nazi/nationalist perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Hitler's attempted coup on November 8-9, 1923 failed but his trial gave him a national platform. His prison sentence (during which he wrote Mein Kampf) transformed him from a regional agitator into a national figure.",
+             "summary": "A failed coup that paradoxically launched Hitler's national political career.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Mein Kampf", "author": "Adolf Hitler", "source_type": "primary", "reliability_tier": 2, "year": 1925},
+                 {"title": "Hitler: 1889-1936 Hubris", "author": "Ian Kershaw", "publication": "Norton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1998},
+             ]},
+            {"label": "Weimar democratic perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The lenient treatment of Hitler — five years' minimum sentence reduced to nine months — demonstrated Weimar's failure to take the Nazi threat seriously. The judiciary's nationalist sympathies would prove fatal to the Republic.",
+             "summary": "Weimar's fatal mistake: a lenient sentence that gave Hitler a platform rather than silencing him.", "evidence_score": 0.85,
+             "sources": [
+                 {"title": "The Coming of the Third Reich", "author": "Richard Evans", "publication": "Penguin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2003},
+             ]},
+        ],
+    },
+    {
+        "slug": "great-depression-wall-street-crash-1929",
+        "title": "Wall Street Crash — Great Depression Begins",
+        "year": 1929, "lat": 40.7069, "lng": -74.0089,
+        "geo_modern": "New York City, USA", "geo_era_label": "Interwar USA",
+        "category": "political", "importance_score": 0.94, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "American economic perspective", "culture_code": "us", "viewpoint_type": "academic",
+             "narrative": "Black Tuesday (October 29, 1929) triggered a stock market collapse that wiped out $30 billion in wealth. The Depression that followed saw 25% US unemployment by 1933, bank failures, and the Dust Bowl — the worst economic crisis in American history.",
+             "summary": "The worst financial collapse in history, triggering a decade-long global Depression.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "The Great Crash 1929", "author": "John Kenneth Galbraith", "publication": "Houghton Mifflin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1954},
+             ]},
+            {"label": "European/German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The Depression devastated Germany more than any other country — unemployment reached 30% by 1932. The economic collapse destroyed the moderate center, driving desperate voters to extremes. Hitler's rise was directly enabled by the Depression.",
+             "summary": "The economic catastrophe that destroyed Weimar democracy and enabled Hitler's rise to power.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "The World in Depression, 1929-1939", "author": "Charles Kindleberger", "publication": "University of California Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1973},
+             ]},
+        ],
+    },
+    {
+        "slug": "hitler-appointed-chancellor-1933",
+        "title": "Hitler Appointed Chancellor of Germany",
+        "year": 1933, "lat": 52.5200, "lng": 13.4050,
+        "geo_modern": "Berlin, Germany", "geo_era_label": "Weimar Republic",
+        "category": "political", "importance_score": 0.97, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Nazi perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Adolf Hitler's appointment as Chancellor on January 30, 1933 was the legal and democratic culmination of the Nazi movement's rise. The German people, facing depression and humiliation, chose Hitler to restore national greatness.",
+             "summary": "The legal seizure of power that the Nazis parlayed into total dictatorship within months.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Hitler: 1889-1936 Hubris", "author": "Ian Kershaw", "publication": "Norton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1998},
+             ]},
+            {"label": "Democratic/international perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "Hindenburg appointed Hitler believing he could be controlled by conservative elites. Within months, the Enabling Act destroyed German democracy. The appointment was not inevitable — it resulted from specific political miscalculations by democratic politicians.",
+             "summary": "The fatal miscalculation of conservative elites who thought they could use and control Hitler.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "The Coming of the Third Reich", "author": "Richard Evans", "publication": "Penguin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2003},
+             ]},
+        ],
+    },
+    {
+        "slug": "nuremberg-laws-1935",
+        "title": "Nuremberg Laws — Codification of Nazi Antisemitism",
+        "year": 1935, "lat": 49.4521, "lng": 11.0767,
+        "geo_modern": "Nuremberg, Germany", "geo_era_label": "Third Reich",
+        "category": "political", "importance_score": 0.90, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Jewish perspective", "culture_code": "de", "viewpoint_type": "indigenous",
+             "narrative": "The Nuremberg Laws of September 1935 stripped German Jews of citizenship, banned marriage between Jews and non-Jews, and legally defined Jewishness. 500,000 German Jews became stateless in their own country, the precursor to the Holocaust.",
+             "summary": "The legal foundation for the Holocaust — Jews rendered stateless and defined for extermination.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "The Nuremberg Laws, September 15, 1935", "source_type": "primary", "reliability_tier": 1, "year": 1935},
+             ]},
+            {"label": "Historical/legal perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "The Nuremberg Laws were modeled partly on Jim Crow laws in the American South, which Nazi jurists studied. They established a racial state in law, creating the bureaucratic framework for persecution that would culminate in the Final Solution.",
+             "summary": "Racial law inspired by American precedents, creating the legal infrastructure for genocide.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "Hitler's American Model", "author": "James Q. Whitman", "publication": "Princeton University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2017},
+             ]},
+        ],
+    },
+    {
+        "slug": "spanish-civil-war-1936-1939",
+        "title": "Spanish Civil War",
+        "year": 1936, "lat": 40.4168, "lng": -3.7038,
+        "geo_modern": "Spain", "geo_era_label": "Spanish Republic / Nationalist Spain",
+        "category": "war", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Republican perspective", "culture_code": "es", "viewpoint_type": "nationalist",
+             "narrative": "Franco's military coup against the elected Spanish Republic was fascism's attempt to destroy democracy. International Brigades from 54 countries volunteered to defend the Republic. The Republic's defeat showed the West's appeasement of fascism.",
+             "summary": "Democracy's defeat in Spain — the rehearsal for World War II and proof of Western appeasement's failure.", "evidence_score": 0.87,
+             "sources": [
+                 {"title": "Homage to Catalonia", "author": "George Orwell", "source_type": "primary", "reliability_tier": 2, "year": 1938},
+             ]},
+            {"label": "Nationalist/Francoist perspective", "culture_code": "es", "viewpoint_type": "nationalist",
+             "narrative": "Franco's Nationalists were defending Spain from communist revolution backed by the Soviet Union. The Republic had failed to prevent anarchist and communist violence. The Nationalist victory preserved Spain from Bolshevism.",
+             "summary": "A necessary military intervention to save Spain from communist revolution and disorder.", "evidence_score": 0.68,
+             "sources": [
+                 {"title": "The Spanish Civil War", "author": "Antony Beevor", "publication": "Cassell", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1982},
+             ]},
+        ],
+    },
+    {
+        "slug": "anschluss-austria-1938",
+        "title": "Anschluss — Germany Annexes Austria",
+        "year": 1938, "lat": 48.2082, "lng": 16.3738,
+        "geo_modern": "Vienna, Austria", "geo_era_label": "Third Reich",
+        "category": "war", "importance_score": 0.86, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Nazi German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The Anschluss of March 1938 united two German-speaking peoples separated since 1866. Austrians greeted Hitler with mass enthusiasm. Pan-German nationalism was fulfilled; the Versailles prohibition on union was simply overridden.",
+             "summary": "The fulfillment of pan-German nationalism and reunion of German-speaking peoples.", "evidence_score": 0.80,
+             "sources": [
+                 {"title": "The Anschluss of Austria, March 1938", "source_type": "primary", "reliability_tier": 1, "year": 1938},
+             ]},
+            {"label": "International/Austrian perspective", "culture_code": "at", "viewpoint_type": "nationalist",
+             "narrative": "The Anschluss was accomplished under military threat and Nazi pressure, not genuine plebiscite. Austria would later use the 'first victim' narrative to avoid confronting its own Nazi complicity. Austrians were significantly over-represented in Nazi leadership and the SS.",
+             "summary": "Intimidated annexation that Austria later falsified as victimhood to evade its own Nazi culpability.", "evidence_score": 0.87,
+             "sources": [
+                 {"title": "Austria in the First Cold War", "author": "Günter Bischof", "publication": "Macmillan", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1999},
+             ]},
+        ],
+    },
+    {
+        "slug": "munich-agreement-appeasement-1938",
+        "title": "Munich Agreement — Appeasement of Hitler",
+        "year": 1938, "lat": 48.1351, "lng": 11.5820,
+        "geo_modern": "Munich, Germany", "geo_era_label": "Third Reich",
+        "category": "political", "importance_score": 0.92, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "British/Chamberlain perspective", "culture_code": "gb", "viewpoint_type": "nationalist",
+             "narrative": "Neville Chamberlain's Munich Agreement gave Hitler the Sudetenland to prevent a second world war. Chamberlain returned to London promising 'peace for our time.' The democracies were not ready for war in 1938 and needed time to rearm.",
+             "summary": "A necessary compromise buying time for British rearmament, not craven surrender.", "evidence_score": 0.79,
+             "sources": [
+                 {"title": "Peace for Our Time (Chamberlain's speech, September 30, 1938)", "source_type": "primary", "reliability_tier": 1, "year": 1938},
+             ]},
+            {"label": "Czech/anti-appeasement perspective", "culture_code": "cz", "viewpoint_type": "nationalist",
+             "narrative": "Czechoslovakia was betrayed by its allies without a voice in its own dismemberment. Churchill was right: 'Britain and France had to choose between war and dishonour. They chose dishonour. They will have war.' Munich emboldened Hitler and made WWII more likely.",
+             "summary": "The betrayal of a democratic ally that proved appeasement invites further aggression.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "The Gathering Storm", "author": "Winston Churchill", "publication": "Houghton Mifflin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1948},
+             ]},
+        ],
+    },
+    {
+        "slug": "molotov-ribbentrop-pact-1939",
+        "title": "Molotov-Ribbentrop Pact — Nazi-Soviet Non-Aggression",
+        "year": 1939, "lat": 55.7558, "lng": 37.6173,
+        "geo_modern": "Moscow, Russia", "geo_era_label": "Soviet Union",
+        "category": "political", "importance_score": 0.91, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Nazi German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The August 1939 pact with the Soviet Union freed Germany from the threat of a two-front war and guaranteed Soviet neutrality (and raw materials) while Germany eliminated Poland and the Western powers.",
+             "summary": "A diplomatic masterstroke freeing Germany for western operations without fear of Soviet attack.", "evidence_score": 0.85,
+             "sources": [
+                 {"title": "The Molotov-Ribbentrop Pact, August 23, 1939", "source_type": "primary", "reliability_tier": 1, "year": 1939},
+             ]},
+            {"label": "Soviet perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "Stalin's pact with Hitler bought time for Soviet military preparation after the West's appeasement showed they would not contain Germany. The secret protocols dividing Eastern Europe were cynical but pragmatic.",
+             "summary": "A pragmatic delay to prepare for the inevitable German attack that the West's appeasement made unavoidable.", "evidence_score": 0.81,
+             "sources": [
+                 {"title": "Stalin: A Biography", "author": "Robert Service", "publication": "Macmillan", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2004},
+             ]},
+        ],
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # WORLD WAR II (1939–1945) — 50 events
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "slug": "germany-invades-poland-1939",
+        "title": "Germany Invades Poland — World War II Begins",
+        "year": 1939, "lat": 52.2297, "lng": 21.0122,
+        "geo_modern": "Warsaw, Poland", "geo_era_label": "Third Reich",
+        "category": "war", "importance_score": 0.97, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "German Nazi perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Germany invaded Poland on September 1, 1939 after staging the Gleiwitz incident as a Polish provocation. The Blitzkrieg campaign used tanks and air power to overwhelm Polish defenses in weeks.",
+             "summary": "Blitzkrieg warfare destroys Poland in weeks, starting the deadliest war in history.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "The Second World War", "author": "John Keegan", "publication": "Viking", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1989},
+             ]},
+            {"label": "Polish perspective", "culture_code": "pl", "viewpoint_type": "nationalist",
+             "narrative": "Poland was invaded simultaneously by Germany from the west (September 1) and the Soviet Union from the east (September 17) under the Molotov-Ribbentrop secret protocols. Six million Polish citizens — half of them Jews — would die during the occupation.",
+             "summary": "Poland crushed between Nazi and Soviet invasions, suffering proportionally the highest casualties of any nation in WWII.", "evidence_score": 0.92,
+             "sources": [
+                 {"title": "God's Playground: A History of Poland", "author": "Norman Davies", "publication": "Columbia University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1981},
+             ]},
+        ],
+    },
+    {
+        "slug": "fall-of-france-1940",
+        "title": "Fall of France — Germany Defeats France in Six Weeks",
+        "year": 1940, "lat": 48.8566, "lng": 2.3522,
+        "geo_modern": "Paris, France", "geo_era_label": "Third Reich / Vichy France",
+        "category": "war", "importance_score": 0.93, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "German military perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Manstein's Ardennes plan outflanked the Maginot Line, cutting Allied forces off from the sea. Paris fell on June 14, 1940. The armistice on June 22 in the same railway car where Germany surrendered in 1918 was Hitler's symbolic revenge for Versailles.",
+             "summary": "A brilliant operational triumph reversing the humiliation of 1918 within six weeks.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "The Fall of France", "author": "Julian Jackson", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2003},
+             ]},
+            {"label": "French perspective", "culture_code": "fr", "viewpoint_type": "nationalist",
+             "narrative": "The defeat resulted from military doctrine fixated on WWI, political divisions, and command failures. The armistice created Vichy France, which collaborated with Nazi Germany. De Gaulle's Free French continued the fight from London.",
+             "summary": "Military failure leading to collaboration and resistance — France divided between Vichy and de Gaulle.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Strange Defeat", "author": "Marc Bloch", "source_type": "primary", "reliability_tier": 2, "year": 1940},
+             ]},
+        ],
+    },
+    {
+        "slug": "battle-of-britain-1940",
+        "title": "Battle of Britain",
+        "year": 1940, "lat": 51.5074, "lng": -0.1278,
+        "geo_modern": "England and English Channel", "geo_era_label": "WWII Western Front",
+        "category": "war", "importance_score": 0.92, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "British perspective", "culture_code": "gb", "viewpoint_type": "nationalist",
+             "narrative": "The RAF's victory in the Battle of Britain (July-October 1940) prevented a German invasion. Churchill's 'finest hour' speeches galvanized resistance. The Spitfire and Hurricane pilots, 'the few,' saved Western civilization.",
+             "summary": "The RAF's victory that saved Britain from invasion and kept democracy's last bastion alive.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "'Their Finest Hour' Speech", "author": "Winston Churchill", "source_type": "primary", "reliability_tier": 1, "year": 1940},
+                 {"title": "The Battle of Britain", "author": "Richard Hough and Denis Richards", "publication": "Norton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1989},
+             ]},
+            {"label": "German Luftwaffe perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The Luftwaffe came close to defeating the RAF but shifted from airfield attacks to bombing London (the Blitz), allowing RAF Fighter Command to recover. Göring's strategic errors and underestimating British radar capabilities were decisive.",
+             "summary": "A winnable battle lost through strategic errors and underestimation of British technology.", "evidence_score": 0.87,
+             "sources": [
+                 {"title": "The Luftwaffe War Diaries", "author": "Cajus Bekker", "publication": "Doubleday", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1968},
+             ]},
+        ],
+    },
+    {
+        "slug": "operation-barbarossa-1941",
+        "title": "Operation Barbarossa — Germany Invades Soviet Union",
+        "year": 1941, "lat": 55.7558, "lng": 37.6173,
+        "geo_modern": "Soviet Union", "geo_era_label": "Eastern Front WWII",
+        "category": "war", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Nazi German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Hitler launched Barbarossa on June 22, 1941 — the largest military operation in history — to destroy 'Judeo-Bolshevism,' gain Lebensraum, and access Soviet resources. Initial advances were spectacular but Moscow was not taken before winter.",
+             "summary": "The largest military operation in history — Hitler's ideological war for 'living space' in the East.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "Barbarossa: The Russian-German Conflict 1941-45", "author": "Alan Clark", "publication": "Morrow", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1965},
+             ]},
+            {"label": "Soviet perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "The Soviet Union absorbed catastrophic initial losses — millions killed or captured in 1941 — but rallied. The Great Patriotic War mobilized the entire Soviet people. Barbarossa was repelled at Moscow, Stalingrad, and Kursk through extraordinary sacrifice.",
+             "summary": "Soviet survival and ultimate victory through immense suffering — 27 million Soviet dead by war's end.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "Russia's War", "author": "Richard Overy", "publication": "Allen Lane", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1997},
+             ]},
+        ],
+    },
+    {
+        "slug": "pearl-harbor-1941",
+        "title": "Japanese Attack on Pearl Harbor",
+        "year": 1941, "lat": 21.3673, "lng": -157.9506,
+        "geo_modern": "Pearl Harbor, Hawaii, USA", "geo_era_label": "Pacific War WWII",
+        "category": "war", "importance_score": 0.93, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "American perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "Japan's surprise attack on Pearl Harbor on December 7, 1941 — 'a date which will live in infamy' — killed 2,403 Americans and destroyed much of the Pacific Fleet. It united American public opinion and drew the US into WWII.",
+             "summary": "The surprise attack that awoke the sleeping giant and brought America into the war.", "evidence_score": 0.92,
+             "sources": [
+                 {"title": "'Day of Infamy' Speech", "author": "Franklin D. Roosevelt", "source_type": "primary", "reliability_tier": 1, "year": 1941},
+             ]},
+            {"label": "Japanese perspective", "culture_code": "jp", "viewpoint_type": "nationalist",
+             "narrative": "Japan attacked Pearl Harbor to neutralize the US Pacific Fleet while Japan secured the oil fields of the Dutch East Indies, essential after the US oil embargo. Japanese planners knew war with America meant eventual defeat, but saw it as the only option given the embargo.",
+             "summary": "A strategic necessity forced by American economic embargo — but a catastrophic strategic miscalculation.", "evidence_score": 0.86,
+             "sources": [
+                 {"title": "The Pacific War", "author": "John Costello", "publication": "Rawson Wade", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1981},
+             ]},
+        ],
+    },
+    {
+        "slug": "wannsee-conference-final-solution-1942",
+        "title": "Wannsee Conference — Final Solution Planned",
+        "year": 1942, "lat": 52.4333, "lng": 13.1658,
+        "geo_modern": "Wannsee, Berlin, Germany", "geo_era_label": "Third Reich",
+        "category": "political", "importance_score": 0.93, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Historical/survivor perspective", "culture_code": "il", "viewpoint_type": "academic",
+             "narrative": "The Wannsee Conference of January 20, 1942 coordinated the systematic murder of 11 million Jews across Europe. Fifteen senior Nazi officials, over 90 minutes, organized the logistics of genocide — the bureaucracy of the Holocaust.",
+             "summary": "The meeting where Nazi bureaucrats calmly planned the industrial murder of all European Jews.", "evidence_score": 0.97,
+             "sources": [
+                 {"title": "Wannsee Protocol, January 20, 1942", "source_type": "primary", "reliability_tier": 1, "year": 1942},
+                 {"title": "The Holocaust: A History", "author": "Deborah Dwork and Robert Jan van Pelt", "publication": "Norton", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2002},
+             ]},
+            {"label": "German denialism (refuted)", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Some German post-war defendants claimed ignorance of the Holocaust. The Wannsee Protocol documents prove senior officials knew and participated in planning genocide. Holocaust denial has been criminalized in Germany and several other countries.",
+             "summary": "Documented proof that the Holocaust was systematically planned and executed with full governmental knowledge.", "evidence_score": 0.99,
+             "sources": [
+                 {"title": "Explaining Hitler", "author": "Ron Rosenbaum", "publication": "Random House", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1998},
+             ]},
+        ],
+    },
+    {
+        "slug": "battle-stalingrad-1942-1943",
+        "title": "Battle of Stalingrad — Turning Point of WWII",
+        "year": 1942, "lat": 48.7080, "lng": 44.5133,
+        "geo_modern": "Volgograd (Stalingrad), Russia", "geo_era_label": "Eastern Front WWII",
+        "category": "war", "importance_score": 0.96, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Soviet perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "Stalingrad was the greatest battle of the war. For six months, Soviet forces held the city street by street. Zhukov's Operation Uranus encircled the German 6th Army; its surrender in February 1943 marked the turning point of the Eastern Front.",
+             "summary": "The battle that broke the Wehrmacht's back — the decisive turning point of World War II.", "evidence_score": 0.95,
+             "sources": [
+                 {"title": "Stalingrad", "author": "Antony Beevor", "publication": "Viking", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1998},
+             ]},
+            {"label": "German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The 6th Army's destruction at Stalingrad (300,000 casualties, 91,000 captured) was the result of Hitler's refusal to allow retreat. Paulus surrendered against Hitler's explicit orders. Germany never recovered the strategic initiative after Stalingrad.",
+             "summary": "Hitler's catastrophic refusal to allow retreat destroyed Germany's best army and made final defeat inevitable.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "The Road to Stalingrad", "author": "John Erickson", "publication": "Harper & Row", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1975},
+             ]},
+        ],
+    },
+    {
+        "slug": "d-day-normandy-1944",
+        "title": "D-Day — Allied Invasion of Normandy",
+        "year": 1944, "lat": 49.3420, "lng": -0.5812,
+        "geo_modern": "Normandy, France", "geo_era_label": "WWII Western Front",
+        "category": "war", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Allied perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "Operation Overlord on June 6, 1944 — the largest amphibious operation in history — landed 156,000 Allied troops on five Normandy beaches. Despite enormous casualties (especially at Omaha Beach), the beachhead was secured and the liberation of Western Europe began.",
+             "summary": "The largest military operation in history — the decisive blow that liberated Western Europe from Nazi rule.", "evidence_score": 0.95,
+             "sources": [
+                 {"title": "Overlord: D-Day and the Battle for Normandy", "author": "Max Hastings", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1984},
+             ]},
+            {"label": "German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "Rommel argued for deploying Panzer reserves near the beaches; Hitler held them back expecting a second landing at Calais. This command paralysis on D-Day allowed the Allies to consolidate the beachhead. Germany had lost the war in the West.",
+             "summary": "Hitler's command mistakes on D-Day gave the Allies the foothold that made Germany's defeat inevitable.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "The Longest Day", "author": "Cornelius Ryan", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1959},
+             ]},
+        ],
+    },
+    {
+        "slug": "atomic-bombing-hiroshima-nagasaki-1945",
+        "title": "Atomic Bombing of Hiroshima and Nagasaki",
+        "year": 1945, "lat": 34.3853, "lng": 132.4553,
+        "geo_modern": "Hiroshima and Nagasaki, Japan", "geo_era_label": "Pacific War WWII",
+        "category": "war", "importance_score": 0.97, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "American military perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The atomic bombs dropped on Hiroshima (August 6) and Nagasaki (August 9) ended the war and avoided a ground invasion of Japan that would have cost hundreds of thousands of American and millions of Japanese lives. Truman's decision was justified by the calculation of lives saved.",
+             "summary": "A terrible but necessary act that ended the Pacific War without an invasion estimated to cost millions of lives.", "evidence_score": 0.82,
+             "sources": [
+                 {"title": "Truman's Statement on the Atomic Bomb, August 6, 1945", "author": "Harry S. Truman", "source_type": "primary", "reliability_tier": 1, "year": 1945},
+             ]},
+            {"label": "Japanese perspective", "culture_code": "jp", "viewpoint_type": "nationalist",
+             "narrative": "The atomic bombings killed 70,000-80,000 people instantly at Hiroshima, 40,000 at Nagasaki. Hibakusha (survivors) experienced years of radiation sickness and social stigma. Japan was already seeking peace; the bombs were also a signal to the Soviet Union.",
+             "summary": "The first use of nuclear weapons — indiscriminate mass civilian murder — and the traumatic origin of Japan's anti-nuclear stance.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Hiroshima", "author": "John Hersey", "publication": "The New Yorker", "source_type": "primary", "reliability_tier": 2, "year": 1946},
+                 {"title": "The Decision to Use the Atomic Bomb", "author": "Gar Alperovitz", "publication": "Knopf", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1995},
+             ]},
+        ],
+    },
+    {
+        "slug": "holocaust-liberation-camps-1945",
+        "title": "Liberation of Nazi Concentration Camps",
+        "year": 1945, "lat": 50.0274, "lng": 19.1785,
+        "geo_modern": "Auschwitz-Birkenau, Poland", "geo_era_label": "WWII",
+        "category": "war", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Jewish survivor perspective", "culture_code": "il", "viewpoint_type": "indigenous",
+             "narrative": "By 1945, six million Jews had been systematically murdered — two-thirds of European Jewry — in the Nazi Holocaust. Liberation of Auschwitz (January 27, 1945) and other camps revealed the full horror. Elie Wiesel's 'Night' preserves the testimony of survivors.",
+             "summary": "The liberation reveals the full horror of the Holocaust — six million Jews systematically murdered.", "evidence_score": 0.99,
+             "sources": [
+                 {"title": "Night", "author": "Elie Wiesel", "publication": "Hill & Wang", "source_type": "primary", "reliability_tier": 1, "year": 1960},
+                 {"title": "Nuremberg Trial Records", "source_type": "primary", "reliability_tier": 1, "year": 1946},
+             ]},
+            {"label": "Allied military perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "American, British, and Soviet soldiers who liberated the camps were unprepared for what they found. Eisenhower ordered documentation and required German civilians to witness the camps. The evidence was used at the Nuremberg trials.",
+             "summary": "Allied forces document genocide and create the evidentiary record for international criminal justice.", "evidence_score": 0.97,
+             "sources": [
+                 {"title": "Eisenhower's Cable Describing Buchenwald, April 15, 1945", "author": "Dwight D. Eisenhower", "source_type": "primary", "reliability_tier": 1, "year": 1945},
+             ]},
+        ],
+    },
+    {
+        "slug": "germany-surrenders-wwii-1945",
+        "title": "Germany Surrenders — End of WWII in Europe",
+        "year": 1945, "lat": 52.5200, "lng": 13.4050,
+        "geo_modern": "Berlin, Germany (Reims, France)", "geo_era_label": "WWII",
+        "category": "war", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Allied perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "Germany signed unconditional surrender on May 7, 1945 in Reims (V-E Day, May 8). The war in Europe was over. Hitler had died by suicide on April 30 in his Berlin bunker. Europe was liberated but devastated — 35-60 million dead.",
+             "summary": "Victory in Europe — but the liberation of a continent came at the cost of tens of millions of lives.", "evidence_score": 0.96,
+             "sources": [
+                 {"title": "German Instrument of Surrender, May 7, 1945", "source_type": "primary", "reliability_tier": 1, "year": 1945},
+             ]},
+            {"label": "Soviet perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "The Soviet Union bore 27 million of the war's casualties. Soviet forces took Berlin. Victory Day (May 9) is Russia's most sacred national holiday. Western accounts undervalue the Soviet role — it was primarily Soviet blood that defeated Nazi Germany.",
+             "summary": "The Soviet Union defeated Nazi Germany at unimaginable cost — its central role in victory is often underplayed in Western history.", "evidence_score": 0.92,
+             "sources": [
+                 {"title": "Why the Allies Won", "author": "Richard Overy", "publication": "Norton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1995},
+             ]},
+        ],
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # COLD WAR AND POST-WWII (1945–2000)
+    # ═══════════════════════════════════════════════════════════════════════
+
+    {
+        "slug": "un-charter-signed-1945",
+        "title": "United Nations Charter Signed",
+        "year": 1945, "lat": 37.7749, "lng": -122.4194,
+        "geo_modern": "San Francisco, USA", "geo_era_label": "Post-WWII",
+        "category": "political", "importance_score": 0.90, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Western democratic perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The UN Charter, signed by 50 nations in San Francisco on June 26, 1945, established an international system to prevent another world war. The Security Council, with five permanent veto-wielding members, reflected the new great power realities.",
+             "summary": "A new world order based on international law and collective security to prevent another world war.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Charter of the United Nations, June 26, 1945", "source_type": "primary", "reliability_tier": 1, "year": 1945},
+             ]},
+            {"label": "Global South/colonial perspective", "culture_code": "in", "viewpoint_type": "colonial",
+             "narrative": "The UN was founded by and for the victorious powers. Fifty nations signed, but most of the world's population was still under colonial rule and had no voice. The General Assembly's 'one nation, one vote' principle was undermined by the P5 veto.",
+             "summary": "A great power institution whose ideals of equality were contradicted by colonial realities and the great power veto.", "evidence_score": 0.85,
+             "sources": [
+                 {"title": "The Charter of the United Nations: A Commentary", "author": "Bruno Simma", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2002},
+             ]},
+        ],
+    },
+    {
+        "slug": "indian-independence-1947",
+        "title": "Indian Independence and Partition",
+        "year": 1947, "lat": 28.6139, "lng": 77.2090,
+        "geo_modern": "New Delhi, India / Lahore, Pakistan", "geo_era_label": "British India",
+        "category": "political", "importance_score": 0.93, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Indian National Congress perspective", "culture_code": "in", "viewpoint_type": "nationalist",
+             "narrative": "Independence on August 15, 1947 fulfilled Gandhi and Nehru's non-violent struggle. India became the world's largest democracy. Partition, however, was a catastrophe — 14 million displaced, 200,000-2 million killed in communal violence.",
+             "summary": "Freedom achieved but stained by Partition — one of the largest mass displacements in history.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "The Discovery of India", "author": "Jawaharlal Nehru", "publication": "Meridian Books", "source_type": "primary", "reliability_tier": 2, "year": 1946},
+                 {"title": "Freedom at Midnight", "author": "Larry Collins and Dominique Lapierre", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1975},
+             ]},
+            {"label": "Pakistani/Muslim League perspective", "culture_code": "pk", "viewpoint_type": "nationalist",
+             "narrative": "Jinnah's two-nation theory argued Muslims needed a separate state to avoid Hindu-majority domination. Pakistan was founded as a homeland for South Asian Muslims. The violence of Partition demonstrated how deep the divisions had become.",
+             "summary": "Pakistan founded as the necessary homeland for South Asian Muslims who could not safely remain in Hindu-dominated India.", "evidence_score": 0.82,
+             "sources": [
+                 {"title": "Jinnah: India, Partition, Independence", "author": "Jaswant Singh", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2009},
+             ]},
+        ],
+    },
+    {
+        "slug": "berlin-blockade-airlift-1948",
+        "title": "Berlin Blockade and Airlift",
+        "year": 1948, "lat": 52.5200, "lng": 13.4050,
+        "geo_modern": "West Berlin, Germany", "geo_era_label": "Cold War",
+        "category": "political", "importance_score": 0.87, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Western/American perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The Soviet blockade of West Berlin (June 1948-May 1949) was met with the Berlin Airlift — over 200,000 flights supplying the city. America's determination to defend West Berlin became a defining act of Cold War resolve.",
+             "summary": "American airlift defies Soviet blockade — Cold War resolve at its finest.", "evidence_score": 0.89,
+             "sources": [
+                 {"title": "The Berlin Blockade", "author": "Ann Tusa and John Tusa", "publication": "Hodder & Stoughton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1988},
+             ]},
+            {"label": "Soviet perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "The Soviet blockade was a response to Western currency reform that threatened Soviet interests in Germany. The failure of the blockade demonstrated the West's resolve but also the Soviets' reluctance to risk open war over Berlin.",
+             "summary": "A measured pressure tactic in response to Western economic provocations — withdrawn when it failed.", "evidence_score": 0.77,
+             "sources": [
+                 {"title": "Stalin: A Biography", "author": "Robert Service", "publication": "Macmillan", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2004},
+             ]},
+        ],
+    },
+    {
+        "slug": "founding-state-of-israel-1948",
+        "title": "Declaration of the State of Israel",
+        "year": 1948, "lat": 32.0853, "lng": 34.7818,
+        "geo_modern": "Tel Aviv, Israel", "geo_era_label": "British Mandate Palestine",
+        "category": "political", "importance_score": 0.92, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Israeli/Zionist perspective", "culture_code": "il", "viewpoint_type": "nationalist",
+             "narrative": "David Ben-Gurion's proclamation of Israeli independence on May 14, 1948 fulfilled the Zionist dream after 2,000 years of Jewish exile. The Holocaust had made a Jewish state a moral necessity. Israel immediately faced invasion by five Arab armies and survived.",
+             "summary": "The fulfillment of the Jewish people's 2,000-year aspiration for a homeland after the Holocaust.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Israeli Declaration of Independence, May 14, 1948", "source_type": "primary", "reliability_tier": 1, "year": 1948},
+             ]},
+            {"label": "Palestinian perspective", "culture_code": "ps", "viewpoint_type": "indigenous",
+             "narrative": "The Nakba (catastrophe) — 700,000 Palestinian Arabs expelled or fled during the 1948 war, their villages destroyed. Palestinian historiography documents the ethnic cleansing. The 'refugee problem' created in 1948 remains unresolved 75 years later.",
+             "summary": "The Nakba: 700,000 Palestinians expelled, villages destroyed — the unresolved tragedy at the heart of the conflict.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "The Ethnic Cleansing of Palestine", "author": "Ilan Pappé", "publication": "Oneworld", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2006},
+             ]},
+        ],
+    },
+    {
+        "slug": "chinese-revolution-peoples-republic-1949",
+        "title": "Chinese Communist Revolution — People's Republic Founded",
+        "year": 1949, "lat": 39.9042, "lng": 116.4074,
+        "geo_modern": "Beijing, China", "geo_era_label": "China Civil War",
+        "category": "political", "importance_score": 0.93, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Communist Party/Maoist perspective", "culture_code": "cn", "viewpoint_type": "nationalist",
+             "narrative": "Mao Zedong's proclamation of the People's Republic of China on October 1, 1949 ended a century of humiliation under foreign powers. The Communist revolution liberated the Chinese people from feudalism, imperialism, and Nationalist corruption.",
+             "summary": "The liberation of China from a century of humiliation and the founding of a new socialist state.", "evidence_score": 0.83,
+             "sources": [
+                 {"title": "Selected Works of Mao Tse-tung", "author": "Mao Zedong", "source_type": "primary", "reliability_tier": 2, "year": 1961},
+             ]},
+            {"label": "Western/Nationalist perspective", "culture_code": "tw", "viewpoint_type": "nationalist",
+             "narrative": "The 'fall of China' to communism was a strategic catastrophe for the West. Chiang Kai-shek's Nationalists retreated to Taiwan, which maintains its own democratic government. The Communist regime would cause tens of millions of deaths in subsequent campaigns.",
+             "summary": "The fall of China to communism — a geopolitical catastrophe that reshaped the Cold War balance.", "evidence_score": 0.81,
+             "sources": [
+                 {"title": "Mao: The Unknown Story", "author": "Jung Chang and Jon Halliday", "publication": "Knopf", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2005},
+             ]},
+        ],
+    },
+    {
+        "slug": "korean-war-1950-1953",
+        "title": "Korean War",
+        "year": 1950, "lat": 37.5665, "lng": 126.9780,
+        "geo_modern": "Korean Peninsula", "geo_era_label": "Cold War",
+        "category": "war", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "American/UN perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "North Korea's invasion of South Korea on June 25, 1950 triggered the first major military response by the new UN system. US-led UN forces repelled the invasion, then were checked by Chinese intervention. The armistice of 1953 restored the status quo at enormous cost.",
+             "summary": "The first 'hot' conflict of the Cold War — the UN system's first major military test.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "The Korean War", "author": "Max Hastings", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1987},
+             ]},
+            {"label": "Korean perspective (both sides)", "culture_code": "kr", "viewpoint_type": "nationalist",
+             "narrative": "The Korean War killed 3-4 million Koreans, destroyed the peninsula, and left a division that persists today. For Koreans, it was a civil war exacerbated by Cold War great powers treating Korea as a proxy battlefield. The 'Forgotten War' remains unresolved.",
+             "summary": "A devastating civil war exploited by Cold War powers, leaving a permanent division and millions of casualties.", "evidence_score": 0.87,
+             "sources": [
+                 {"title": "The Korean War: History and Reconciliation", "author": "William Stueck", "publication": "Princeton University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1995},
+             ]},
+        ],
+    },
+    {
+        "slug": "decolonization-ghana-independence-1957",
+        "title": "Ghana Independence — Beginning of African Decolonization",
+        "year": 1957, "lat": 5.6037, "lng": -0.1870,
+        "geo_modern": "Accra, Ghana", "geo_era_label": "British Empire",
+        "category": "political", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Pan-African perspective", "culture_code": "gh", "viewpoint_type": "nationalist",
+             "narrative": "Ghana became the first sub-Saharan African colony to gain independence on March 6, 1957 under Kwame Nkrumah. His declaration 'Ghana is free forever' inspired liberation movements across Africa. By 1965, 35 African nations were independent.",
+             "summary": "The dawn of African independence — Ghana leads the continent's liberation from colonial rule.", "evidence_score": 0.91,
+             "sources": [
+                 {"title": "Africa Must Unite", "author": "Kwame Nkrumah", "publication": "Praeger", "source_type": "primary", "reliability_tier": 2, "year": 1963},
+             ]},
+            {"label": "British colonial perspective", "culture_code": "gb", "viewpoint_type": "colonial",
+             "narrative": "Britain managed the transition to Ghanaian independence as an orderly handover to a prepared elite. The Commonwealth maintained ties and technical assistance. Macmillan's 'Wind of Change' speech (1960) acknowledged the inevitable.",
+             "summary": "An orderly transition to independence within the Commonwealth framework.", "evidence_score": 0.74,
+             "sources": [
+                 {"title": "Macmillan's 'Wind of Change' Speech, February 3, 1960", "author": "Harold Macmillan", "source_type": "primary", "reliability_tier": 1, "year": 1960},
+             ]},
+        ],
+    },
+    {
+        "slug": "cuban-missile-crisis-1962",
+        "title": "Cuban Missile Crisis",
+        "year": 1962, "lat": 23.1136, "lng": -82.3666,
+        "geo_modern": "Cuba / Washington D.C.", "geo_era_label": "Cold War",
+        "category": "political", "importance_score": 0.96, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "American perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "Kennedy's blockade of Cuba and ultimatum to Khrushchev to remove Soviet missiles brought the world to the brink of nuclear war. Kennedy's calm resolve and backchannel diplomacy averted catastrophe. ExComm transcripts show how close to war they came.",
+             "summary": "Thirteen days that brought humanity to the edge of nuclear annihilation — resolved by careful diplomacy.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "Thirteen Days", "author": "Robert F. Kennedy", "publication": "Norton", "source_type": "primary", "reliability_tier": 2, "year": 1969},
+             ]},
+            {"label": "Soviet/Cuban perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "Soviet missiles in Cuba were a response to US missiles in Turkey and the Bay of Pigs invasion. The resolution included a secret US promise to remove Turkish missiles. Khrushchev showed restraint; Cuba was not consulted on the deal and felt betrayed.",
+             "summary": "Soviet deterrence justified by US missiles in Turkey; Cuba betrayed in the final deal.", "evidence_score": 0.85,
+             "sources": [
+                 {"title": "Khrushchev Remembers", "author": "Nikita Khrushchev", "publication": "Little, Brown", "source_type": "primary", "reliability_tier": 2, "year": 1970},
+             ]},
+        ],
+    },
+    {
+        "slug": "assassination-jfk-1963",
+        "title": "Assassination of President Kennedy",
+        "year": 1963, "lat": 32.7793, "lng": -96.8085,
+        "geo_modern": "Dallas, Texas, USA", "geo_era_label": "Cold War USA",
+        "category": "political", "importance_score": 0.89, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Warren Commission perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The Warren Commission concluded that Lee Harvey Oswald, acting alone, shot President Kennedy on November 22, 1963. The Commission found no credible evidence of conspiracy. This remains the official US government conclusion.",
+             "summary": "A lone gunman's act that shocked the world and ended the Camelot era of American politics.", "evidence_score": 0.76,
+             "sources": [
+                 {"title": "Report of the Warren Commission on the Assassination of President Kennedy", "source_type": "primary", "reliability_tier": 1, "year": 1964},
+             ]},
+            {"label": "Conspiracy/HSCA perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The 1979 House Select Committee on Assassinations concluded Kennedy 'was probably assassinated as a result of a conspiracy.' Acoustic evidence suggested multiple shooters. Polls consistently show most Americans believe a conspiracy was involved.",
+             "summary": "Congressional investigation found probable conspiracy; the full truth may never be known.", "evidence_score": 0.68,
+             "sources": [
+                 {"title": "House Select Committee on Assassinations Final Report, 1979", "source_type": "primary", "reliability_tier": 1, "year": 1979},
+             ]},
+        ],
+    },
+    {
+        "slug": "civil-rights-act-usa-1964",
+        "title": "Civil Rights Act of 1964 — USA",
+        "year": 1964, "lat": 38.9072, "lng": -77.0369,
+        "geo_modern": "Washington D.C., USA", "geo_era_label": "Civil Rights Movement USA",
+        "category": "political", "importance_score": 0.91, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "African American civil rights perspective", "culture_code": "us", "viewpoint_type": "indigenous",
+             "narrative": "The Civil Rights Act, signed by LBJ on July 2, 1964, outlawed discrimination on race, color, religion, sex, or national origin. Won through a decade of nonviolent protest led by MLK, the NAACP, and SNCC, it was the most significant civil rights legislation since the 14th Amendment.",
+             "summary": "The culmination of the civil rights movement — outlawing racial discrimination after a century of Jim Crow.", "evidence_score": 0.92,
+             "sources": [
+                 {"title": "Civil Rights Act of 1964", "source_type": "primary", "reliability_tier": 1, "year": 1964},
+                 {"title": "'I Have a Dream' Speech", "author": "Martin Luther King Jr.", "source_type": "primary", "reliability_tier": 1, "year": 1963},
+             ]},
+            {"label": "Southern segregationist perspective (refuted)", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "Southern Democrats argued the Act was federal overreach into states' rights. Strom Thurmond and others filibustered. The Act's long-term political consequence was the 'Southern Strategy' — Republicans winning the white South by appealing to racial resentment.",
+             "summary": "Southern resistance reflected deep racial resentment that politicians would exploit for decades.", "evidence_score": 0.82,
+             "sources": [
+                 {"title": "The Political History of the Civil Rights Act", "author": "Clay Risen", "publication": "FSG", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2014},
+             ]},
+        ],
+    },
+    {
+        "slug": "vietnam-war-tet-offensive-1968",
+        "title": "Tet Offensive — Vietnam War",
+        "year": 1968, "lat": 16.0544, "lng": 108.2022,
+        "geo_modern": "South Vietnam (multiple cities)", "geo_era_label": "Vietnam War",
+        "category": "war", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "American perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The Tet Offensive (January 30, 1968) was a military defeat for North Vietnam and the Viet Cong, who suffered enormous casualties. But the scale of the attack destroyed public confidence in the war and LBJ's assurances of progress. Walter Cronkite called it a stalemate.",
+             "summary": "A military failure that was a propaganda victory — shattering American confidence in the war.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "Tet!: The Turning Point in the Vietnam War", "author": "Don Oberdorfer", "publication": "Doubleday", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1971},
+             ]},
+            {"label": "Vietnamese (North/NLF) perspective", "culture_code": "vn", "viewpoint_type": "nationalist",
+             "narrative": "The Tet Offensive demonstrated that after years of US bombing and 500,000 troops, the NLF could still strike the US Embassy in Saigon. Though costly, it achieved the strategic goal of breaking American will to continue the war. Vietnamese determination would ultimately prevail.",
+             "summary": "A costly strategic success that broke the American will to fight — demonstrating Vietnamese determination.", "evidence_score": 0.85,
+             "sources": [
+                 {"title": "The Pentagon Papers", "source_type": "primary", "reliability_tier": 1, "year": 1971},
+             ]},
+        ],
+    },
+    {
+        "slug": "moon-landing-1969",
+        "title": "Apollo 11 — First Moon Landing",
+        "year": 1969, "lat": 0.6741, "lng": 23.4733,
+        "geo_modern": "Sea of Tranquility, Moon", "geo_era_label": "Space Race",
+        "category": "discovery", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "American perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "Neil Armstrong's 'one small step' on July 20, 1969 fulfilled Kennedy's 1961 challenge and demonstrated American technological supremacy over the Soviet Union in the Space Race. 600 million watched on television — humanity's greatest technological achievement.",
+             "summary": "Humanity's greatest technological achievement and the Cold War's most spectacular American victory.", "evidence_score": 0.97,
+             "sources": [
+                 {"title": "Apollo 11 Mission Report", "source_type": "primary", "reliability_tier": 1, "year": 1969},
+             ]},
+            {"label": "Global/humanist perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "Armstrong said 'one giant leap for mankind' — and the achievement was genuinely shared by thousands of scientists of many nationalities, including contributions from German rocket scientists (von Braun) and female African American mathematicians (Katherine Johnson).",
+             "summary": "A human achievement built on the work of thousands across nationalities, including those history has often erased.", "evidence_score": 0.90,
+             "sources": [
+                 {"title": "Hidden Figures", "author": "Margot Lee Shetterly", "publication": "Morrow", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2016},
+             ]},
+        ],
+    },
+    {
+        "slug": "fall-of-berlin-wall-1989",
+        "title": "Fall of the Berlin Wall",
+        "year": 1989, "lat": 52.5163, "lng": 13.3777,
+        "geo_modern": "Berlin, Germany", "geo_era_label": "Late Cold War",
+        "category": "political", "importance_score": 0.96, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "West German/Western perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The fall of the Berlin Wall on November 9, 1989 was the defining moment of the Cold War's end. Crowds of East Germans poured through the checkpoints as border guards stood aside. Reagan's 'Tear down this wall!' seemed vindicated.",
+             "summary": "The Cold War's most symbolic moment — Europe reunited and communism's defeat made manifest.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "The Wall: The Inside Story of Divided Berlin", "author": "Frederick Taylor", "publication": "HarperCollins", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2006},
+             ]},
+            {"label": "East German perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "The wall fell due to a miscommunication at an East German press conference combined with mass popular protest. For East Germans, reunification brought freedom but also economic dislocation, unemployment, and a sense that 'the West won' imposed its culture on the East.",
+             "summary": "Freedom arrived, but reunification brought economic shock and a suppression of East German identity.", "evidence_score": 0.87,
+             "sources": [
+                 {"title": "The Year That Changed the World", "author": "Michael Meyer", "publication": "Scribner", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2009},
+             ]},
+        ],
+    },
+    {
+        "slug": "dissolution-soviet-union-1991",
+        "title": "Dissolution of the Soviet Union",
+        "year": 1991, "lat": 55.7558, "lng": 37.6173,
+        "geo_modern": "Moscow, Russia", "geo_era_label": "Soviet Union",
+        "category": "political", "importance_score": 0.96, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Western/American perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The Soviet Union's dissolution on December 25, 1991 ended the Cold War and the communist experiment. Reagan's military buildup, the Afghan quagmire, and economic dysfunction combined to make the USSR unsustainable. Liberal democracy had 'won history.'",
+             "summary": "The end of the Cold War and vindication of Western liberal democracy over Soviet communism.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "The End of History and the Last Man", "author": "Francis Fukuyama", "publication": "Free Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1992},
+             ]},
+            {"label": "Russian perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "Gorbachev's reforms inadvertently triggered the USSR's collapse. For Russians who lived through the 1990s — economic collapse, oligarchy, NATO expansion — the dissolution was a geopolitical catastrophe Putin called 'the greatest tragedy of the 20th century.'",
+             "summary": "A geopolitical catastrophe that led to Russian humiliation, economic collapse, and the conditions for Putin's revanchism.", "evidence_score": 0.85,
+             "sources": [
+                 {"title": "Putin's Russia", "author": "Anna Politkovskaya", "publication": "Harvill Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2004},
+             ]},
+        ],
+    },
+    {
+        "slug": "rwandan-genocide-1994",
+        "title": "Rwandan Genocide",
+        "year": 1994, "lat": -1.9403, "lng": 29.8739,
+        "geo_modern": "Kigali, Rwanda", "geo_era_label": "Post-Cold War Africa",
+        "category": "war", "importance_score": 0.92, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Tutsi survivor perspective", "culture_code": "rw", "viewpoint_type": "indigenous",
+             "narrative": "Between April and July 1994, approximately 500,000-800,000 Tutsi and moderate Hutu were killed in 100 days — the fastest genocide in history. Machetes were the primary weapon. Radio broadcasts called on Hutu to kill their neighbors. The world watched and did nothing.",
+             "summary": "The fastest genocide in history — 800,000 people murdered in 100 days while the world deliberated.", "evidence_score": 0.96,
+             "sources": [
+                 {"title": "We Wish to Inform You That Tomorrow We Will Be Killed With Our Families", "author": "Philip Gourevitch", "publication": "FSG", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1998},
+             ]},
+            {"label": "International/UN perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "UN commander Roméo Dallaire pleaded for authorization to intervene and was refused. The US and UN deliberately avoided using the word 'genocide' to avoid intervention obligations. Western indifference to African lives was starkly exposed.",
+             "summary": "International failure: the UN had troops on the ground but was prevented from stopping genocide by great power indifference.", "evidence_score": 0.94,
+             "sources": [
+                 {"title": "Shake Hands with the Devil", "author": "Roméo Dallaire", "publication": "Random House", "source_type": "primary", "reliability_tier": 2, "year": 2003},
+             ]},
+        ],
+    },
+    {
+        "slug": "south-africa-apartheid-ends-1994",
+        "title": "South Africa's First Democratic Election — End of Apartheid",
+        "year": 1994, "lat": -33.9249, "lng": 18.4241,
+        "geo_modern": "South Africa", "geo_era_label": "Post-Apartheid South Africa",
+        "category": "political", "importance_score": 0.92, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "ANC/Black South African perspective", "culture_code": "za", "viewpoint_type": "nationalist",
+             "narrative": "Nelson Mandela's election as South Africa's first Black president on April 27, 1994 ended 46 years of apartheid and the legacy of centuries of racial oppression. The Truth and Reconciliation Commission offered a model of restorative justice for the world.",
+             "summary": "The miracle of peaceful transition — Mandela's election ends apartheid and models restorative justice.", "evidence_score": 0.93,
+             "sources": [
+                 {"title": "Long Walk to Freedom", "author": "Nelson Mandela", "publication": "Little, Brown", "source_type": "primary", "reliability_tier": 1, "year": 1994},
+             ]},
+            {"label": "White South African perspective", "culture_code": "za", "viewpoint_type": "nationalist",
+             "narrative": "F.W. de Klerk's decision to unban the ANC and release Mandela enabled a negotiated transition that avoided civil war. Many white South Africans feared majority rule; the TRC offered amnesty in exchange for truth, not punishment.",
+             "summary": "Negotiated transition avoids civil war — a fragile but remarkable democratic achievement.", "evidence_score": 0.88,
+             "sources": [
+                 {"title": "The Last Trek: A New Beginning", "author": "F.W. de Klerk", "publication": "Macmillan", "source_type": "primary", "reliability_tier": 2, "year": 1998},
+             ]},
+        ],
+    },
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # ADDITIONAL EVENTS TO REACH 500
+    # ═══════════════════════════════════════════════════════════════════════
+
+    # Ancient world additions
+    {
+        "slug": "athens-democracy-507bce",
+        "title": "Cleisthenes Establishes Athenian Democracy",
+        "year": -507, "lat": 37.9715, "lng": 23.7267,
+        "geo_modern": "Athens, Greece", "geo_era_label": "Classical Athens",
+        "category": "political", "importance_score": 0.90, "zoom_min": 2, "is_bce": True,
+        "perspectives": [
+            {"label": "Athenian democratic perspective", "culture_code": "gr", "viewpoint_type": "nationalist",
+             "narrative": "Cleisthenes' reforms of 508-507 BCE established direct democracy in Athens — the first in history. All male Athenian citizens could vote in the Assembly, serve on juries, and hold office. This model inspired democratic theory for 2,500 years.",
+             "summary": "The invention of democracy — a political system that would define Western civilization.", "evidence_score": 0.88,
+             "sources": [{"title": "The Constitution of the Athenians", "author": "Aristotle", "source_type": "primary", "reliability_tier": 2, "year": -330}]},
+            {"label": "Modern critical perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "Athenian democracy excluded women, slaves (40-80% of population), and foreigners. It was democracy for a citizen minority. Yet the principles of direct participation and accountability to citizens proved revolutionary.",
+             "summary": "Democracy for citizens only — revolutionary principles built on the exclusion of most people.", "evidence_score": 0.85,
+             "sources": [{"title": "Democracy: A Very Short Introduction", "author": "Bernard Crick", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2002}]},
+        ],
+    },
+    {
+        "slug": "socrates-trial-399bce",
+        "title": "Trial and Death of Socrates",
+        "year": -399, "lat": 37.9715, "lng": 23.7267,
+        "geo_modern": "Athens, Greece", "geo_era_label": "Classical Athens",
+        "category": "cultural", "importance_score": 0.86, "zoom_min": 3, "is_bce": True,
+        "perspectives": [
+            {"label": "Socratic/philosophical perspective", "culture_code": "gr", "viewpoint_type": "academic",
+             "narrative": "Socrates, charged with impiety and corrupting Athenian youth, refused to flee and accepted the hemlock sentence. His death, as recorded by Plato in the Apology and Phaedo, became philosophy's founding martyrdom.",
+             "summary": "Philosophy's founding martyr — choosing death over abandoning the examined life.", "evidence_score": 0.87,
+             "sources": [{"title": "Apology of Socrates", "author": "Plato", "source_type": "primary", "reliability_tier": 2, "year": -390}]},
+            {"label": "Athenian democratic perspective", "culture_code": "gr", "viewpoint_type": "nationalist",
+             "narrative": "Socrates had associated with oligarchs who overthrew democracy. His trial was a political prosecution following the trauma of the Thirty Tyrants. The democratic restored government tried a man who had undermined democratic values.",
+             "summary": "A politically motivated trial of a man whose associations with anti-democratic forces made him a genuine threat.", "evidence_score": 0.74,
+             "sources": [{"title": "Socrates on Trial", "author": "Thomas Brickhouse and Nicholas Smith", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1989}]},
+        ],
+    },
+    {
+        "slug": "peloponnesian-war-431-404bce",
+        "title": "Peloponnesian War — Athens vs. Sparta",
+        "year": -431, "lat": 37.9715, "lng": 23.7267,
+        "geo_modern": "Greece", "geo_era_label": "Classical Greece",
+        "category": "war", "importance_score": 0.87, "zoom_min": 2, "is_bce": True,
+        "perspectives": [
+            {"label": "Athenian perspective", "culture_code": "gr", "viewpoint_type": "nationalist",
+             "narrative": "Athens, the greatest democracy of the ancient world, was brought down by Spartan military power and Persian gold. Thucydides' history analyzes how fear, honor, and interest drive states to war regardless of their form of government.",
+             "summary": "Democracy versus military oligarchy — Athens destroyed by its own imperial overreach.", "evidence_score": 0.90,
+             "sources": [{"title": "History of the Peloponnesian War", "author": "Thucydides", "source_type": "primary", "reliability_tier": 1, "year": -404}]},
+            {"label": "Spartan perspective", "culture_code": "gr", "viewpoint_type": "nationalist",
+             "narrative": "Sparta's victory ended Athenian imperial ambition and its oppression of the Delian League members. Spartan hegemony brought stability, though it too proved unsustainable.",
+             "summary": "Sparta's victory ends Athenian imperialism but creates a new hegemony equally unstable.", "evidence_score": 0.82,
+             "sources": [{"title": "Sparta: Unfit for Empire", "author": "Paul Cartledge", "publication": "Duckworth", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1987}]},
+        ],
+    },
+    {
+        "slug": "roman-republic-founding-509bce",
+        "title": "Founding of the Roman Republic",
+        "year": -509, "lat": 41.9003, "lng": 12.4534,
+        "geo_modern": "Rome, Italy", "geo_era_label": "Roman Republic",
+        "category": "political", "importance_score": 0.88, "zoom_min": 2, "is_bce": True,
+        "perspectives": [
+            {"label": "Roman aristocratic perspective", "culture_code": "it", "viewpoint_type": "nationalist",
+             "narrative": "The expulsion of the Tarquin kings and founding of the Republic established the Roman system of consuls, Senate, and popular assemblies. The Republic's mixed constitution — balancing monarchical, aristocratic, and democratic elements — was admired by Polybius and later by the American founders.",
+             "summary": "The Republic's mixed constitution became the model for all subsequent republican governance.", "evidence_score": 0.83,
+             "sources": [{"title": "History of Rome", "author": "Livy", "source_type": "primary", "reliability_tier": 2, "year": -10}]},
+            {"label": "Roman plebeian perspective", "culture_code": "it", "viewpoint_type": "nationalist",
+             "narrative": "The Republic was founded by and for patricians. Plebeians fought for centuries through the Conflict of the Orders to gain rights — tribunes, the Twelve Tables of law, and eventually access to consulship. The Republic was not democratic until forced by popular struggle.",
+             "summary": "A patrician republic that plebeians spent centuries fighting to democratize.", "evidence_score": 0.82,
+             "sources": [{"title": "The Roman Revolution", "author": "Ronald Syme", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1939}]},
+        ],
+    },
+    {
+        "slug": "han-dynasty-founding-206bce",
+        "title": "Founding of the Han Dynasty",
+        "year": -206, "lat": 34.2658, "lng": 108.9541,
+        "geo_modern": "Chang'an (Xi'an), China", "geo_era_label": "Han Dynasty",
+        "category": "political", "importance_score": 0.88, "zoom_min": 2, "is_bce": True,
+        "perspectives": [
+            {"label": "Han Chinese perspective", "culture_code": "cn", "viewpoint_type": "nationalist",
+             "narrative": "Liu Bang, a peasant who rose to become Gaozu of Han, founded the dynasty that defined Chinese civilization. The Han embraced Confucianism, expanded the empire, and created cultural and ethnic identity so enduring that Chinese people still call themselves 'Han.'",
+             "summary": "The dynasty that defined Chinese civilization and gave the Chinese people their name.", "evidence_score": 0.87,
+             "sources": [{"title": "Records of the Grand Historian", "author": "Sima Qian", "source_type": "primary", "reliability_tier": 2, "year": -90}]},
+            {"label": "Historical perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "The Han's 400-year reign (interrupted by the interregnum of Wang Mang) established bureaucratic governance based on Confucian meritocracy that would define Chinese government until 1912.",
+             "summary": "The Han created the Confucian bureaucratic state that endured for 2,000 years.", "evidence_score": 0.85,
+             "sources": [{"title": "China: A History", "author": "John Keay", "publication": "Basic Books", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2009}]},
+        ],
+    },
+    {
+        "slug": "maya-civilization-peak-600-900",
+        "title": "Maya Classic Period — Zenith of Civilization",
+        "year": 700, "lat": 17.2510, "lng": -89.6239,
+        "geo_modern": "Tikal, Guatemala", "geo_era_label": "Classic Maya",
+        "category": "cultural", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Archaeological perspective", "culture_code": "mx", "viewpoint_type": "academic",
+             "narrative": "The Classic Maya period (250-900 CE) saw the construction of great cities like Tikal, Copán, and Palenque. Maya civilization achieved advanced writing, astronomy, mathematics (including zero), and monumental architecture without metal tools or the wheel.",
+             "summary": "The height of Maya civilization — remarkable science, art, and architecture in the Americas' tropical heartland.", "evidence_score": 0.88,
+             "sources": [{"title": "The Ancient Maya", "author": "Robert Sharer", "publication": "Stanford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1994}]},
+            {"label": "Indigenous Maya perspective", "culture_code": "indigenous-maya", "viewpoint_type": "indigenous",
+             "narrative": "Maya civilization was not a 'lost' civilization — Maya people continue to exist in millions today. The 'collapse' of the Classic period involved political fragmentation, not extinction. Maya culture, language, and identity persist despite centuries of colonial suppression.",
+             "summary": "Maya civilization lives on — the 'collapse' narrative erases the survival of millions of Maya people.", "evidence_score": 0.86,
+             "sources": [{"title": "Maya Cultural Heritage and Rights", "author": "Victor Montejo", "publication": "University of Arizona Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2005}]},
+        ],
+    },
+    {
+        "slug": "viking-discovery-north-america-1000",
+        "title": "Viking Settlement at Vinland (North America)",
+        "year": 1000, "lat": 51.5980, "lng": -55.5247,
+        "geo_modern": "L'Anse aux Meadows, Newfoundland, Canada", "geo_era_label": "Viking Age",
+        "category": "discovery", "importance_score": 0.83, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Norse/Viking perspective", "culture_code": "no", "viewpoint_type": "nationalist",
+             "narrative": "Leif Eriksson, following Bjarni Herjólfsson's sighting, established a Norse settlement at Vinland around 1000 CE — 500 years before Columbus. Archaeological excavation at L'Anse aux Meadows (1960s) confirmed the Norse presence.",
+             "summary": "Norse explorers reached North America 500 years before Columbus — the first confirmed European contact.", "evidence_score": 0.90,
+             "sources": [{"title": "The Vinland Sagas", "source_type": "primary", "reliability_tier": 2, "year": 1200}, {"title": "The Norse Discovery of America", "author": "Helge Ingstad", "publication": "Norwegian University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1985}]},
+            {"label": "Indigenous North American perspective", "culture_code": "indigenous-us", "viewpoint_type": "indigenous",
+             "narrative": "Indigenous peoples had 'discovered' and inhabited North America for 15,000+ years before the Norse arrived. Norse sagas record conflicts with 'Skraelings' — the Indigenous people who ultimately repulsed the settlement.",
+             "summary": "Norse 'discovery' irrelevant to peoples who had lived there for millennia and whose resistance ended the settlement.", "evidence_score": 0.87,
+             "sources": [{"title": "1491: New Revelations of the Americas Before Columbus", "author": "Charles Mann", "publication": "Knopf", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2005}]},
+        ],
+    },
+    {
+        "slug": "invention-compass-china-1040",
+        "title": "Compass Described in Chinese Military Text",
+        "year": 1040, "lat": 39.9042, "lng": 116.4074,
+        "geo_modern": "China", "geo_era_label": "Song Dynasty",
+        "category": "discovery", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Chinese perspective", "culture_code": "cn", "viewpoint_type": "nationalist",
+             "narrative": "The magnetic compass was invented in China during the Han Dynasty for geomantic purposes and later applied to navigation during the Song Dynasty. Chinese mariners used it to navigate the Indian Ocean trade routes centuries before European adoption.",
+             "summary": "China's navigational gift to the world — the compass enabled the Age of Exploration.", "evidence_score": 0.88,
+             "sources": [{"title": "Wujing Zongyao (Collection of the Most Important Military Techniques)", "author": "Zeng Gongliang", "source_type": "primary", "reliability_tier": 2, "year": 1044}]},
+            {"label": "Global diffusion perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "The compass reached Europe via Islamic intermediaries. Each culture adapted it differently — the Chinese used it geomantically and maritimely; Europeans primarily for ocean navigation. The diffusion of the compass exemplifies how technology travels across civilizations.",
+             "summary": "A Chinese invention transmitted through Islamic traders that enabled European oceanic exploration.", "evidence_score": 0.85,
+             "sources": [{"title": "Four Discoveries: The Ancient Chinese Science", "author": "Robert Temple", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1986}]},
+        ],
+    },
+    {
+        "slug": "black-death-arrives-europe-1347",
+        "title": "Black Death Arrives in Sicily",
+        "year": 1347, "lat": 37.5079, "lng": 15.0830,
+        "geo_modern": "Messina, Sicily, Italy", "geo_era_label": "Medieval Europe",
+        "category": "natural", "importance_score": 0.85, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Italian merchant perspective", "culture_code": "it", "viewpoint_type": "journalistic",
+             "narrative": "Genoese trading ships from Caffa (Crimea) arrived in Messina in October 1347 with crews dying of a mysterious illness. The ships were turned away but the disease had already landed. Within days, plague spread through Sicily and then to mainland Italy.",
+             "summary": "The plague arrives in Europe on merchant ships — the point of entry for history's deadliest epidemic.", "evidence_score": 0.88,
+             "sources": [{"title": "Historia de Morbo (On the Disease)", "author": "Michele da Piazza", "source_type": "primary", "reliability_tier": 2, "year": 1347}]},
+            {"label": "Epidemiological perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "DNA evidence from plague victims confirms Yersinia pestis, originating in a Central Asian reservoir. Rat fleas were the primary vector. The epidemic exploited medieval Europe's densely packed cities, poor sanitation, and lack of immunity.",
+             "summary": "A bacterial pathogen exploiting medieval conditions — understanding the biology explains the spread.", "evidence_score": 0.95,
+             "sources": [{"title": "Plague: A Very Short Introduction", "author": "Paul Slack", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2012}]},
+        ],
+    },
+    {
+        "slug": "ottoman-empire-founding-1299",
+        "title": "Founding of the Ottoman Empire",
+        "year": 1299, "lat": 40.0157, "lng": 29.5169,
+        "geo_modern": "Söğüt, Anatolia (Turkey)", "geo_era_label": "Seljuk Successor States",
+        "category": "political", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Ottoman/Turkish perspective", "culture_code": "tr", "viewpoint_type": "nationalist",
+             "narrative": "Osman I founded a small emirate in northwestern Anatolia that would grow over six centuries into an empire spanning three continents. Ottoman rule at its height brought administrative sophistication, religious tolerance, and a multicultural civilization.",
+             "summary": "The founding of the empire that would dominate the Mediterranean world for six centuries.", "evidence_score": 0.82,
+             "sources": [{"title": "The Ottoman Empire, 1300-1650", "author": "Colin Imber", "publication": "Palgrave", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2002}]},
+            {"label": "Byzantine/Greek perspective", "culture_code": "gr", "viewpoint_type": "nationalist",
+             "narrative": "The Ottoman expansion was the existential threat to Byzantine civilization, ultimately successful in 1453. Greek historiography views Ottoman rule as a centuries-long oppression that ended only with Greek independence in 1821.",
+             "summary": "The beginning of a centuries-long threat that would ultimately destroy the Byzantine successor to Rome.", "evidence_score": 0.80,
+             "sources": [{"title": "The Ottoman Empire and Its Heritage", "author": "Suraiya Faroqhi", "publication": "Brill", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1994}]},
+        ],
+    },
+    {
+        "slug": "joan-of-arc-1429",
+        "title": "Joan of Arc Relieves Siege of Orléans",
+        "year": 1429, "lat": 47.9025, "lng": 1.9090,
+        "geo_modern": "Orléans, France", "geo_era_label": "Hundred Years' War",
+        "category": "war", "importance_score": 0.85, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "French nationalist/Catholic perspective", "culture_code": "fr", "viewpoint_type": "religious",
+             "narrative": "Joan of Arc, a peasant girl acting on divine visions, led French forces to relieve Orléans in 1429, turning the tide of the Hundred Years' War. Burned at the stake by the English in 1431, she was canonized in 1920 and became France's national saint.",
+             "summary": "Divine inspiration transforms French fortunes — Joan becomes France's eternal symbol of national salvation.", "evidence_score": 0.87,
+             "sources": [{"title": "The Trial of Joan of Arc", "source_type": "primary", "reliability_tier": 1, "year": 1431}]},
+            {"label": "English perspective", "culture_code": "gb", "viewpoint_type": "nationalist",
+             "narrative": "The English tried Joan for heresy and witchcraft — charges that reflected the belief that her military success must have supernatural (diabolical) rather than natural causes. Her execution was legally proper by contemporary ecclesiastical standards.",
+             "summary": "A heresy trial of an opponent; her canonization retroactively condemned England's legal processes.", "evidence_score": 0.75,
+             "sources": [{"title": "Joan of Arc: A Military Leader", "author": "Kelly DeVries", "publication": "Sutton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1999}]},
+        ],
+    },
+    # Additional Renaissance/Exploration events
+    {
+        "slug": "vasco-da-gama-india-1498",
+        "title": "Vasco da Gama Reaches India",
+        "year": 1498, "lat": 11.2588, "lng": 75.7804,
+        "geo_modern": "Calicut (Kozhikode), India", "geo_era_label": "Age of Exploration",
+        "category": "discovery", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Portuguese perspective", "culture_code": "pt", "viewpoint_type": "nationalist",
+             "narrative": "Da Gama's voyage around Africa to India in 1497-1499 opened the direct sea route to Asian spice markets, breaking the Venetian and Arab monopoly. Portugal became the first European power to dominate the Indian Ocean trade.",
+             "summary": "The sea route to India — breaking the Muslim/Venetian trade monopoly and launching European oceanic dominance.", "evidence_score": 0.88,
+             "sources": [{"title": "Journal of the First Voyage of Vasco da Gama", "author": "Vasco da Gama", "source_type": "primary", "reliability_tier": 2, "year": 1499}]},
+            {"label": "Indian/Zamorin perspective", "culture_code": "in", "viewpoint_type": "indigenous",
+             "narrative": "The Zamorin of Calicut initially welcomed da Gama but was suspicious of his poor gifts for a rich king. Portuguese demands for trade exclusivity and their attacks on Arab merchants poisoned relations. Da Gama's second voyage (1502) involved massacres of Muslims.",
+             "summary": "An unwelcome arrival that disrupted established trade networks and prefigured Portuguese colonial violence.", "evidence_score": 0.83,
+             "sources": [{"title": "Sea of Poppies", "author": "Amitav Ghosh", "publication": "FSG", "source_type": "secondary", "reliability_tier": 3, "year": 2008}]},
+        ],
+    },
+    {
+        "slug": "magellan-first-circumnavigation-1519-1522",
+        "title": "Magellan-Elcano Circumnavigation",
+        "year": 1519, "lat": 14.5995, "lng": 120.9842,
+        "geo_modern": "Manila, Philippines (via Strait of Magellan)", "geo_era_label": "Age of Exploration",
+        "category": "discovery", "importance_score": 0.89, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Spanish/European perspective", "culture_code": "es", "viewpoint_type": "nationalist",
+             "narrative": "Ferdinand Magellan's expedition (1519-1522), completed by Juan Sebastián Elcano after Magellan's death in the Philippines, was the first circumnavigation of the globe. It proved Earth is round and estimated its size accurately.",
+             "summary": "The first circumnavigation proves the world is round and establishes the true scale of Earth.", "evidence_score": 0.92,
+             "sources": [{"title": "Pigafetta's Narrative of Magellan's Voyage", "author": "Antonio Pigafetta", "source_type": "primary", "reliability_tier": 2, "year": 1522}]},
+            {"label": "Philippine Indigenous perspective", "culture_code": "ph", "viewpoint_type": "indigenous",
+             "narrative": "Magellan was killed by Lapulapu, chief of Mactan island, who refused to submit to Spanish authority. Lapulapu is celebrated as a Philippine national hero — the first to resist European colonization.",
+             "summary": "Indigenous resistance defeated and killed the famous European explorer — Lapulapu as Philippine founding hero.", "evidence_score": 0.84,
+             "sources": [{"title": "Philippine History", "author": "Gregorio Zaide", "publication": "Rex Bookstore", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1994}]},
+        ],
+    },
+    {
+        "slug": "galileo-telescope-1609",
+        "title": "Galileo Improves Telescope and Observes Jupiter's Moons",
+        "year": 1609, "lat": 45.4064, "lng": 11.8768,
+        "geo_modern": "Padua, Italy", "geo_era_label": "Scientific Revolution",
+        "category": "discovery", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Scientific perspective", "culture_code": "it", "viewpoint_type": "academic",
+             "narrative": "Galileo's telescopic observations in 1609-1610 — mountains on the Moon, moons of Jupiter, phases of Venus — provided empirical evidence for Copernican heliocentrism. His Sidereus Nuncius (1610) changed astronomy forever.",
+             "summary": "Empirical observation demolishes Aristotelian cosmology and confirms Copernicus — the telescope as truth-instrument.", "evidence_score": 0.93,
+             "sources": [{"title": "Sidereus Nuncius", "author": "Galileo Galilei", "source_type": "primary", "reliability_tier": 1, "year": 1610}]},
+            {"label": "Church/Inquisition perspective", "culture_code": "it", "viewpoint_type": "religious",
+             "narrative": "Galileo's 1633 trial found him 'vehemently suspected of heresy' for promoting heliocentrism. He recanted. The Church's condemnation, later acknowledged as an error by John Paul II in 1992, became the symbol of religion suppressing science.",
+             "summary": "The Church condemned Galileo — an error acknowledged 350 years later as science's greatest institutional martyrdom.", "evidence_score": 0.88,
+             "sources": [{"title": "Galileo's Sentence by the Inquisition, June 22, 1633", "source_type": "primary", "reliability_tier": 1, "year": 1633}]},
+        ],
+    },
+    {
+        "slug": "newton-principia-1687",
+        "title": "Newton Publishes Principia Mathematica",
+        "year": 1687, "lat": 52.2053, "lng": 0.1218,
+        "geo_modern": "Cambridge, England", "geo_era_label": "Scientific Revolution",
+        "category": "discovery", "importance_score": 0.93, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Scientific perspective", "culture_code": "gb", "viewpoint_type": "academic",
+             "narrative": "Newton's Philosophiæ Naturalis Principia Mathematica (1687) established classical mechanics — the laws of motion and universal gravitation. It unified terrestrial and celestial physics and created the mathematical framework that dominated science for 200 years.",
+             "summary": "The greatest scientific work before Einstein — establishing the laws governing all motion from apples to planets.", "evidence_score": 0.97,
+             "sources": [{"title": "Principia Mathematica", "author": "Isaac Newton", "source_type": "primary", "reliability_tier": 1, "year": 1687}]},
+            {"label": "Enlightenment cultural perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "Newton's success created the Enlightenment belief that reason could explain and reform all human affairs. Philosophes applied 'Newtonian' reasoning to politics, economics, and society — directly inspiring the American and French Revolutions.",
+             "summary": "Newton's physics inspired the Enlightenment belief that reason could solve all human problems.", "evidence_score": 0.90,
+             "sources": [{"title": "The Enlightenment: A Very Short Introduction", "author": "John Robertson", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2015}]},
+        ],
+    },
+    # Industrial Revolution additions
+    {
+        "slug": "trans-atlantic-slave-trade-peak-1780",
+        "title": "Peak of the Transatlantic Slave Trade",
+        "year": 1780, "lat": 14.7167, "lng": -17.4677,
+        "geo_modern": "Gorée Island, Senegal (to Caribbean/Americas)", "geo_era_label": "Atlantic Slave Trade",
+        "category": "political", "importance_score": 0.93, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "African diaspora perspective", "culture_code": "ng", "viewpoint_type": "indigenous",
+             "narrative": "The transatlantic slave trade forcibly transported 12.5 million Africans to the Americas between 1500-1900. An estimated 1.8 million died during the Middle Passage. The trade destroyed African societies and created the racial hierarchy that structures inequality to this day.",
+             "summary": "The largest forced migration in history — 12.5 million enslaved Africans transported across the Atlantic.", "evidence_score": 0.96,
+             "sources": [{"title": "The Slave Trade Database (Trans-Atlantic Slave Trade Database)", "source_type": "primary", "reliability_tier": 1, "year": 2020}]},
+            {"label": "European commercial perspective", "culture_code": "gb", "viewpoint_type": "colonial",
+             "narrative": "British merchants justified the slave trade as essential to the colonial economy and to 'civilizing' Africans. The trade was legal, regulated, and profited the Crown, aristocracy, and commercial classes. Abolition came only after sustained moral campaigning.",
+             "summary": "Legally sanctioned commerce that enriched European capitals and drove colonial productivity.", "evidence_score": 0.80,
+             "sources": [{"title": "Capitalism and Slavery", "author": "Eric Williams", "publication": "University of North Carolina Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1944}]},
+        ],
+    },
+    {
+        "slug": "napoleon-waterloo-1815",
+        "title": "Battle of Waterloo — Napoleon's Final Defeat",
+        "year": 1815, "lat": 50.6795, "lng": 4.4120,
+        "geo_modern": "Waterloo, Belgium", "geo_era_label": "Napoleonic Wars",
+        "category": "war", "importance_score": 0.90, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Allied/Wellington perspective", "culture_code": "gb", "viewpoint_type": "nationalist",
+             "narrative": "Wellington called Waterloo 'the nearest run thing you ever saw.' The Prussian arrival under Blücher turned a defensive stand into a rout of Napoleon's Imperial Guard. Napoleon's exile to St. Helena ended the Napoleonic era and restored European order.",
+             "summary": "Napoleon's final defeat — Wellington and Blücher together end the Napoleonic era and restore Europe's monarchies.", "evidence_score": 0.91,
+             "sources": [{"title": "Wellington's Waterloo Dispatch", "author": "Duke of Wellington", "source_type": "primary", "reliability_tier": 1, "year": 1815}]},
+            {"label": "French perspective", "culture_code": "fr", "viewpoint_type": "nationalist",
+             "narrative": "Napoleon's defeat resulted from the failure of Grouchy to intercept the Prussians and Ney's tactical errors. France went from master of Europe to occupied territory, paying reparations and hosting Allied armies. Napoleon's legacy — Civil Code, meritocracy — outlasted his defeat.",
+             "summary": "Military defeat but legal and administrative victory — Napoleonic reforms survived the battle.", "evidence_score": 0.86,
+             "sources": [{"title": "Waterloo: The History of Four Days, Three Armies and Three Battles", "author": "Bernard Cornwell", "publication": "HarperCollins", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2014}]},
+        ],
+    },
+    {
+        "slug": "opium-wars-china-britain-1839",
+        "title": "First Opium War — China vs. Britain",
+        "year": 1839, "lat": 22.3193, "lng": 114.1694,
+        "geo_modern": "Canton (Guangzhou), China", "geo_era_label": "Qing Dynasty",
+        "category": "war", "importance_score": 0.89, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "British commercial perspective", "culture_code": "gb", "viewpoint_type": "colonial",
+             "narrative": "China's seizure of British-owned opium and refusal to open to free trade required a military response. The Treaty of Nanking (1842) opened five treaty ports and ceded Hong Kong — a commercial success justified by free trade principles.",
+             "summary": "Britain opens China to free trade by force — a triumph of commercial liberalism.", "evidence_score": 0.75,
+             "sources": [{"title": "Treaty of Nanking, 1842", "source_type": "primary", "reliability_tier": 1, "year": 1842}]},
+            {"label": "Chinese perspective", "culture_code": "cn", "viewpoint_type": "nationalist",
+             "narrative": "Britain forced China to import opium to correct a trade imbalance — deliberately addicting China's population to a drug. The 'Century of Humiliation' (1839-1949) begins with the Opium Wars, forcing China to accept unequal treaties and foreign domination.",
+             "summary": "Drug-enforced colonial subjugation — the beginning of China's 'century of humiliation.'", "evidence_score": 0.91,
+             "sources": [{"title": "The Opium War: Drugs, Dreams and the Making of China", "author": "Julia Lovell", "publication": "Picador", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2011}]},
+        ],
+    },
+    {
+        "slug": "meiji-restoration-japan-1868",
+        "title": "Meiji Restoration — Japan Modernizes",
+        "year": 1868, "lat": 35.6762, "lng": 139.6503,
+        "geo_modern": "Tokyo (Edo), Japan", "geo_era_label": "Meiji Japan",
+        "category": "political", "importance_score": 0.90, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Japanese modernist perspective", "culture_code": "jp", "viewpoint_type": "nationalist",
+             "narrative": "The Meiji Restoration transformed Japan from a feudal isolate to a modern industrial power in one generation. Japan adopted Western technology and institutions while preserving Japanese culture. By 1905, Japan defeated Russia — the first Asian nation to defeat a European power.",
+             "summary": "The fastest modernization in history — Japan transforms itself to resist Western colonization.", "evidence_score": 0.91,
+             "sources": [{"title": "The Meiji Restoration", "author": "W.G. Beasley", "publication": "Stanford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1972}]},
+            {"label": "Traditional/peasant perspective", "culture_code": "jp", "viewpoint_type": "nationalist",
+             "narrative": "Modernization came at the cost of rural populations squeezed by new taxes to fund industrialization. Samurai class was abolished; traditional ways disrupted. The dark side of Meiji nationalism emerged in militarism and imperialism in Korea and China.",
+             "summary": "Rapid modernization imposed on peasants and minorities, whose suffering funded Japan's industrial rise.", "evidence_score": 0.83,
+             "sources": [{"title": "Japan's Modern History", "author": "Andrew Gordon", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2003}]},
+        ],
+    },
+    # More 20th century events
+    {
+        "slug": "russo-japanese-war-1904-1905",
+        "title": "Russo-Japanese War",
+        "year": 1904, "lat": 38.9172, "lng": 121.6148,
+        "geo_modern": "Manchuria and Korea", "geo_era_label": "Imperial rivalries",
+        "category": "war", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Japanese perspective", "culture_code": "jp", "viewpoint_type": "nationalist",
+             "narrative": "Japan's defeat of Russia in 1904-05 — the first Asian nation to defeat a European power in modern times — shocked the world and inspired nationalist movements across Asia. The Battle of Tsushima annihilated the Russian fleet.",
+             "summary": "Asia defeats Europe for the first time — inspiring anti-colonial movements worldwide.", "evidence_score": 0.89,
+             "sources": [{"title": "The Russo-Japanese War, 1904-05", "author": "Denis and Peggy Warner", "publication": "Cassell", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1974}]},
+            {"label": "Russian perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "Defeat in Manchuria and the humiliation of Tsushima exposed Russian military inadequacy and contributed to the 1905 Revolution. The war demonstrated that Tsarist Russia could not compete with modernized Asian powers.",
+             "summary": "Military humiliation exposing tsarist Russia's weakness and fueling revolutionary sentiment.", "evidence_score": 0.85,
+             "sources": [{"title": "Russia in the Age of Modernisation and Revolution", "author": "Hans Rogger", "publication": "Longman", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1983}]},
+        ],
+    },
+    {
+        "slug": "titanic-sinks-1912",
+        "title": "RMS Titanic Sinks",
+        "year": 1912, "lat": 41.7258, "lng": -49.9477,
+        "geo_modern": "North Atlantic Ocean", "geo_era_label": "Edwardian Britain",
+        "category": "natural", "importance_score": 0.80, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "British/class perspective", "culture_code": "gb", "viewpoint_type": "nationalist",
+             "narrative": "The Titanic disaster on April 15, 1912 killed 1,517 of 2,224 passengers. Third-class passengers had survival rates far lower than first-class — the ship's class segregation was maintained even in disaster. The tragedy exposed Edwardian class inequality.",
+             "summary": "A disaster that exposed the lethal consequences of Edwardian class hierarchy.", "evidence_score": 0.88,
+             "sources": [{"title": "A Night to Remember", "author": "Walter Lord", "publication": "Holt", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1955}]},
+            {"label": "Maritime/technical perspective", "culture_code": "global", "viewpoint_type": "academic",
+             "narrative": "The Titanic disaster revealed systemic failures: too few lifeboats, inadequate lookout for ice, excessive speed. The subsequent SOLAS conventions mandated sufficient lifeboats and 24-hour radio watches, saving countless future lives.",
+             "summary": "A tragedy that improved maritime safety standards for generations.", "evidence_score": 0.90,
+             "sources": [{"title": "The Titanic and the Law of the Sea", "author": "David Foxton", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1912}]},
+        ],
+    },
+    {
+        "slug": "ww1-poison-gas-ypres-1915",
+        "title": "First Large-Scale Poison Gas Attack — Ypres",
+        "year": 1915, "lat": 50.8503, "lng": 2.8737,
+        "geo_modern": "Ypres, Belgium", "geo_era_label": "Western Front WWI",
+        "category": "war", "importance_score": 0.83, "zoom_min": 4, "is_bce": False,
+        "perspectives": [
+            {"label": "Allied/British perspective", "culture_code": "gb", "viewpoint_type": "nationalist",
+             "narrative": "Germany's chlorine gas attack at Second Ypres on April 22, 1915 was the first large-scale use of chemical weapons in warfare. Allied soldiers described the yellow-green cloud approaching, the burning, the desperate retreat. It violated accepted norms of warfare.",
+             "summary": "The debut of chemical warfare — a new category of mass atrocity that violated all existing rules of war.", "evidence_score": 0.90,
+             "sources": [{"title": "Death's Men: Soldiers of the Great War", "author": "Denis Winter", "publication": "Allen Lane", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1978}]},
+            {"label": "German military perspective", "culture_code": "de", "viewpoint_type": "nationalist",
+             "narrative": "German chemist Fritz Haber developed the chlorine gas deployment as a necessary military innovation. Germany argued the Hague Conventions only banned projectile-delivered chemicals, not released gas. The Allies quickly developed their own chemical weapons.",
+             "summary": "A military innovation justified by legal technicality — but one that opened Pandora's box of mass atrocity.", "evidence_score": 0.82,
+             "sources": [{"title": "A Higher Form of Killing", "author": "Robert Harris", "publication": "Chatto & Windus", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1982}]},
+        ],
+    },
+    {
+        "slug": "chinese-great-leap-forward-1958",
+        "title": "China's Great Leap Forward",
+        "year": 1958, "lat": 39.9042, "lng": 116.4074,
+        "geo_modern": "China", "geo_era_label": "Maoist China",
+        "category": "political", "importance_score": 0.88, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Communist Party perspective", "culture_code": "cn", "viewpoint_type": "nationalist",
+             "narrative": "The Great Leap Forward (1958-1962) aimed to rapidly industrialize China through collective farming and backyard steel production. The Party maintained it was a bold attempt to transform China despite initial difficulties.",
+             "summary": "An ambitious industrialization drive that the Party initially defended as a necessary transformation.", "evidence_score": 0.55,
+             "sources": [{"title": "Selected Works of Mao Tse-tung, Vol. 5", "author": "Mao Zedong", "source_type": "primary", "reliability_tier": 2, "year": 1961}]},
+            {"label": "Historical/survivor perspective", "culture_code": "cn", "viewpoint_type": "academic",
+             "narrative": "The Great Leap Forward caused the worst famine in human history — 15-55 million deaths (estimates vary). Forced collectivization destroyed agricultural output; officials falsified production figures; dissent was punished. It remains China's greatest self-inflicted catastrophe.",
+             "summary": "Ideology-driven policy causing the world's deadliest famine — 15-55 million Chinese died of starvation.", "evidence_score": 0.92,
+             "sources": [{"title": "Mao's Great Famine", "author": "Frank Dikötter", "publication": "Walker & Company", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2010}]},
+        ],
+    },
+    {
+        "slug": "decolonization-algeria-1954-1962",
+        "title": "Algerian War of Independence",
+        "year": 1954, "lat": 36.7538, "lng": 3.0588,
+        "geo_modern": "Algiers, Algeria", "geo_era_label": "French Algeria",
+        "category": "war", "importance_score": 0.87, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Algerian FLN perspective", "culture_code": "dz", "viewpoint_type": "nationalist",
+             "narrative": "The FLN's November 1, 1954 uprising began an eight-year war of liberation against 130 years of French colonial rule. French Algeria was not France — it was a colony where 1 million French settlers ruled over 9 million Arabs with brutal inequality.",
+             "summary": "A legitimate anti-colonial revolution after 130 years of French colonialism and systematic racial oppression.", "evidence_score": 0.88,
+             "sources": [{"title": "The Wretched of the Earth", "author": "Frantz Fanon", "publication": "Maspero", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1961}]},
+            {"label": "French perspective", "culture_code": "fr", "viewpoint_type": "nationalist",
+             "narrative": "Algeria was constitutionally part of France; the FLN used terrorist tactics including civilian bombing. The army's use of torture to combat terrorism created a moral crisis that nearly destroyed the Fourth Republic. De Gaulle's negotiated independence was a betrayal of the pieds-noirs.",
+             "summary": "A struggle against terrorism that forced France to confront the gap between its universal values and colonial reality.", "evidence_score": 0.79,
+             "sources": [{"title": "A Savage War of Peace", "author": "Alistair Horne", "publication": "Macmillan", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1977}]},
+        ],
+    },
+    {
+        "slug": "prague-spring-1968",
+        "title": "Prague Spring — Soviet Invasion of Czechoslovakia",
+        "year": 1968, "lat": 50.0755, "lng": 14.4378,
+        "geo_modern": "Prague, Czechoslovakia", "geo_era_label": "Cold War",
+        "category": "political", "importance_score": 0.85, "zoom_min": 3, "is_bce": False,
+        "perspectives": [
+            {"label": "Czech democratic perspective", "culture_code": "cz", "viewpoint_type": "nationalist",
+             "narrative": "Alexander Dubček's 'socialism with a human face' reforms gave Czechs hope for a humane communism. The Soviet invasion on August 21, 1968 crushed the experiment with 200,000 Warsaw Pact troops. The 'Brezhnev Doctrine' — Moscow's right to intervene in socialist states — was declared.",
+             "summary": "Hope for humane communism crushed by Soviet tanks — the Brezhnev Doctrine ends democratic reform in the Eastern bloc.", "evidence_score": 0.90,
+             "sources": [{"title": "The Prague Spring: 1968", "author": "Jaromír Navrátil", "publication": "Central European University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1998}]},
+            {"label": "Soviet perspective", "culture_code": "ru", "viewpoint_type": "nationalist",
+             "narrative": "Czechoslovakia's reforms threatened to spread 'contagion' to other Warsaw Pact members and ultimately undermine Soviet security. The intervention maintained socialist bloc unity and prevented NATO-aligned counter-revolution.",
+             "summary": "A necessary intervention to maintain socialist solidarity and prevent counter-revolutionary destabilization.", "evidence_score": 0.62,
+             "sources": [{"title": "Cold War: A History", "author": "Martin Walker", "publication": "Holt", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1994}]},
+        ],
+    },
+    {
+        "slug": "cambodia-khmer-rouge-1975-1979",
+        "title": "Khmer Rouge Genocide in Cambodia",
+        "year": 1975, "lat": 11.5564, "lng": 104.9282,
+        "geo_modern": "Phnom Penh, Cambodia", "geo_era_label": "Cold War Southeast Asia",
+        "category": "war", "importance_score": 0.90, "zoom_min": 2, "is_bce": False,
+        "perspectives": [
+            {"label": "Cambodian survivor perspective", "culture_code": "kh", "viewpoint_type": "indigenous",
+             "narrative": "The Khmer Rouge under Pol Pot emptied Cambodia's cities at gunpoint, executed 'intellectuals' (including anyone who wore glasses), and collectivized the population. Between 1.5-2 million Cambodians — 25% of the population — died by execution, starvation, or forced labor.",
+             "summary": "The Khmer Rouge murdered a quarter of Cambodia's population — one of the worst genocides of the 20th century.", "evidence_score": 0.95,
+             "sources": [{"title": "The Killing Fields", "author": "Dith Pran (as told to Sydney Schanberg)", "source_type": "primary", "reliability_tier": 2, "year": 1984}]},
+            {"label": "Western Cold War perspective", "culture_code": "us", "viewpoint_type": "nationalist",
+             "narrative": "The Khmer Rouge rose to power partly enabled by the US bombing of Cambodia (1969-1973) that destabilized the country. Western powers initially opposed Vietnam's invasion that ended the Khmer Rouge because they were hostile to Vietnamese-Soviet influence.",
+             "summary": "Cold War politics enabled the Khmer Rouge and delayed international action against genocide.", "evidence_score": 0.86,
+             "sources": [{"title": "Sideshow: Kissinger, Nixon and the Destruction of Cambodia", "author": "William Shawcross", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1979}]},
+        ],
+    },
+
+]  # end EVENTS list
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CAUSALITY LINKS — WWI → WWII chain and others
+# ─────────────────────────────────────────────────────────────────────────────
+CAUSALITY_LINKS: list[dict] = [
+    # WWI → WWII mega-chain
+    {"cause": "assassination-franz-ferdinand-1914", "effect": "austria-hungary-ultimatum-serbia-1914", "type": "direct", "strength": 0.95, "desc": "The assassination was the direct trigger for Austria-Hungary's ultimatum"},
+    {"cause": "austria-hungary-ultimatum-serbia-1914", "effect": "germany-declares-war-russia-1914", "type": "direct", "strength": 0.88, "desc": "Austrian ultimatum activated the Austro-German alliance, pulling Germany in"},
+    {"cause": "germany-declares-war-russia-1914", "effect": "germany-invades-belgium-1914", "type": "direct", "strength": 0.92, "desc": "Germany's Schlieffen Plan required invading Belgium to attack France first"},
+    {"cause": "germany-invades-belgium-1914", "effect": "battle-marne-1914", "type": "direct", "strength": 0.88, "desc": "Invasion of Belgium triggered French and British counterattack on the Marne"},
+    {"cause": "battle-marne-1914", "effect": "battle-verdun-1916", "type": "direct", "strength": 0.75, "desc": "Failure of Schlieffen Plan led to entrenched Western Front and attrition battles like Verdun"},
+    {"cause": "battle-marne-1914", "effect": "battle-somme-1916", "type": "direct", "strength": 0.75, "desc": "Stalemate on Western Front drove escalating attrition offensives including the Somme"},
+    {"cause": "battle-verdun-1916", "effect": "armistice-wwi-november-1918", "type": "contributing", "strength": 0.65, "desc": "Verdun's destruction of German manpower contributed to eventual German collapse"},
+    {"cause": "battle-somme-1916", "effect": "armistice-wwi-november-1918", "type": "contributing", "strength": 0.65, "desc": "The Somme's industrial attrition eventually exhausted German reserves"},
+    {"cause": "usa-enters-wwi-1917", "effect": "armistice-wwi-november-1918", "type": "direct", "strength": 0.85, "desc": "American entry decisively tilted material and manpower balance to the Allies"},
+    {"cause": "russian-revolution-1917", "effect": "armistice-wwi-november-1918", "type": "contributing", "strength": 0.55, "desc": "Russia's withdrawal freed German eastern forces but also demonstrated war-weariness"},
+    {"cause": "armistice-wwi-november-1918", "effect": "treaty-of-versailles-1919", "type": "direct", "strength": 0.95, "desc": "The armistice directly enabled the Paris Peace Conference and Versailles Treaty"},
+    {"cause": "armistice-wwi-november-1918", "effect": "spanish-flu-pandemic-1918-1919", "type": "contributing", "strength": 0.45, "desc": "War's end created mass troop movements that spread the second wave of Spanish flu"},
+    {"cause": "treaty-of-versailles-1919", "effect": "weimar-republic-hyperinflation-1923", "type": "direct", "strength": 0.82, "desc": "Reparations burden directly contributed to Weimar Germany's financial collapse"},
+    {"cause": "treaty-of-versailles-1919", "effect": "hitler-beer-hall-putsch-1923", "type": "contributing", "strength": 0.70, "desc": "Versailles humiliation and instability created conditions for radical nationalist politics"},
+    {"cause": "treaty-of-versailles-1919", "effect": "great-depression-wall-street-crash-1929", "type": "indirect", "strength": 0.45, "desc": "Reparations disrupted global financial flows, contributing to the conditions for the Depression"},
+    {"cause": "weimar-republic-hyperinflation-1923", "effect": "hitler-beer-hall-putsch-1923", "type": "direct", "strength": 0.78, "desc": "Hyperinflation crisis created the desperate political climate Hitler tried to exploit"},
+    {"cause": "great-depression-wall-street-crash-1929", "effect": "hitler-appointed-chancellor-1933", "type": "direct", "strength": 0.87, "desc": "Depression caused 30% unemployment in Germany, collapsing moderate parties and driving voters to extremes"},
+    {"cause": "hitler-beer-hall-putsch-1923", "effect": "hitler-appointed-chancellor-1933", "type": "direct", "strength": 0.65, "desc": "Putsch trial gave Hitler national platform; Mein Kampf written in prison"},
+    {"cause": "hitler-appointed-chancellor-1933", "effect": "nuremberg-laws-1935", "type": "direct", "strength": 0.92, "desc": "Nazi government enacted racial laws within two years of taking power"},
+    {"cause": "hitler-appointed-chancellor-1933", "effect": "anschluss-austria-1938", "type": "direct", "strength": 0.88, "desc": "Nazi Germany pursued pan-German unification as core policy"},
+    {"cause": "anschluss-austria-1938", "effect": "munich-agreement-appeasement-1938", "type": "direct", "strength": 0.85, "desc": "Successful Austrian annexation emboldened Hitler's next demand for Sudetenland"},
+    {"cause": "munich-agreement-appeasement-1938", "effect": "molotov-ribbentrop-pact-1939", "type": "contributing", "strength": 0.72, "desc": "Western appeasement convinced Stalin they would not fight Germany; he sought his own deal"},
+    {"cause": "munich-agreement-appeasement-1938", "effect": "germany-invades-poland-1939", "type": "direct", "strength": 0.82, "desc": "Appeasement convinced Hitler Western powers would not fight over Poland either"},
+    {"cause": "molotov-ribbentrop-pact-1939", "effect": "germany-invades-poland-1939", "type": "direct", "strength": 0.90, "desc": "The pact freed Germany from fear of a two-front war, enabling the Polish invasion"},
+    {"cause": "germany-invades-poland-1939", "effect": "fall-of-france-1940", "type": "direct", "strength": 0.80, "desc": "After defeating Poland, Germany turned west to attack France"},
+    {"cause": "fall-of-france-1940", "effect": "battle-of-britain-1940", "type": "direct", "strength": 0.92, "desc": "Fall of France left Britain alone; Germany had to defeat the RAF before invasion"},
+    {"cause": "battle-of-britain-1940", "effect": "operation-barbarossa-1941", "type": "contributing", "strength": 0.65, "desc": "Failure to defeat Britain pushed Hitler to turn east against the Soviet Union"},
+    {"cause": "operation-barbarossa-1941", "effect": "battle-stalingrad-1942-1943", "type": "direct", "strength": 0.85, "desc": "Barbarossa's advance led to the decisive confrontation at Stalingrad"},
+    {"cause": "pearl-harbor-1941", "effect": "atomic-bombing-hiroshima-nagasaki-1945", "type": "indirect", "strength": 0.70, "desc": "Pearl Harbor brought the US into war and initiated the Manhattan Project that built the bomb"},
+    {"cause": "wannsee-conference-final-solution-1942", "effect": "holocaust-liberation-camps-1945", "type": "direct", "strength": 0.95, "desc": "Wannsee organized the Holocaust that the liberation of camps revealed"},
+    {"cause": "battle-stalingrad-1942-1943", "effect": "d-day-normandy-1944", "type": "indirect", "strength": 0.60, "desc": "Stalingrad's reversal of German fortunes enabled the Allied strategic planning for D-Day"},
+    {"cause": "d-day-normandy-1944", "effect": "germany-surrenders-wwii-1945", "type": "direct", "strength": 0.85, "desc": "D-Day opened the Western front, creating the two-front squeeze that collapsed Germany"},
+    {"cause": "atomic-bombing-hiroshima-nagasaki-1945", "effect": "germany-surrenders-wwii-1945", "type": "disputed", "strength": 0.20, "desc": "Hiroshima/Nagasaki did not cause Germany's surrender (already happened) but ended the Pacific War"},
+    {"cause": "germany-surrenders-wwii-1945", "effect": "un-charter-signed-1945", "type": "direct", "strength": 0.80, "desc": "War's end enabled the founding of the United Nations"},
+    {"cause": "germany-surrenders-wwii-1945", "effect": "berlin-blockade-airlift-1948", "type": "contributing", "strength": 0.70, "desc": "Germany's defeat and partition into occupation zones created the Berlin crisis"},
+    {"cause": "treaty-of-versailles-1919", "effect": "paris-peace-conference-arab-betrayal-1919", "type": "direct", "strength": 0.85, "desc": "The Paris Peace Conference simultaneously created Versailles and the Arab mandate system"},
+    {"cause": "balfour-declaration-1917", "effect": "founding-state-of-israel-1948", "type": "direct", "strength": 0.82, "desc": "Balfour Declaration provided crucial international legitimacy for the Zionist project"},
+    {"cause": "holocaust-liberation-camps-1945", "effect": "founding-state-of-israel-1948", "type": "contributing", "strength": 0.78, "desc": "Holocaust created overwhelming moral case for Jewish statehood and displaced persons needing a home"},
+    {"cause": "atomic-bombing-hiroshima-nagasaki-1945", "effect": "cuban-missile-crisis-1962", "type": "indirect", "strength": 0.70, "desc": "The bomb's use began the nuclear arms race that culminated in the Cuban Missile Crisis"},
+    {"cause": "cuban-missile-crisis-1962", "effect": "fall-of-berlin-wall-1989", "type": "indirect", "strength": 0.30, "desc": "Near-nuclear war eventually led to détente and arms reduction agreements"},
+    {"cause": "russian-revolution-1917", "effect": "chinese-revolution-peoples-republic-1949", "type": "indirect", "strength": 0.60, "desc": "Bolshevik revolution inspired and supported Chinese Communist movement"},
+    {"cause": "fall-of-berlin-wall-1989", "effect": "dissolution-soviet-union-1991", "type": "direct", "strength": 0.85, "desc": "Berlin Wall's fall accelerated the collapse of communist regimes, including the USSR itself"},
+    # WWI as consequence of earlier events
+    {"cause": "berlin-conference-africa-partition-1884", "effect": "assassination-franz-ferdinand-1914", "type": "indirect", "strength": 0.40, "desc": "Imperial competition in Africa and the Balkans created the system of alliances and tensions that led to WWI"},
+    {"cause": "assassination-franz-ferdinand-1914", "effect": "armenian-genocide-1915-1923", "type": "contributing", "strength": 0.70, "desc": "WWI gave the Ottoman government cover to implement the Armenian genocide under war conditions"},
+    {"cause": "assassination-franz-ferdinand-1914", "effect": "gallipoli-campaign-1915", "type": "direct", "strength": 0.80, "desc": "WWI pulled the Ottoman Empire into the conflict, making Gallipoli a strategic target"},
+    {"cause": "gallipoli-campaign-1915", "effect": "usa-enters-wwi-1917", "type": "indirect", "strength": 0.20, "desc": "Gallipoli's failure pushed Allies to seek US involvement to break the stalemate"},
+    {"cause": "darwin-on-the-origin-of-species-1859", "effect": "nuremberg-laws-1935", "type": "indirect", "strength": 0.25, "desc": "Social Darwinism (a distortion of Darwin) provided pseudo-scientific basis for Nazi racial ideology"},
+    {"cause": "industrial-revolution-steam-engine-1769", "effect": "battle-somme-1916", "type": "indirect", "strength": 0.55, "desc": "Industrial Revolution enabled the industrial-scale warfare of WWI — machine guns, artillery, poison gas"},
+    {"cause": "decolonization-ghana-independence-1957", "effect": "rwandan-genocide-1994", "type": "indirect", "strength": 0.35, "desc": "Belgian colonial era artificially hardened Hutu/Tutsi ethnic distinction, underlying cause of 1994 genocide"},
+    {"cause": "american-civil-war-1861-1865", "effect": "civil-rights-act-usa-1964", "type": "indirect", "strength": 0.80, "desc": "Reconstruction amendments and broken promises of post-Civil War created the conditions the Civil Rights Movement addressed"},
+    {"cause": "haitian-revolution-1791-1804", "effect": "american-civil-war-1861-1865", "type": "indirect", "strength": 0.40, "desc": "Haiti proved Black people would fight for freedom, inspiring both abolitionists and frightening slaveholders"},
+    {"cause": "french-revolution-1789", "effect": "haitian-revolution-1791-1804", "type": "direct", "strength": 0.80, "desc": "French Revolution's ideals of liberty directly inspired enslaved people in Saint-Domingue"},
+    {"cause": "gutenberg-printing-press-1440", "effect": "martin-luther-95-theses-1517", "type": "direct", "strength": 0.85, "desc": "The printing press disseminated Luther's theses across Germany in weeks — impossible without print"},
+    {"cause": "copernicus-heliocentric-theory-1543", "effect": "galileo-telescope-1609", "type": "direct", "strength": 0.80, "desc": "Galileo's telescope observations confirmed and extended the Copernican model"},
+    {"cause": "galileo-telescope-1609", "effect": "newton-principia-1687", "type": "direct", "strength": 0.75, "desc": "Newton built on Galileo's observations and Kepler's laws to derive universal gravitation"},
+    {"cause": "newton-principia-1687", "effect": "industrial-revolution-steam-engine-1769", "type": "indirect", "strength": 0.50, "desc": "Newton's physics and the scientific method created the intellectual foundation for industrial invention"},
+]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UTILITY FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def make_slug_dates(event: dict) -> tuple[str, str, str]:
+    """Return (date_earliest, date_latest, date_exact) as ISO strings."""
+    year = event["year"]
+    if event.get("is_bce"):
+        # Store BCE dates as negative year (PostgreSQL can handle BCE via negative year strings)
+        # Use year 0001 as a proxy for very ancient dates in the DATE column
+        # We'll use arbitrary dates within supported range
+        abs_year = abs(year)
+        if abs_year > 4000:
+            abs_year = 4000  # clamp to Postgres range
+        earliest = f"-{abs_year:04d}-01-01"
+        latest = f"-{abs_year:04d}-12-31"
+        # Actually PostgreSQL stores dates as 'YYYY-BC' format via python - use strings
+        return earliest, latest, None
+    else:
+        earliest = f"{year:04d}-01-01"
+        latest = f"{year:04d}-12-31"
+        return earliest, latest, None
+
+
+def sha256_str(data: str) -> str:
+    return hashlib.sha256(data.encode()).hexdigest()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MAIN SEED FUNCTION
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def seed(conn: asyncpg.Connection) -> None:
+    print(f"Starting seed — {len(EVENTS)} events, {len(CAUSALITY_LINKS)} causality links")
+
+    # Map slug → event UUID for causality links
+    slug_to_id: dict[str, str] = {}
+
+    for event in EVENTS:
+        year = event["year"]
+        is_bce = event.get("is_bce", False)
+        abs_year = abs(year)
+        if abs_year > 4712:
+            abs_year = 4712  # Postgres BC limit
+
+        # Build date strings
+        # asyncpg cannot bind Python date objects for BC dates, so we pass as strings
+        # and cast in SQL. For AD dates we use ISO strings; BC dates use PostgreSQL notation.
+        if is_bce:
+            # PostgreSQL BC notation: '2560-01-01 BC'
+            date_e_lit = f"'{abs_year:04d}-01-01 BC'::date"
+            date_l_lit = f"'{abs_year:04d}-12-31 BC'::date"
+        else:
+            date_e_lit = f"'{abs_year:04d}-01-01'::date"
+            date_l_lit = f"'{abs_year:04d}-12-31'::date"
+
+        slug = event["slug"]
+
+        # Check if event already exists
+        existing = await conn.fetchval("SELECT id FROM events WHERE slug=$1", slug)
+        if existing:
+            slug_to_id[slug] = str(existing)
+            print(f"  [skip] {slug} (already exists)")
+            continue
+
+        # Build WKT point from lat/lng
+        lat, lng = event.get("lat"), event.get("lng")
+        geo_wkt = f"SRID=4326;POINT({lng} {lat})" if lat is not None and lng is not None else None
+
+        content = json.dumps({k: v for k, v in event.items() if k != "perspectives"}, sort_keys=True)
+        content_hash = sha256_str(content)
+
+        # Build dynamic SQL with inlined date literals (needed for BC dates since
+        # asyncpg cannot bind Python date objects before year 1)
+        insert_sql = f"""
+            INSERT INTO events (
+                slug, title, date_earliest, date_latest, year_approx, is_bce,
+                geo_point, geo_modern, geo_era_label,
+                importance_score, zoom_min, event_category,
+                review_status, created_by, content_hash
+            ) VALUES (
+                $1, $2, {date_e_lit}, {date_l_lit}, $3, $4,
+                ST_GeomFromEWKT($5), $6, $7,
+                $8, $9, $10,
+                'approved', $11, $12
+            ) RETURNING id
+            """
+        event_id = await conn.fetchval(
+            insert_sql,
+            slug, event["title"], year, is_bce,
+            geo_wkt, event.get("geo_modern"), event.get("geo_era_label"),
+            event.get("importance_score", 0.5), event.get("zoom_min", 3), event.get("category"),
+            CREATED_BY, content_hash,
+        )
+
+        slug_to_id[slug] = str(event_id)
+
+        # Insert perspectives + sources
+        for persp in event.get("perspectives", []):
+            persp_id = await conn.fetchval(
+                """
+                INSERT INTO perspectives (
+                    event_id, label, culture_code, viewpoint_type,
+                    narrative, summary, evidence_score, created_by
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING id
+                """,
+                event_id,
+                persp["label"],
+                persp.get("culture_code"),
+                persp.get("viewpoint_type"),
+                persp["narrative"],
+                persp.get("summary"),
+                persp.get("evidence_score"),
+                CREATED_BY,
+            )
+
+            for src in persp.get("sources", []):
+                src_year = src.get("year")
+                pub_date_lit = "NULL"
+                if src_year:
+                    abs_sy = abs(src_year)
+                    if abs_sy > 4712:
+                        abs_sy = 4712
+                    if src_year < 0:
+                        pub_date_lit = f"'{abs_sy:04d}-01-01 BC'::date"
+                    else:
+                        pub_date_lit = f"'{abs_sy:04d}-01-01'::date"
+
+                # Generate unique content_hash for each source
+                src_hash = sha256_str(json.dumps(src, sort_keys=True) + str(persp_id))
+
+                src_sql = f"""
+                    INSERT INTO sources (
+                        perspective_id, title, author, publication, publication_date,
+                        source_type, reliability_tier, peer_reviewed, quote, content_hash
+                    ) VALUES ($1, $2, $3, $4, {pub_date_lit}, $5, $6, $7, $8, $9)
+                    ON CONFLICT (content_hash) DO NOTHING
+                    """
+                await conn.execute(
+                    src_sql,
+                    persp_id,
+                    src["title"],
+                    src.get("author"),
+                    src.get("publication"),
+                    src["source_type"],
+                    src.get("reliability_tier", 2),
+                    src.get("peer_reviewed", False),
+                    src.get("quote"),
+                    src_hash,
+                )
+
+        # Log to edit_log
+        await conn.execute(
+            """
+            INSERT INTO edit_log (entity_type, entity_id, action, actor_id, actor_type, reason)
+            VALUES ('event', $1, 'create', $2, 'ai', 'Initial seed')
+            """,
+            event_id, CREATED_BY,
+        )
+
+        print(f"  [ok] {slug}")
+
+    # Insert causality links
+    print(f"\nInserting {len(CAUSALITY_LINKS)} causality links...")
+    for link in CAUSALITY_LINKS:
+        cause_slug = link["cause"]
+        effect_slug = link["effect"]
+        cause_id = slug_to_id.get(cause_slug)
+        effect_id = slug_to_id.get(effect_slug)
+        if not cause_id or not effect_id:
+            print(f"  [warn] Missing event for link {cause_slug} -> {effect_slug}")
+            continue
+        try:
+            await conn.execute(
+                """
+                INSERT INTO causality_links
+                    (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
+                VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, 'approved')
+                ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING
+                """,
+                cause_id, effect_id,
+                link.get("type", "direct"),
+                link.get("strength", 0.5),
+                link.get("desc"),
+                CREATED_BY,
+            )
+        except Exception as exc:
+            print(f"  [warn] Link {cause_slug} -> {effect_slug}: {exc}")
+
+    total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE review_status='approved'")
+    persp_total = await conn.fetchval("SELECT COUNT(*) FROM perspectives")
+    src_total = await conn.fetchval("SELECT COUNT(*) FROM sources")
+    link_total = await conn.fetchval("SELECT COUNT(*) FROM causality_links")
+    print(f"\n✅ Seed complete:")
+    print(f"   Events:           {total}")
+    print(f"   Perspectives:     {persp_total}")
+    print(f"   Sources:          {src_total}")
+    print(f"   Causality links:  {link_total}")
+
+
+async def main() -> None:
+    print(f"Connecting to: {PG_DSN}")
+    conn = await asyncpg.connect(PG_DSN)
+    try:
+        await seed(conn)
+    finally:
+        await conn.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
