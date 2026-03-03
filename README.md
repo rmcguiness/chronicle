@@ -74,6 +74,10 @@ uvicorn app.main:app --reload
 API is now live at **http://localhost:8000**  
 OpenAPI docs: **http://localhost:8000/docs**
 
+> **Note:** The docker-compose maps PostgreSQL to **port 5433** (not 5432) to avoid conflicts
+> with local PostgreSQL installations. The `.env` defaults are pre-configured for this.
+> If port 5433 is free and you have no local PostgreSQL, you can change it to 5432.
+
 ---
 
 ## API Endpoints
