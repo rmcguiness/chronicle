@@ -1,5 +1,5 @@
 """
-Pydantic v2 response schemas — matches the API contract exactly.
+Pydantic v2 response schemas — aligned exactly with the frontend API contract.
 """
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ────────────────────────────────────────────
@@ -30,23 +30,16 @@ class SourceOut(BaseModel):
     ipfs_cid: Optional[str] = None
 
 
-class EvidenceFactors(BaseModel):
-    source_tier: Optional[float] = None
-    source_count: Optional[float] = None
-    source_diversity: Optional[float] = None
-    temporal_proximity: Optional[float] = None
-    peer_review: Optional[float] = None
-    archive_integrity: Optional[float] = None
-
-
 class PerspectiveOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     label: str
+    # perspective_type maps from viewpoint_type in the DB — exposed under both names
+    perspective_type: Optional[str] = None  # frontend key
+    viewpoint_type: Optional[str] = None    # DB key (kept for compat)
     culture_code: Optional[str] = None
     era_written: Optional[str] = None
-    viewpoint_type: Optional[str] = None
     language: str = "en"
     summary: Optional[str] = None
     narrative: str
@@ -59,10 +52,33 @@ class PerspectiveOut(BaseModel):
 
 
 # ────────────────────────────────────────────
+# Causality link — used in canvas tile + connections endpoint
+# ────────────────────────────────────────────
+
+# DB link_type → frontend ConnectionType
+_LINK_TYPE_MAP: dict[str, str] = {
+    "direct": "causes",
+    "indirect": "context",
+    "contributing": "enables",
+    "disputed": "context",
+}
+
+
+class CausalityLinkItem(BaseModel):
+    """Frontend-aligned causality link shape."""
+    id: UUID
+    cause_event_id: UUID
+    effect_event_id: UUID
+    connection_type: str   # mapped from link_type
+    strength: float = 0.5
+    description: Optional[str] = None
+
+
+# ────────────────────────────────────────────
 # Canvas tile response — GET /api/canvas/tiles
 # ────────────────────────────────────────────
 class CanvasEventItem(BaseModel):
-    """Lightweight event item for canvas tile rendering."""
+    """Lightweight event item for canvas tile rendering — mirrors HistoricalEvent."""
 
     id: UUID
     slug: str
@@ -70,18 +86,37 @@ class CanvasEventItem(BaseModel):
     year_approx: Optional[int] = None
     lat: Optional[float] = None
     lng: Optional[float] = None
-    category: Optional[str] = None
+    geo_modern: Optional[str] = None
+    geo_era_label: Optional[str] = None
+    category: Optional[str] = None          # mapped from event_category
     importance_score: float = 0.5
+    tags: Optional[List[str]] = None
+    perspective_count: Optional[int] = None
     zoom_min: int = 1
 
 
 class CanvasTileResponse(BaseModel):
+    """Full tile response — matches TileResponse in frontend types."""
     events: List[CanvasEventItem]
+    links: List[CausalityLinkItem] = []
+    computed_at: str                        # ISO datetime string
 
 
 # ────────────────────────────────────────────
 # Full event detail — GET /api/events/{slug}
 # ────────────────────────────────────────────
+class ConnectedEventItem(BaseModel):
+    """Connected event for the detail panel — matches ConnectedEvent type."""
+    id: UUID
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    connection_type: str    # mapped link_type
+    direction: str          # 'cause' | 'effect'
+    strength: Optional[float] = None
+    description: Optional[str] = None
+
+
 class EventDetailOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -108,7 +143,7 @@ class EventDetailOut(BaseModel):
     importance_score: float = 0.5
     zoom_min: int = 1
     zoom_max: int = 10
-    event_category: Optional[str] = None
+    category: Optional[str] = None         # frontend key (event_category in DB)
     tags: Optional[List[str]] = None
 
     review_status: str
@@ -118,23 +153,16 @@ class EventDetailOut(BaseModel):
     updated_at: datetime
 
     perspectives: List[PerspectiveOut] = []
+    connected_events: List[ConnectedEventItem] = []
 
 
 # ────────────────────────────────────────────
 # Connections — GET /api/events/{slug}/connections
+# Returns a flat list matching CausalityLink[] in frontend
 # ────────────────────────────────────────────
-class ConnectionItem(BaseModel):
-    source_id: UUID
-    target_id: UUID
-    source_slug: str
-    target_slug: str
-    connection_type: str  # link_type from causality_links
-    label: Optional[str] = None
-    strength: float = 0.5
-
-
 class ConnectionsResponse(BaseModel):
-    connections: List[ConnectionItem]
+    """Flat list of causality links for an event."""
+    connections: List[CausalityLinkItem] = []
 
 
 # ────────────────────────────────────────────
@@ -146,7 +174,10 @@ class SearchResultItem(BaseModel):
     title: str
     year_approx: Optional[int] = None
     geo_modern: Optional[str] = None
-    category: Optional[str] = None
+    category: Optional[str] = None         # mapped from event_category
+    importance_score: float = 0.5
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     score: float = 1.0
 
 

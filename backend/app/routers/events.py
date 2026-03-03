@@ -1,6 +1,6 @@
 """
-GET /api/events/{slug}        — full event detail with perspectives
-GET /api/events/{slug}/connections — causality connections
+GET /api/events/{slug}        — full event detail with perspectives + connected events
+GET /api/events/{slug}/connections — causality connections (flat list)
 """
 from __future__ import annotations
 
@@ -8,18 +8,20 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from geoalchemy2.functions import ST_X, ST_Y
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import CausalityLink, Event, Perspective, Source
 from app.schemas import (
-    ConnectionItem,
+    CausalityLinkItem,
+    ConnectedEventItem,
     ConnectionsResponse,
     EventDetailOut,
     PerspectiveOut,
     SourceOut,
+    _LINK_TYPE_MAP,
 )
 
 router = APIRouter(prefix="/api/events", tags=["events"])
@@ -42,7 +44,7 @@ async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:
 
 @router.get("/{slug}", response_model=EventDetailOut)
 async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetailOut:
-    """Full event detail including perspectives and source citations."""
+    """Full event detail including perspectives, sources, and connected events."""
     event = await _get_event_by_slug(slug, db)
 
     # Extract lat/lng from PostGIS geo_point
@@ -70,9 +72,11 @@ async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetai
         PerspectiveOut(
             id=p.id,
             label=p.label,
+            # Map viewpoint_type → perspective_type for frontend compatibility
+            perspective_type=p.viewpoint_type,
+            viewpoint_type=p.viewpoint_type,
             culture_code=p.culture_code,
             era_written=p.era_written,
-            viewpoint_type=p.viewpoint_type,
             language=p.language,
             summary=p.summary,
             narrative=p.narrative,
@@ -102,6 +106,56 @@ async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetai
         for p in sorted_perspectives
     ]
 
+    # ── Load connected events ──────────────────────────────────────────────
+    link_stmt = select(
+        CausalityLink.id,
+        CausalityLink.cause_event_id,
+        CausalityLink.effect_event_id,
+        CausalityLink.link_type,
+        CausalityLink.strength,
+        CausalityLink.description,
+    ).where(
+        or_(
+            CausalityLink.cause_event_id == event.id,
+            CausalityLink.effect_event_id == event.id,
+        )
+    )
+    link_result = await db.execute(link_stmt)
+    raw_links = link_result.fetchall()
+
+    connected_ids: set[UUID] = set()
+    for lnk in raw_links:
+        other = lnk.effect_event_id if lnk.cause_event_id == event.id else lnk.cause_event_id
+        connected_ids.add(other)
+
+    # Fetch connected event titles + slugs + year
+    connected_events_out: list[ConnectedEventItem] = []
+    if connected_ids:
+        ev_stmt = select(Event.id, Event.slug, Event.title, Event.year_approx).where(
+            Event.id.in_(list(connected_ids))
+        )
+        ev_result = await db.execute(ev_stmt)
+        id_to_ev = {row.id: row for row in ev_result.fetchall()}
+
+        for lnk in raw_links:
+            is_cause = lnk.cause_event_id == event.id
+            other_id = lnk.effect_event_id if is_cause else lnk.cause_event_id
+            other_ev = id_to_ev.get(other_id)
+            if other_ev is None:
+                continue
+            connected_events_out.append(
+                ConnectedEventItem(
+                    id=other_ev.id,
+                    slug=other_ev.slug,
+                    title=other_ev.title,
+                    year_approx=other_ev.year_approx,
+                    connection_type=_LINK_TYPE_MAP.get(lnk.link_type, "context"),
+                    direction="effect" if is_cause else "cause",
+                    strength=lnk.strength,
+                    description=lnk.description,
+                )
+            )
+
     return EventDetailOut(
         id=event.id,
         slug=event.slug,
@@ -123,7 +177,7 @@ async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetai
         importance_score=event.importance_score,
         zoom_min=event.zoom_min,
         zoom_max=event.zoom_max,
-        event_category=event.event_category,
+        category=event.event_category,        # ← mapped from DB event_category
         tags=event.tags,
         review_status=event.review_status,
         wikidata_id=event.wikidata_id,
@@ -131,6 +185,7 @@ async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetai
         created_at=event.created_at,
         updated_at=event.updated_at,
         perspectives=perspectives_out,
+        connected_events=connected_events_out,
     )
 
 
@@ -139,9 +194,9 @@ async def get_connections(
     slug: str, db: AsyncSession = Depends(get_db)
 ) -> ConnectionsResponse:
     """
-    Returns all causality connections (incoming and outgoing) for this event.
+    Returns all causality connections for this event.
+    Field names match the frontend CausalityLink type.
     """
-    # Resolve event id from slug
     event_stmt = select(Event.id).where(Event.slug == slug)
     result = await db.execute(event_stmt)
     row = result.fetchone()
@@ -149,48 +204,32 @@ async def get_connections(
         raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
     event_id: UUID = row[0]
 
-    # Outgoing (this event is the CAUSE)
-    out_stmt = (
-        select(
-            CausalityLink.id,
-            CausalityLink.cause_event_id,
-            CausalityLink.effect_event_id,
-            CausalityLink.link_type,
-            CausalityLink.description,
-            CausalityLink.strength,
-        )
-        .where(
-            (CausalityLink.cause_event_id == event_id)
-            | (CausalityLink.effect_event_id == event_id)
+    link_stmt = select(
+        CausalityLink.id,
+        CausalityLink.cause_event_id,
+        CausalityLink.effect_event_id,
+        CausalityLink.link_type,
+        CausalityLink.strength,
+        CausalityLink.description,
+    ).where(
+        or_(
+            CausalityLink.cause_event_id == event_id,
+            CausalityLink.effect_event_id == event_id,
         )
     )
-    links_result = await db.execute(out_stmt)
+    links_result = await db.execute(link_stmt)
     links = links_result.fetchall()
 
-    if not links:
-        return ConnectionsResponse(connections=[])
-
-    # Collect all referenced event IDs so we can resolve their slugs
-    all_event_ids = set()
-    for link in links:
-        all_event_ids.add(link.cause_event_id)
-        all_event_ids.add(link.effect_event_id)
-
-    slug_stmt = select(Event.id, Event.slug).where(Event.id.in_(list(all_event_ids)))
-    slugs_result = await db.execute(slug_stmt)
-    id_to_slug: dict[UUID, str] = {row.id: row.slug for row in slugs_result.fetchall()}
-
-    connections = [
-        ConnectionItem(
-            source_id=link.cause_event_id,
-            target_id=link.effect_event_id,
-            source_slug=id_to_slug.get(link.cause_event_id, ""),
-            target_slug=id_to_slug.get(link.effect_event_id, ""),
-            connection_type=link.link_type,
-            label=link.description,
-            strength=link.strength,
-        )
-        for link in links
-    ]
-
-    return ConnectionsResponse(connections=connections)
+    return ConnectionsResponse(
+        connections=[
+            CausalityLinkItem(
+                id=lnk.id,
+                cause_event_id=lnk.cause_event_id,
+                effect_event_id=lnk.effect_event_id,
+                connection_type=_LINK_TYPE_MAP.get(lnk.link_type, "context"),
+                strength=lnk.strength,
+                description=lnk.description,
+            )
+            for lnk in links
+        ]
+    )

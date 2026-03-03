@@ -11,11 +11,15 @@ import type {
 } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Axios instance
+// Axios instance — reads VITE_API_URL from environment (with localhost fallback)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const BASE_URL =
+  (typeof import.meta !== 'undefined' && (import.meta as { env?: Record<string, string> }).env?.VITE_API_URL) ||
+  'http://localhost:8000';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: BASE_URL,
   timeout: 5000,
 });
 
@@ -166,7 +170,7 @@ export const MOCK_EVENTS: HistoricalEvent[] = [
   },
 ];
 
-// Mock causality links between events
+// Mock causality links
 const MOCK_LINKS: CausalityLink[] = [
   {
     id: 'l1',
@@ -210,7 +214,6 @@ const MOCK_LINKS: CausalityLink[] = [
   },
 ];
 
-// Mock event detail with perspectives
 const MOCK_DETAIL_MAP: Record<string, Partial<EventDetail>> = {
   '1': {
     perspectives: [
@@ -220,7 +223,7 @@ const MOCK_DETAIL_MAP: Record<string, Partial<EventDetail>> = {
         perspective_type: 'government',
         summary: 'A direct act of Serbian-backed terrorism requiring decisive military response.',
         narrative:
-          'The assassination of Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, by Gavrilo Princip was understood in Vienna as a state-sponsored act of terrorism by Serbia. The imperial government viewed the killing as an existential challenge to the multi-ethnic empire\'s stability, necessitating a firm ultimatum to Belgrade...',
+          "The assassination of Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, by Gavrilo Princip was understood in Vienna as a state-sponsored act of terrorism by Serbia.",
         evidence_score: 0.88,
         sources: [
           {
@@ -231,7 +234,7 @@ const MOCK_DETAIL_MAP: Record<string, Partial<EventDetail>> = {
             publication_date: '1991-01-01',
             source_type: 'secondary',
             peer_reviewed: true,
-            quote: 'Vienna saw the assassination as requiring a firm response to crush the South Slav threat.',
+            quote: 'Vienna saw the assassination as requiring a firm response.',
           },
         ],
       },
@@ -241,7 +244,7 @@ const MOCK_DETAIL_MAP: Record<string, Partial<EventDetail>> = {
         perspective_type: 'nationalist',
         summary: 'The assassination as an act of liberation from Austro-Hungarian oppression.',
         narrative:
-          'For many Serbs and South Slav nationalists, Gavrilo Princip was a hero acting against imperial occupation. The Black Hand and similar societies saw the assassination not as terrorism but as a liberatory act, seeking the unification of South Slavic peoples under Serbian leadership and the end of Habsburg rule in Bosnia-Herzegovina...',
+          'For many Serbs and South Slav nationalists, Gavrilo Princip was a hero acting against imperial occupation.',
         evidence_score: 0.72,
         sources: [
           {
@@ -252,40 +255,26 @@ const MOCK_DETAIL_MAP: Record<string, Partial<EventDetail>> = {
             publication_date: '1989-01-01',
             source_type: 'secondary',
             peer_reviewed: true,
-            quote: 'Princip was celebrated in Serbian nationalist circles as a martyr for South Slav unity.',
-          },
-        ],
-      },
-      {
-        id: 'p1c',
-        label: 'British Foreign Office View',
-        perspective_type: 'foreign',
-        summary: 'A regional crisis that rapidly became a European catastrophe.',
-        narrative:
-          'British diplomats initially viewed the assassination as a regional Austro-Serbian conflict. Sir Edward Grey\'s attempts to mediate failed as Germany supported Austria-Hungary\'s ultimatum and Russia began mobilisation. The British government was slow to appreciate the speed at which a localised dispute would trigger the alliance system...',
-        evidence_score: 0.81,
-        sources: [
-          {
-            id: 's3',
-            title: 'British Foreign Policy and the July Crisis',
-            author: 'Zara Steiner',
-            publication: 'Oxford University Press',
-            publication_date: '2003-01-01',
-            source_type: 'secondary',
-            peer_reviewed: true,
-            quote: 'Grey underestimated the momentum towards general European war in those critical July days.',
           },
         ],
       },
     ],
     connected_events: [
-      { id: '2', slug: 'world-war-i-begins-1914', title: 'World War I Begins', year_approx: 1914, connection_type: 'causes', direction: 'effect', strength: 0.95 },
+      {
+        id: '2',
+        slug: 'world-war-i-begins-1914',
+        title: 'World War I Begins',
+        year_approx: 1914,
+        connection_type: 'causes',
+        direction: 'effect',
+        strength: 0.95,
+      },
     ],
   },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Helper: is the backend reachable?
+// Backend availability check
 // ─────────────────────────────────────────────────────────────────────────────
 
 let _backendAvailable: boolean | null = null;
@@ -309,8 +298,18 @@ async function isBackendAvailable(): Promise<boolean> {
   return _checkPromise;
 }
 
-// Reset the cached availability after 30 seconds so it can recover
-setInterval(() => { _backendAvailable = null; _checkPromise = null; }, 30_000);
+// Reset cache every 30 s so the app can recover when the backend starts
+setInterval(() => {
+  _backendAvailable = null;
+  _checkPromise = null;
+}, 30_000);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API helpers — normalise backend UUID fields to strings
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Backend returns `category` (mapped from event_category) — no transform needed.
+// Backend id fields are UUIDs serialised as strings by Pydantic.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // API functions
@@ -321,21 +320,29 @@ export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse
 
   if (available) {
     try {
+      // bbox = "west,south,east,north" — use full longitude range since we only
+      // filter by lat in the viewport. The backend will also apply year_min/max.
+      const bbox = `-180,${viewport.lat_min},180,${viewport.lat_max}`;
       const { data } = await api.get('/api/canvas/tiles', {
         params: {
           zoom: viewport.zoom,
           year_min: viewport.year_min,
           year_max: viewport.year_max,
-          bbox: `${viewport.lat_min},${viewport.lat_max},${viewport.year_min},${viewport.year_max}`,
+          bbox,
         },
       });
-      return data;
+      // Backend response: { events, links, computed_at } — matches TileResponse
+      return {
+        events: (data.events ?? []) as HistoricalEvent[],
+        links: (data.links ?? []) as CausalityLink[],
+        computed_at: data.computed_at ?? new Date().toISOString(),
+      };
     } catch {
       // fall through to mock
     }
   }
 
-  // Mock: filter events by viewport
+  // ── Mock fallback ──────────────────────────────────────────────────────────
   const importance_threshold =
     viewport.zoom <= 2 ? 0.9 :
     viewport.zoom <= 4 ? 0.7 :
@@ -365,7 +372,9 @@ export async function fetchEventDetail(slug: string): Promise<EventDetail> {
   if (available) {
     try {
       const { data } = await api.get(`/api/events/${slug}`);
-      return data;
+      // Backend returns `category` directly (mapped from event_category)
+      // and `connected_events` list — matches EventDetail shape.
+      return data as EventDetail;
     } catch {
       // fall through to mock
     }
@@ -383,7 +392,7 @@ export async function fetchEventDetail(slug: string): Promise<EventDetail> {
         label: 'Primary Account',
         perspective_type: 'academic',
         summary: 'The mainstream historical consensus view of this event.',
-        narrative: `${base.title} (${base.year_approx}) is considered one of the most significant events of the modern era. Historians have extensively documented its causes, course, and consequences across multiple scholarly traditions.`,
+        narrative: `${base.title} (${base.year_approx}) is considered one of the most significant events of the modern era.`,
         evidence_score: 0.75,
         sources: [],
       },
@@ -398,7 +407,9 @@ export async function fetchEventConnections(slug: string): Promise<CausalityLink
   if (available) {
     try {
       const { data } = await api.get(`/api/events/${slug}/connections`);
-      return data;
+      // Backend returns { connections: [...] } — extract the array
+      const raw = data.connections ?? data;
+      return Array.isArray(raw) ? (raw as CausalityLink[]) : [];
     } catch {
       // fall through
     }
@@ -419,7 +430,9 @@ export async function searchEvents(q: string, limit = 10): Promise<SearchResult[
   if (available) {
     try {
       const { data } = await api.get('/api/search', { params: { q, limit } });
-      return data.hits ?? data;
+      // Backend returns { results: [...] }
+      const hits = data.results ?? data.hits ?? (Array.isArray(data) ? data : []);
+      return hits as SearchResult[];
     } catch {
       // fall through
     }

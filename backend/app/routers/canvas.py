@@ -4,16 +4,23 @@ Query params: zoom, year_min, year_max, bbox ("west,south,east,north")
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from geoalchemy2.functions import ST_MakeEnvelope, ST_Within, ST_X, ST_Y
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Event
-from app.schemas import CanvasEventItem, CanvasTileResponse
+from app.models import CausalityLink, Event, Perspective
+from app.schemas import (
+    CanvasEventItem,
+    CanvasTileResponse,
+    CausalityLinkItem,
+    _LINK_TYPE_MAP,
+)
 
 router = APIRouter(prefix="/api/canvas", tags=["canvas"])
 
@@ -30,7 +37,7 @@ async def get_tiles(
     db: AsyncSession = Depends(get_db),
 ) -> CanvasTileResponse:
     """
-    Returns events for the canvas tile defined by zoom + year range + bbox.
+    Returns events + causality links for the canvas tile.
     Only returns events whose zoom_min <= requested zoom.
     Ordered by importance_score DESC, capped at 500 per request.
     """
@@ -46,13 +53,23 @@ async def get_tiles(
         try:
             parts = [float(x.strip()) for x in bbox.split(",")]
             west, south, east, north = parts
-            # ST_MakeEnvelope(xmin, ymin, xmax, ymax, srid)
             envelope = ST_MakeEnvelope(west, south, east, north, 4326)
             conditions.append(Event.geo_point.isnot(None))
             conditions.append(ST_Within(Event.geo_point, envelope))
         except (ValueError, AttributeError):
             pass  # bad bbox — return without geo filter
 
+    # ── Perspective count subquery ──────────────────────────────────────────
+    persp_count_sq = (
+        select(
+            Perspective.event_id,
+            func.count(Perspective.id).label("cnt"),
+        )
+        .group_by(Perspective.event_id)
+        .subquery()
+    )
+
+    # ── Main event query ────────────────────────────────────────────────────
     stmt = (
         select(
             Event.id,
@@ -61,10 +78,15 @@ async def get_tiles(
             Event.year_approx,
             ST_X(Event.geo_point).label("lng"),
             ST_Y(Event.geo_point).label("lat"),
+            Event.geo_modern,
+            Event.geo_era_label,
             Event.event_category,
             Event.importance_score,
+            Event.tags,
             Event.zoom_min,
+            persp_count_sq.c.cnt.label("perspective_count"),
         )
+        .outerjoin(persp_count_sq, Event.id == persp_count_sq.c.event_id)
         .where(and_(*conditions))
         .order_by(Event.importance_score.desc())
         .limit(500)
@@ -72,6 +94,8 @@ async def get_tiles(
 
     result = await db.execute(stmt)
     rows = result.fetchall()
+
+    event_ids: list[UUID] = [row.id for row in rows]
 
     events = [
         CanvasEventItem(
@@ -81,11 +105,47 @@ async def get_tiles(
             year_approx=row.year_approx,
             lat=float(row.lat) if row.lat is not None else None,
             lng=float(row.lng) if row.lng is not None else None,
+            geo_modern=row.geo_modern,
+            geo_era_label=row.geo_era_label,
             category=row.event_category,
             importance_score=row.importance_score or 0.5,
+            tags=list(row.tags) if row.tags else None,
+            perspective_count=row.perspective_count,
             zoom_min=row.zoom_min or 1,
         )
         for row in rows
     ]
 
-    return CanvasTileResponse(events=events)
+    # ── Causality links between visible events ─────────────────────────────
+    links: list[CausalityLinkItem] = []
+    if event_ids:
+        link_stmt = select(
+            CausalityLink.id,
+            CausalityLink.cause_event_id,
+            CausalityLink.effect_event_id,
+            CausalityLink.link_type,
+            CausalityLink.strength,
+            CausalityLink.description,
+        ).where(
+            CausalityLink.cause_event_id.in_(event_ids),
+            CausalityLink.effect_event_id.in_(event_ids),
+            CausalityLink.review_status == "approved",
+        )
+        link_result = await db.execute(link_stmt)
+        links = [
+            CausalityLinkItem(
+                id=lr.id,
+                cause_event_id=lr.cause_event_id,
+                effect_event_id=lr.effect_event_id,
+                connection_type=_LINK_TYPE_MAP.get(lr.link_type, "context"),
+                strength=lr.strength,
+                description=lr.description,
+            )
+            for lr in link_result.fetchall()
+        ]
+
+    return CanvasTileResponse(
+        events=events,
+        links=links,
+        computed_at=datetime.now(timezone.utc).isoformat(),
+    )

@@ -9,7 +9,8 @@ import os
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select, text
+from geoalchemy2.functions import ST_X, ST_Y
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -23,6 +24,7 @@ router = APIRouter(prefix="/api", tags=["search"])
 # Meilisearch client — optional, gracefully degrades to PG FTS
 _meili_client = None
 
+
 def get_meili_client():
     """Lazily initialise Meilisearch client (optional)."""
     global _meili_client
@@ -33,9 +35,7 @@ def get_meili_client():
         url = os.getenv("MEILI_URL", "http://localhost:7700")
         key = os.getenv("MEILI_MASTER_KEY", "")
         _meili_client = meilisearch.Client(url, key)
-        # Quick health check (doesn't require auth)
         _meili_client.health()
-        # Verify the key works by listing indexes
         _meili_client.get_indexes()
         logger.info("Meilisearch client connected at %s", url)
     except Exception as exc:
@@ -53,11 +53,11 @@ async def search(
     """
     Search events by title, narrative, tags.
     Uses Meilisearch if available; falls back to PostgreSQL FTS.
+    Response: { results: SearchResultItem[] } with lat/lng included.
     """
     if not q.strip():
         return SearchResponse(results=[])
 
-    # Try Meilisearch first
     meili = get_meili_client()
     if meili is not None:
         try:
@@ -65,13 +65,11 @@ async def search(
         except Exception as exc:
             logger.warning("Meilisearch search failed (%s), falling back to PG FTS", exc)
 
-    # Fallback: PostgreSQL full-text search
     return await _search_postgres(q, limit, db)
 
 
 async def _search_postgres(q: str, limit: int, db: AsyncSession) -> SearchResponse:
-    """PostgreSQL tsvector search fallback."""
-    # Use plainto_tsquery for user-friendly query parsing
+    """PostgreSQL tsvector search fallback — includes lat/lng."""
     tsq = func.plainto_tsquery("english", q)
     tsvec = func.to_tsvector(
         "english",
@@ -91,6 +89,9 @@ async def _search_postgres(q: str, limit: int, db: AsyncSession) -> SearchRespon
             Event.year_approx,
             Event.geo_modern,
             Event.event_category,
+            Event.importance_score,
+            ST_X(Event.geo_point).label("lng"),
+            ST_Y(Event.geo_point).label("lat"),
             rank,
         )
         .where(
@@ -113,6 +114,9 @@ async def _search_postgres(q: str, limit: int, db: AsyncSession) -> SearchRespon
                 year_approx=row.year_approx,
                 geo_modern=row.geo_modern,
                 category=row.event_category,
+                importance_score=row.importance_score or 0.5,
+                lat=float(row.lat) if row.lat is not None else None,
+                lng=float(row.lng) if row.lng is not None else None,
                 score=float(row.rank) if row.rank else 0.0,
             )
             for row in rows
@@ -121,22 +125,55 @@ async def _search_postgres(q: str, limit: int, db: AsyncSession) -> SearchRespon
 
 
 async def _search_meili(q: str, limit: int, meili, db: AsyncSession) -> SearchResponse:
-    """Meilisearch search — returns slugs, then fetches from PG."""
+    """Meilisearch search — fetches lat/lng from PG for matched slugs."""
     index = meili.index("events")
-    res = index.search(q, {"limit": limit, "attributesToRetrieve": ["slug", "title", "year_approx", "geo_modern", "event_category"]})
+    res = index.search(q, {
+        "limit": limit,
+        "attributesToRetrieve": ["slug", "title", "year_approx", "geo_modern", "event_category"],
+    })
     hits = res.get("hits", [])
+    if not hits:
+        return SearchResponse(results=[])
 
-    results = [
-        SearchResultItem(
-            id=hit.get("id", "00000000-0000-0000-0000-000000000000"),
-            slug=hit["slug"],
-            title=hit["title"],
-            year_approx=hit.get("year_approx"),
-            geo_modern=hit.get("geo_modern"),
-            category=hit.get("event_category"),
-            score=float(hit.get("_rankingScore", 1.0)),
+    slugs = [h["slug"] for h in hits if "slug" in h]
+    # Fetch lat/lng from PG
+    ev_stmt = (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.geo_modern,
+            Event.event_category,
+            Event.importance_score,
+            ST_X(Event.geo_point).label("lng"),
+            ST_Y(Event.geo_point).label("lat"),
         )
-        for hit in hits
-        if "slug" in hit
-    ]
+        .where(Event.slug.in_(slugs))
+    )
+    ev_result = await db.execute(ev_stmt)
+    ev_map = {row.slug: row for row in ev_result.fetchall()}
+
+    results = []
+    for hit in hits:
+        slug = hit.get("slug")
+        if not slug:
+            continue
+        ev = ev_map.get(slug)
+        if ev is None:
+            continue
+        results.append(
+            SearchResultItem(
+                id=ev.id,
+                slug=ev.slug,
+                title=ev.title,
+                year_approx=ev.year_approx,
+                geo_modern=ev.geo_modern,
+                category=ev.event_category,
+                importance_score=ev.importance_score or 0.5,
+                lat=float(ev.lat) if ev.lat is not None else None,
+                lng=float(ev.lng) if ev.lng is not None else None,
+                score=float(hit.get("_rankingScore", 1.0)),
+            )
+        )
     return SearchResponse(results=results)
