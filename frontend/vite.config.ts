@@ -10,7 +10,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'maplibre': ['maplibre-gl'],
+
           'xyflow': ['@xyflow/react'],
           'query': ['@tanstack/react-query'],
           'zustand': ['zustand'],

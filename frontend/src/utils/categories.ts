@@ -1,4 +1,5 @@
-import type { EventCategory, ConnectionType, PerspectiveType } from '../types';
+import type { EventCategory, ConnectionType, PerspectiveType, Region } from '../types';
+import { REGIONS, CANVAS_CONSTANTS } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Category colours
@@ -113,4 +114,37 @@ export function importanceThreshold(rfZoom: number): number {
   if (rfZoom <= 1.0) return 0.5;
   if (rfZoom <= 2.0) return 0.3;
   return 0;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Region classification for swim lanes
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function classifyRegion(lat: number, lng: number): Region {
+  if (lng < -25) return 'americas';
+  if (lng > 65) return 'asia';
+  if (lat >= 35) return 'europe';
+  if (lat < 35) return 'middle_east_africa';
+  return 'global';
+}
+
+export function regionBandIndex(region: Region): number {
+  const idx = REGIONS.findIndex((r) => r.id === region);
+  return idx >= 0 ? idx : REGIONS.length - 1;
+}
+
+/**
+ * Compute canvas-space Y for an event based on its region band.
+ * Uses longitude for vertical spread within the band to avoid overlap.
+ */
+export function eventBandY(lat: number, lng: number): number {
+  const region = classifyRegion(lat, lng);
+  const bandIdx = regionBandIndex(region);
+  const { BAND_HEIGHT } = CANVAS_CONSTANTS;
+  const bandTop = bandIdx * BAND_HEIGHT;
+  const padding = 30;
+  const usable = BAND_HEIGHT - 2 * padding;
+  // Normalise longitude to [0, 1] for intra-band spread
+  const lngNorm = Math.max(0, Math.min(1, (lng + 180) / 360));
+  return bandTop + padding + lngNorm * usable;
 }

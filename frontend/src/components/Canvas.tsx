@@ -10,10 +10,9 @@ import {
   type OnMove,
   MarkerType,
   Panel,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
 import { useQuery } from '@tanstack/react-query';
 
 import EventNode from './EventNode';
@@ -21,15 +20,15 @@ import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
-import { CONNECTION_COLORS, importanceThreshold } from '../utils/categories';
-import { CANVAS_CONSTANTS } from '../types';
+import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
+import { CANVAS_CONSTANTS, REGIONS } from '../types';
 import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { LAT_MIN, LAT_MAX, CANVAS_HEIGHT, PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
+const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
 
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
@@ -38,13 +37,20 @@ const EDGE_TYPES = { causality: CausalityEdge };
 // Convert events + links → react-flow nodes + edges
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Compute Y position within the appropriate region swim lane */
 function eventToNode(event: HistoricalEvent, rfZoom: number): Node {
   const x = (event.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
-  const fraction = (LAT_MAX - event.lat) / (LAT_MAX - LAT_MIN);
-  const y = fraction * CANVAS_HEIGHT;
+  const region = classifyRegion(event.lat, event.lng);
+  const bandIdx = regionBandIndex(region);
+  const bandTop = bandIdx * BAND_HEIGHT;
+  const padding = 30;
+  const usable = BAND_HEIGHT - 2 * padding;
+  // Use longitude for intra-band spread
+  const lngNorm = Math.max(0, Math.min(1, (event.lng + 180) / 360));
+  const y = bandTop + padding + lngNorm * usable;
 
   return {
-    id: String(event.id),           // ensure string ID (UUIDs from backend are already strings)
+    id: String(event.id),
     type: 'event',
     position: { x, y },
     data: { ...event, showLabel: rfZoom >= 0.6 },
@@ -77,54 +83,186 @@ function linkToEdge(link: CausalityLink): Edge {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MapLibre background
+// Timeline Ruler (sticky overlay — renders outside react-flow)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function MapBackground() {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+interface TimelineRulerProps {
+  rfTransform: { x: number; y: number; zoom: number };
+  width: number;
+}
 
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
+function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
+  const { x: offsetX, zoom } = rfTransform;
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
-            maxzoom: 19,
-          },
-        },
-        layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
-        glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
-      },
-      center: [10, 45],
-      zoom: 2.5,
-      interactive: false,
-      attributionControl: false,
-    });
+  // Determine tick interval based on zoom
+  let tickInterval: number;
+  if (zoom < 0.15) tickInterval = 100;       // centuries
+  else if (zoom < 0.5) tickInterval = 50;
+  else if (zoom < 1.0) tickInterval = 10;     // decades
+  else if (zoom < 2.0) tickInterval = 5;
+  else tickInterval = 1;                       // years
 
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, []);
+  // Visible year range
+  const yearLeft = Math.floor(-offsetX / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN);
+  const yearRight = Math.ceil((width - offsetX) / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN);
+  const startYear = Math.floor(yearLeft / tickInterval) * tickInterval;
+  const endYear = Math.ceil(yearRight / tickInterval) * tickInterval;
+
+  const ticks: { year: number; screenX: number }[] = [];
+  for (let y = startYear; y <= endYear; y += tickInterval) {
+    const canvasX = (y - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
+    const screenX = canvasX * zoom + offsetX;
+    if (screenX >= -50 && screenX <= width + 50) {
+      ticks.push({ year: y, screenX });
+    }
+  }
 
   return (
     <div
-      ref={mapContainerRef}
       style={{
         position: 'absolute',
-        inset: 0,
-        opacity: 0.45,
-        filter: 'saturate(0.5) brightness(0.35) hue-rotate(200deg)',
+        top: '50%',
+        left: 0,
+        right: 0,
+        height: 0,
+        zIndex: 10,
         pointerEvents: 'none',
-        zIndex: 0,
+        transform: 'translateY(-50%)',
       }}
-    />
+    >
+      {/* Main horizontal line */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 1,
+          backgroundColor: 'rgba(255,255,255,0.12)',
+        }}
+      />
+      {/* Ticks */}
+      {ticks.map((t) => {
+        const isMajor = t.year % (tickInterval * 5 === 0 ? tickInterval * 5 : tickInterval >= 100 ? 100 : 50) === 0;
+        const tickH = isMajor ? 16 : 8;
+        return (
+          <div key={t.year} style={{ position: 'absolute', left: t.screenX, top: -tickH }}>
+            <div
+              style={{
+                width: 1,
+                height: tickH * 2,
+                backgroundColor: isMajor ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+              }}
+            />
+            {(isMajor || tickInterval <= 10) && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: tickH * 2 + 4,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: 10,
+                  fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                  color: isMajor ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.2)',
+                  whiteSpace: 'nowrap',
+                  userSelect: 'none',
+                }}
+              >
+                {t.year < 0 ? `${Math.abs(t.year)} BC` : t.year === 0 ? '1 AD' : `${t.year}`}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Region Swim Lane Labels (sticky left overlay)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SwimLaneLabelsProps {
+  rfTransform: { x: number; y: number; zoom: number };
+}
+
+const BAND_COLORS = [
+  'rgba(255,255,255,0.02)',
+  'rgba(255,255,255,0.04)',
+  'rgba(255,255,255,0.02)',
+  'rgba(255,255,255,0.04)',
+  'rgba(255,255,255,0.02)',
+];
+
+function SwimLaneOverlay({ rfTransform }: SwimLaneLabelsProps) {
+  const { y: offsetY, zoom } = rfTransform;
+
+  return (
+    <>
+      {/* Band backgrounds */}
+      {REGIONS.map((region, idx) => {
+        const bandTop = idx * BAND_HEIGHT * zoom + offsetY;
+        const bandH = BAND_HEIGHT * zoom;
+        return (
+          <div
+            key={region.id}
+            style={{
+              position: 'absolute',
+              top: bandTop,
+              left: 0,
+              right: 0,
+              height: bandH,
+              backgroundColor: BAND_COLORS[idx],
+              borderBottom: '1px solid rgba(255,255,255,0.04)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+        );
+      })}
+
+      {/* Sticky labels */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: 48,
+          zIndex: 12,
+          pointerEvents: 'none',
+        }}
+      >
+        {REGIONS.map((region, idx) => {
+          const bandTop = idx * BAND_HEIGHT * zoom + offsetY;
+          const bandH = BAND_HEIGHT * zoom;
+          const labelTop = bandTop + bandH / 2;
+          // Only show if in view
+          if (labelTop < -40 || labelTop > window.innerHeight + 40) return null;
+          return (
+            <div
+              key={region.id}
+              style={{
+                position: 'absolute',
+                top: labelTop,
+                left: 8,
+                transform: 'translateY(-50%) rotate(-90deg)',
+                transformOrigin: 'center center',
+                fontSize: 10,
+                fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                color: 'rgba(255,255,255,0.3)',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
+                userSelect: 'none',
+              }}
+            >
+              {region.label}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -151,11 +289,8 @@ function CanvasInner() {
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
   // ── WebGL tier state ─────────────────────────────────────────────────────
-  // Real-time RF viewport transform for WebGL projection
   const [rfTransform, setRfTransform] = useState({ x: 20, y: 80, zoom: 0.22 });
-  // All events (unfiltered by LOD) for the WebGL layer
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
-  // Container size for deck.gl
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
@@ -168,7 +303,6 @@ function CanvasInner() {
     return () => obs.disconnect();
   }, []);
 
-  // Decide render mode
   const useWebGL = allFilteredEvents.length > GL_THRESHOLD;
 
   // Debounce tile fetch key
@@ -206,12 +340,10 @@ function CanvasInner() {
     setAllFilteredEvents(filteredEvents);
     setVisibleEvents(filteredEvents);
 
-    // Detect mock data
     const isMock = filteredEvents.some((e) => String(e.id).length < 10);
     setUsingMockData(isMock);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
-      // ReactFlow mode — build nodes + edges
       const newNodes = filteredEvents.map((e) => eventToNode(e, rfZoom));
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
@@ -225,7 +357,6 @@ function CanvasInner() {
       setNodes(newNodes);
       setEdges(newEdges);
     } else {
-      // WebGL mode — clear RF nodes so ReactFlow is just the pan/zoom layer
       setNodes([]);
       setEdges([]);
     }
@@ -247,8 +378,9 @@ function CanvasInner() {
   useEffect(() => {
     if (!flyToEvent) return;
     const x = (flyToEvent.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
-    const fraction = (LAT_MAX - flyToEvent.lat) / (LAT_MAX - LAT_MIN);
-    const y = fraction * CANVAS_HEIGHT;
+    const region = classifyRegion(flyToEvent.lat, flyToEvent.lng);
+    const bandIdx = regionBandIndex(region);
+    const y = bandIdx * BAND_HEIGHT + BAND_HEIGHT / 2;
 
     reactFlow.setViewport({ x: 0, y: 0, zoom: 0.3 }, { duration: 500 });
     setTimeout(() => {
@@ -258,10 +390,9 @@ function CanvasInner() {
     setFlyToEvent(null);
   }, [flyToEvent, reactFlow, setFlyToEvent]);
 
-  // Track RF viewport — used for both the geo viewport store AND the WebGL projection
+  // Track RF viewport
   const onMoveHandler: OnMove = useCallback(
     (_event, rfVp) => {
-      // Update real-time transform for WebGL
       setRfTransform({ x: rfVp.x, y: rfVp.y, zoom: rfVp.zoom });
       setRfZoom(rfVp.zoom);
     },
@@ -271,24 +402,19 @@ function CanvasInner() {
   const onMoveEnd: OnMove = useCallback(
     (_event, rfViewport) => {
       const containerWidth = containerSize.width;
-      const containerHeight = containerSize.height - 80;
       const zoom = rfViewport.zoom;
 
       const leftX = -rfViewport.x / zoom;
       const rightX = (containerWidth - rfViewport.x) / zoom;
-      const topY = -rfViewport.y / zoom;
-      const bottomY = (containerHeight - rfViewport.y) / zoom;
 
       const yearMin = Math.floor(leftX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
       const yearMax = Math.ceil(rightX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
-      const latMax = LAT_MAX - (topY / CANVAS_HEIGHT) * (LAT_MAX - LAT_MIN);
-      const latMin = LAT_MAX - (bottomY / CANVAS_HEIGHT) * (LAT_MAX - LAT_MIN);
 
       setViewport({
         year_min: Math.max(-5000, yearMin),
         year_max: Math.min(3000, yearMax),
-        lat_min: Math.max(-90, latMin),
-        lat_max: Math.min(90, latMax),
+        lat_min: -90,
+        lat_max: 90,
         zoom: Math.round(rfViewport.zoom * 5),
       });
     },
@@ -305,8 +431,8 @@ function CanvasInner() {
 
   return (
     <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      {/* Map background */}
-      <MapBackground />
+      {/* Swim lane backgrounds + labels (behind everything) */}
+      <SwimLaneOverlay rfTransform={rfTransform} />
 
       {/* React Flow — always rendered for pan/zoom interaction */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
@@ -376,28 +502,6 @@ function CanvasInner() {
               )}
             </div>
           </Panel>
-
-          {/* Lat axis labels */}
-          <Panel position="center-left" style={{ pointerEvents: 'none' }}>
-            {[60, 45, 30, 15, 0, -15, -30].map((lat) => (
-              <div
-                key={lat}
-                style={{
-                  position: 'absolute',
-                  top: `${((LAT_MAX - lat) / (LAT_MAX - LAT_MIN)) * 100}%`,
-                  right: 0,
-                  transform: 'translateY(-50%)',
-                  fontSize: 9,
-                  color: 'rgba(255,255,255,0.18)',
-                  fontFamily: 'monospace',
-                  paddingRight: 4,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {lat}°
-              </div>
-            ))}
-          </Panel>
         </ReactFlow>
       </div>
 
@@ -412,19 +516,8 @@ function CanvasInner() {
         />
       )}
 
-      {/* Equator line */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: `${((LAT_MAX - 0) / (LAT_MAX - LAT_MIN)) * 100}%`,
-          height: 1,
-          backgroundColor: 'rgba(255,255,255,0.07)',
-          zIndex: 6,
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Timeline ruler (sticky overlay on top) */}
+      <TimelineRuler rfTransform={rfTransform} width={containerSize.width} />
     </div>
   );
 }
@@ -433,15 +526,13 @@ function CanvasInner() {
 // Exported Canvas wrapper (provides ReactFlow context)
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { ReactFlowProvider } from '@xyflow/react';
-
 export default function Canvas() {
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: '#070e22',
+        backgroundColor: '#0f1117',
         overflow: 'hidden',
       }}
     >

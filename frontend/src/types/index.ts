@@ -138,6 +138,18 @@ export interface CanvasTransform {
   zoom: number;
 }
 
+// ─── Region / swim-lane types ────────────────────────────────────────────────
+
+export type Region = 'europe' | 'americas' | 'asia' | 'middle_east_africa' | 'global';
+
+export const REGIONS: { id: Region; label: string }[] = [
+  { id: 'europe', label: 'Europe' },
+  { id: 'americas', label: 'Americas' },
+  { id: 'asia', label: 'Asia' },
+  { id: 'middle_east_africa', label: 'Middle East & Africa' },
+  { id: 'global', label: 'Global / Multi-region' },
+];
+
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {
   // Time axis: pixels per year at zoom 1
@@ -145,9 +157,12 @@ export const CANVAS_CONSTANTS = {
   // Year range shown in full-width view
   BASE_YEAR_MIN: 1850,
   BASE_YEAR_MAX: 1960,
-  // Lat bounds for Y axis (Mercator projection approximation)
+  // Region swim-lane layout
+  BAND_HEIGHT: 200,
+  BAND_COUNT: 5,
+  // Canvas height = BAND_COUNT * BAND_HEIGHT
+  CANVAS_HEIGHT: 1000,
+  // Legacy lat bounds (used by store coordinate helpers)
   LAT_MIN: -60,
   LAT_MAX: 75,
-  // Canvas height
-  CANVAS_HEIGHT: 800,
 };
