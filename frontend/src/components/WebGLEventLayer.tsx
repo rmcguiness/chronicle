@@ -144,7 +144,7 @@ export default function WebGLEventLayer({
         controller={false}
         layers={[layer]}
         onClick={handleClick}
-        style={{ position: 'absolute', inset: 0 }}
+        style={{ position: 'absolute', inset: '0' }}
         getCursor={({ isDragging }) =>
           isDragging ? 'grabbing' : 'crosshair'
         }
