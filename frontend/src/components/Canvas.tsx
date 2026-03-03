@@ -289,7 +289,9 @@ function CanvasInner() {
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
   // ── WebGL tier state ─────────────────────────────────────────────────────
-  const [rfTransform, setRfTransform] = useState({ x: 20, y: 80, zoom: 0.22 });
+  // Start centered near year 500 CE at zoom 0.1 (century-level tick view, ~2000 years visible)
+  // x = viewportW/2 - year500_canvasX * zoom = 960 - (500-(-5000))*10*0.1 = 960 - 5500 = -4540
+  const [rfTransform, setRfTransform] = useState({ x: -4540, y: 80, zoom: 0.1 });
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });

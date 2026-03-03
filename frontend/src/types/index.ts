@@ -153,10 +153,11 @@ export const REGIONS: { id: Region; label: string }[] = [
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {
   // Time axis: pixels per year at zoom 1
-  PIXELS_PER_YEAR: 40,
-  // Year range shown in full-width view
-  BASE_YEAR_MIN: 1850,
-  BASE_YEAR_MAX: 1960,
+  // At zoom=0.1 (default), effective = 1px/year → 1920px screen = 1920 years visible
+  PIXELS_PER_YEAR: 10,
+  // Full history range
+  BASE_YEAR_MIN: -5000,
+  BASE_YEAR_MAX: 2100,
   // Region swim-lane layout
   BAND_HEIGHT: 200,
   BAND_COUNT: 5,
