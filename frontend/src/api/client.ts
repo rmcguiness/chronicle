@@ -323,9 +323,12 @@ export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse
       // bbox = "west,south,east,north" — use full longitude range since we only
       // filter by lat in the viewport. The backend will also apply year_min/max.
       const bbox = `-180,${viewport.lat_min},180,${viewport.lat_max}`;
+      // Map react-flow fractional zoom (0.05–4+) → backend tile zoom (int 2–10)
+      // zoom_min in DB starts at 2, so floor at 2 to always return events
+      const tileZoom = Math.max(2, Math.min(10, Math.floor(viewport.zoom * 8) + 2));
       const { data } = await api.get('/api/canvas/tiles', {
         params: {
-          zoom: viewport.zoom,
+          zoom: tileZoom,
           year_min: viewport.year_min,
           year_max: viewport.year_max,
           bbox,
