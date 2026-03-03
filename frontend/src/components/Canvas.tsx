@@ -330,11 +330,18 @@ function CanvasInner() {
     retry: 1,
   });
 
-  // Build nodes + edges when tile data arrives
+  // Keep a ref to rfZoom so build-nodes effect can read current value
+  // without having rfZoom as a dependency (which would cause constant rebuilds)
+  const rfZoomRef = useRef(rfZoom);
+  useEffect(() => { rfZoomRef.current = rfZoom; }, [rfZoom]);
+
+  // Build nodes + edges when tile data arrives — rfZoom intentionally excluded
+  // from deps; positions are static per-event, LOD is handled by the effect below
   useEffect(() => {
     if (!tileData) return;
 
-    const threshold = importanceThreshold(rfZoom);
+    const currentZoom = rfZoomRef.current;
+    const threshold = importanceThreshold(currentZoom);
     const filteredEvents = tileData.events.filter(
       (e) => e.importance_score >= threshold
     );
@@ -346,7 +353,7 @@ function CanvasInner() {
     setUsingMockData(isMock);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) => eventToNode(e, rfZoom));
+      const newNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
@@ -362,7 +369,8 @@ function CanvasInner() {
       setNodes([]);
       setEdges([]);
     }
-  }, [tileData, rfZoom, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tileData, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
 
   // Re-apply LOD when zoom changes (ReactFlow mode only)
   useEffect(() => {
@@ -395,10 +403,13 @@ function CanvasInner() {
   // Track RF viewport
   const onMoveHandler: OnMove = useCallback(
     (_event, rfVp) => {
+      // Only update visual overlays (timeline ruler, swim lane labels) — do NOT
+      // update rfZoom here. Updating store state every frame causes the build-nodes
+      // effect to fire continuously, rebuilding the entire nodes array mid-interaction
+      // and corrupting React-Flow's internal state.
       setRfTransform({ x: rfVp.x, y: rfVp.y, zoom: rfVp.zoom });
-      setRfZoom(rfVp.zoom);
     },
-    [setRfZoom]
+    []
   );
 
   const onMoveEnd: OnMove = useCallback(
@@ -412,15 +423,19 @@ function CanvasInner() {
       const yearMin = Math.floor(leftX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
       const yearMax = Math.ceil(rightX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
 
+      // Update rfZoom here (after interaction ends) so the build-nodes effect
+      // only fires once per gesture, not on every animation frame
+      setRfZoom(rfViewport.zoom);
+
       setViewport({
         year_min: Math.max(-5000, yearMin),
         year_max: Math.min(3000, yearMax),
         lat_min: -90,
         lat_max: 90,
-        zoom: Math.round(rfViewport.zoom * 5),
+        zoom: rfViewport.zoom,
       });
     },
-    [containerSize, setViewport]
+    [containerSize, setViewport, setRfZoom]
   );
 
   // WebGL click handler
