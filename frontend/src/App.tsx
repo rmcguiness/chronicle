@@ -4,6 +4,7 @@ import SearchBar from './components/SearchBar';
 import DetailPanel from './components/DetailPanel';
 import TimelineScrubber from './components/TimelineScrubber';
 import CategoryLegend from './components/CategoryLegend';
+import WelcomeOverlay from './components/WelcomeOverlay';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,9 @@ export default function App() {
 
         {/* Bottom timeline scrubber */}
         <TimelineScrubber />
+
+        {/* Welcome overlay — shown on first load each session */}
+        <WelcomeOverlay />
       </div>
     </QueryClientProvider>
   );
