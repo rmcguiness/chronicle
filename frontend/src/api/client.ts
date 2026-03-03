@@ -1,0 +1,439 @@
+import axios from 'axios';
+import type {
+  HistoricalEvent,
+  EventDetail,
+  TileResponse,
+  SearchResult,
+  CausalityLink,
+  CanvasViewport,
+  Perspective,
+  ConnectedEvent,
+} from '../types';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Axios instance
+// ─────────────────────────────────────────────────────────────────────────────
+
+const api = axios.create({
+  baseURL: 'http://localhost:8000',
+  timeout: 5000,
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mock data  (used when backend is unavailable)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const MOCK_EVENTS: HistoricalEvent[] = [
+  {
+    id: '1',
+    slug: 'assassination-franz-ferdinand-1914',
+    title: 'Assassination of Franz Ferdinand',
+    year_approx: 1914,
+    lat: 43.85,
+    lng: 18.41,
+    geo_modern: 'Sarajevo, Bosnia',
+    geo_era_label: 'Austria-Hungary',
+    category: 'political',
+    importance_score: 0.95,
+    tags: ['assassination', 'austria-hungary', 'balkans'],
+    perspective_count: 4,
+  },
+  {
+    id: '2',
+    slug: 'world-war-i-begins-1914',
+    title: 'World War I Begins',
+    year_approx: 1914,
+    lat: 48.85,
+    lng: 2.35,
+    geo_modern: 'Paris, France',
+    geo_era_label: 'Western Front',
+    category: 'war',
+    importance_score: 0.98,
+    tags: ['wwi', 'world-war', 'europe'],
+    perspective_count: 5,
+  },
+  {
+    id: '3',
+    slug: 'treaty-of-versailles-1919',
+    title: 'Treaty of Versailles',
+    year_approx: 1919,
+    lat: 48.8,
+    lng: 2.12,
+    geo_modern: 'Versailles, France',
+    geo_era_label: 'Post-WWI Europe',
+    category: 'political',
+    importance_score: 0.95,
+    tags: ['treaty', 'wwi', 'peace-conference'],
+    perspective_count: 6,
+  },
+  {
+    id: '4',
+    slug: 'world-war-ii-begins-1939',
+    title: 'World War II Begins',
+    year_approx: 1939,
+    lat: 52.52,
+    lng: 13.4,
+    geo_modern: 'Berlin, Germany',
+    geo_era_label: 'Nazi Germany',
+    category: 'war',
+    importance_score: 0.99,
+    tags: ['wwii', 'world-war', 'nazi-germany'],
+    perspective_count: 7,
+  },
+  {
+    id: '5',
+    slug: 'industrial-revolution-peak-1850',
+    title: 'Industrial Revolution at Peak',
+    year_approx: 1850,
+    lat: 51.5,
+    lng: -0.12,
+    geo_modern: 'London, England',
+    geo_era_label: 'British Empire',
+    category: 'discovery',
+    importance_score: 0.92,
+    tags: ['industrial', 'economy', 'britain'],
+    perspective_count: 3,
+  },
+  {
+    id: '6',
+    slug: 'meiji-restoration-1868',
+    title: 'Meiji Restoration',
+    year_approx: 1868,
+    lat: 35.68,
+    lng: 139.69,
+    geo_modern: 'Tokyo, Japan',
+    geo_era_label: 'Japanese Empire',
+    category: 'political',
+    importance_score: 0.88,
+    tags: ['japan', 'modernization', 'asia'],
+    perspective_count: 3,
+  },
+  {
+    id: '7',
+    slug: 'russian-revolution-1917',
+    title: 'Russian Revolution',
+    year_approx: 1917,
+    lat: 59.93,
+    lng: 30.32,
+    geo_modern: 'Petrograd (Saint Petersburg), Russia',
+    geo_era_label: 'Russian Empire',
+    category: 'political',
+    importance_score: 0.97,
+    tags: ['russia', 'communism', 'revolution'],
+    perspective_count: 5,
+  },
+  {
+    id: '8',
+    slug: 'wright-brothers-first-flight-1903',
+    title: 'Wright Brothers First Flight',
+    year_approx: 1903,
+    lat: 36.0,
+    lng: -75.67,
+    geo_modern: 'Kitty Hawk, North Carolina, USA',
+    geo_era_label: 'United States',
+    category: 'discovery',
+    importance_score: 0.91,
+    tags: ['aviation', 'technology', 'usa'],
+    perspective_count: 2,
+  },
+  {
+    id: '9',
+    slug: 'great-depression-1929',
+    title: 'Wall Street Crash / Great Depression',
+    year_approx: 1929,
+    lat: 40.71,
+    lng: -74.01,
+    geo_modern: 'New York City, USA',
+    geo_era_label: 'United States',
+    category: 'cultural',
+    importance_score: 0.93,
+    tags: ['economic-crisis', 'usa', 'global-economy'],
+    perspective_count: 4,
+  },
+  {
+    id: '10',
+    slug: 'hiroshima-bombing-1945',
+    title: 'Atomic Bombing of Hiroshima',
+    year_approx: 1945,
+    lat: 34.39,
+    lng: 132.45,
+    geo_modern: 'Hiroshima, Japan',
+    geo_era_label: 'Japanese Empire (final days)',
+    category: 'war',
+    importance_score: 0.98,
+    tags: ['atomic-bomb', 'wwii', 'nuclear', 'japan'],
+    perspective_count: 6,
+  },
+];
+
+// Mock causality links between events
+const MOCK_LINKS: CausalityLink[] = [
+  {
+    id: 'l1',
+    cause_event_id: '1',
+    effect_event_id: '2',
+    connection_type: 'causes',
+    strength: 0.95,
+    description: 'The assassination triggered the mobilisation of European alliances.',
+  },
+  {
+    id: 'l2',
+    cause_event_id: '2',
+    effect_event_id: '3',
+    connection_type: 'leads_to',
+    strength: 0.99,
+    description: 'WWI ended with the Paris Peace Conference and Treaty of Versailles.',
+  },
+  {
+    id: 'l3',
+    cause_event_id: '3',
+    effect_event_id: '4',
+    connection_type: 'causes',
+    strength: 0.85,
+    description: 'Harsh reparations and territorial changes fuelled German resentment.',
+  },
+  {
+    id: 'l4',
+    cause_event_id: '9',
+    effect_event_id: '4',
+    connection_type: 'enables',
+    strength: 0.7,
+    description: 'Economic instability enabled the rise of fascism across Europe.',
+  },
+  {
+    id: 'l5',
+    cause_event_id: '4',
+    effect_event_id: '10',
+    connection_type: 'leads_to',
+    strength: 0.9,
+    description: 'Pacific theatre of WWII culminated in the atomic bombings of Japan.',
+  },
+];
+
+// Mock event detail with perspectives
+const MOCK_DETAIL_MAP: Record<string, Partial<EventDetail>> = {
+  '1': {
+    perspectives: [
+      {
+        id: 'p1a',
+        label: 'Austro-Hungarian Imperial Account',
+        perspective_type: 'government',
+        summary: 'A direct act of Serbian-backed terrorism requiring decisive military response.',
+        narrative:
+          'The assassination of Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, by Gavrilo Princip was understood in Vienna as a state-sponsored act of terrorism by Serbia. The imperial government viewed the killing as an existential challenge to the multi-ethnic empire\'s stability, necessitating a firm ultimatum to Belgrade...',
+        evidence_score: 0.88,
+        sources: [
+          {
+            id: 's1',
+            title: 'Austria-Hungary and the Origins of WWI',
+            author: 'Samuel Williamson',
+            publication: 'Journal of Modern History',
+            publication_date: '1991-01-01',
+            source_type: 'secondary',
+            peer_reviewed: true,
+            quote: 'Vienna saw the assassination as requiring a firm response to crush the South Slav threat.',
+          },
+        ],
+      },
+      {
+        id: 'p1b',
+        label: 'Serbian Nationalist Perspective',
+        perspective_type: 'nationalist',
+        summary: 'The assassination as an act of liberation from Austro-Hungarian oppression.',
+        narrative:
+          'For many Serbs and South Slav nationalists, Gavrilo Princip was a hero acting against imperial occupation. The Black Hand and similar societies saw the assassination not as terrorism but as a liberatory act, seeking the unification of South Slavic peoples under Serbian leadership and the end of Habsburg rule in Bosnia-Herzegovina...',
+        evidence_score: 0.72,
+        sources: [
+          {
+            id: 's2',
+            title: 'The Black Hand: Terror and Assassination in Serbia',
+            author: 'David MacKenzie',
+            publication: 'Columbia University Press',
+            publication_date: '1989-01-01',
+            source_type: 'secondary',
+            peer_reviewed: true,
+            quote: 'Princip was celebrated in Serbian nationalist circles as a martyr for South Slav unity.',
+          },
+        ],
+      },
+      {
+        id: 'p1c',
+        label: 'British Foreign Office View',
+        perspective_type: 'foreign',
+        summary: 'A regional crisis that rapidly became a European catastrophe.',
+        narrative:
+          'British diplomats initially viewed the assassination as a regional Austro-Serbian conflict. Sir Edward Grey\'s attempts to mediate failed as Germany supported Austria-Hungary\'s ultimatum and Russia began mobilisation. The British government was slow to appreciate the speed at which a localised dispute would trigger the alliance system...',
+        evidence_score: 0.81,
+        sources: [
+          {
+            id: 's3',
+            title: 'British Foreign Policy and the July Crisis',
+            author: 'Zara Steiner',
+            publication: 'Oxford University Press',
+            publication_date: '2003-01-01',
+            source_type: 'secondary',
+            peer_reviewed: true,
+            quote: 'Grey underestimated the momentum towards general European war in those critical July days.',
+          },
+        ],
+      },
+    ],
+    connected_events: [
+      { id: '2', slug: 'world-war-i-begins-1914', title: 'World War I Begins', year_approx: 1914, connection_type: 'causes', direction: 'effect', strength: 0.95 },
+    ],
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: is the backend reachable?
+// ─────────────────────────────────────────────────────────────────────────────
+
+let _backendAvailable: boolean | null = null;
+let _checkPromise: Promise<boolean> | null = null;
+
+async function isBackendAvailable(): Promise<boolean> {
+  if (_backendAvailable !== null) return _backendAvailable;
+  if (_checkPromise) return _checkPromise;
+
+  _checkPromise = api
+    .get('/api/health', { timeout: 2000 })
+    .then(() => {
+      _backendAvailable = true;
+      return true;
+    })
+    .catch(() => {
+      _backendAvailable = false;
+      return false;
+    });
+
+  return _checkPromise;
+}
+
+// Reset the cached availability after 30 seconds so it can recover
+setInterval(() => { _backendAvailable = null; _checkPromise = null; }, 30_000);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API functions
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get('/api/canvas/tiles', {
+        params: {
+          zoom: viewport.zoom,
+          year_min: viewport.year_min,
+          year_max: viewport.year_max,
+          bbox: `${viewport.lat_min},${viewport.lat_max},${viewport.year_min},${viewport.year_max}`,
+        },
+      });
+      return data;
+    } catch {
+      // fall through to mock
+    }
+  }
+
+  // Mock: filter events by viewport
+  const importance_threshold =
+    viewport.zoom <= 2 ? 0.9 :
+    viewport.zoom <= 4 ? 0.7 :
+    viewport.zoom <= 6 ? 0.5 :
+    viewport.zoom <= 8 ? 0.3 : 0;
+
+  const events = MOCK_EVENTS.filter(
+    (e) =>
+      e.year_approx >= viewport.year_min &&
+      e.year_approx <= viewport.year_max &&
+      e.lat >= viewport.lat_min &&
+      e.lat <= viewport.lat_max &&
+      e.importance_score >= importance_threshold
+  );
+
+  const eventIds = new Set(events.map((e) => e.id));
+  const links = MOCK_LINKS.filter(
+    (l) => eventIds.has(l.cause_event_id) && eventIds.has(l.effect_event_id)
+  );
+
+  return { events, links, computed_at: new Date().toISOString() };
+}
+
+export async function fetchEventDetail(slug: string): Promise<EventDetail> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get(`/api/events/${slug}`);
+      return data;
+    } catch {
+      // fall through to mock
+    }
+  }
+
+  const base = MOCK_EVENTS.find((e) => e.slug === slug || e.id === slug);
+  if (!base) throw new Error(`Event not found: ${slug}`);
+
+  const extra = MOCK_DETAIL_MAP[base.id] ?? {};
+  return {
+    ...base,
+    perspectives: extra.perspectives ?? [
+      {
+        id: `${base.id}-p1`,
+        label: 'Primary Account',
+        perspective_type: 'academic',
+        summary: 'The mainstream historical consensus view of this event.',
+        narrative: `${base.title} (${base.year_approx}) is considered one of the most significant events of the modern era. Historians have extensively documented its causes, course, and consequences across multiple scholarly traditions.`,
+        evidence_score: 0.75,
+        sources: [],
+      },
+    ],
+    connected_events: extra.connected_events ?? [],
+  };
+}
+
+export async function fetchEventConnections(slug: string): Promise<CausalityLink[]> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get(`/api/events/${slug}/connections`);
+      return data;
+    } catch {
+      // fall through
+    }
+  }
+
+  const event = MOCK_EVENTS.find((e) => e.slug === slug || e.id === slug);
+  if (!event) return [];
+  return MOCK_LINKS.filter(
+    (l) => l.cause_event_id === event.id || l.effect_event_id === event.id
+  );
+}
+
+export async function searchEvents(q: string, limit = 10): Promise<SearchResult[]> {
+  if (!q.trim()) return [];
+
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get('/api/search', { params: { q, limit } });
+      return data.hits ?? data;
+    } catch {
+      // fall through
+    }
+  }
+
+  const lower = q.toLowerCase();
+  return MOCK_EVENTS.filter(
+    (e) =>
+      e.title.toLowerCase().includes(lower) ||
+      e.tags?.some((t) => t.includes(lower)) ||
+      e.geo_modern?.toLowerCase().includes(lower)
+  )
+    .slice(0, limit)
+    .map((e) => ({ ...e }));
+}
+
+export type { Perspective, ConnectedEvent };
