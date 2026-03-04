@@ -30,6 +30,9 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 
 const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
 
+/** Extra pixels beyond viewport edges to include nodes (prevents pop-in) */
+const VIEWPORT_CULL_BUFFER_PX = 200;
+
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
@@ -295,6 +298,8 @@ function CanvasInner() {
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  /** Canvas-space X bounds for viewport culling (updated on onMoveEnd) */
+  const viewportXBoundsRef = useRef({ left: -Infinity, right: Infinity });
 
   useEffect(() => {
     const obs = new ResizeObserver((entries) => {
@@ -353,7 +358,14 @@ function CanvasInner() {
     setUsingMockData(isMock);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
+      const { left: cullLeft, right: cullRight } = viewportXBoundsRef.current;
+      const newNodes = filteredEvents.map((e) => {
+        const node = eventToNode(e, currentZoom);
+        const inView =
+          node.position.x >= cullLeft - VIEWPORT_CULL_BUFFER_PX &&
+          node.position.x <= cullRight + VIEWPORT_CULL_BUFFER_PX;
+        return { ...node, hidden: !inView };
+      });
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
@@ -420,6 +432,20 @@ function CanvasInner() {
       const leftX = -rfViewport.x / zoom;
       const rightX = (containerWidth - rfViewport.x) / zoom;
 
+      // Store canvas-space X bounds for viewport culling
+      viewportXBoundsRef.current = { left: leftX, right: rightX };
+
+      // Re-apply viewport culling to existing nodes without rebuilding
+      setNodes((nds) =>
+        nds.map((n) => {
+          const x = n.position.x;
+          const inView =
+            x >= leftX - VIEWPORT_CULL_BUFFER_PX &&
+            x <= rightX + VIEWPORT_CULL_BUFFER_PX;
+          return n.hidden === !inView ? n : { ...n, hidden: !inView };
+        })
+      );
+
       const yearMin = Math.floor(leftX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
       const yearMax = Math.ceil(rightX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
 
@@ -435,7 +461,7 @@ function CanvasInner() {
         zoom: rfViewport.zoom,
       });
     },
-    [containerSize, setViewport, setRfZoom]
+    [containerSize, setViewport, setRfZoom, setNodes]
   );
 
   // WebGL click handler
