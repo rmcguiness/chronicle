@@ -18,6 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
+import { useViewportCulling } from '../hooks/useViewportCulling';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
@@ -277,6 +278,11 @@ function CanvasInner() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
 
+  // PERF-02: Cull off-screen nodes — only visible nodes (+ buffer) reach ReactFlow.
+  // `nodes` remains the source of truth for data; `visibleNodes` is render-only.
+  // Edges are handled automatically by ReactFlow when their source/target is absent.
+  const visibleNodes = useViewportCulling(nodes);
+
   const viewport = useAppStore((s) => s.viewport);
   const setViewport = useAppStore((s) => s.setViewport);
   const rfZoom = useAppStore((s) => s.rfZoom);
@@ -454,7 +460,7 @@ function CanvasInner() {
       {/* React Flow — always rendered for pan/zoom interaction */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
         <ReactFlow
-          nodes={nodes}
+          nodes={visibleNodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
