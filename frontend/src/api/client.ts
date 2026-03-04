@@ -9,6 +9,7 @@ import type {
   Perspective,
   ConnectedEvent,
 } from '../types';
+import { importanceThreshold } from '../utils/categories';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Axios instance — reads VITE_API_URL from environment (with localhost fallback)
@@ -326,12 +327,14 @@ export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse
       // Map react-flow fractional zoom (0.05–4+) → backend tile zoom (int 2–10)
       // zoom_min in DB starts at 2, so floor at 2 to always return events
       const tileZoom = Math.max(2, Math.min(10, Math.floor(viewport.zoom * 8) + 2));
+      const minImportance = importanceThreshold(viewport.zoom);
       const { data } = await api.get('/api/canvas/tiles', {
         params: {
           zoom: tileZoom,
           year_min: viewport.year_min,
           year_max: viewport.year_max,
           bbox,
+          min_importance: minImportance,
         },
       });
       // Backend response: { events, links, computed_at } — matches TileResponse

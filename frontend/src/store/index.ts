@@ -1,6 +1,50 @@
 import { create } from 'zustand';
-import type { HistoricalEvent, CanvasTransform, CanvasViewport } from '../types';
+import type { HistoricalEvent, CanvasTransform, CanvasViewport, EventCategory } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bookmark types & localStorage helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+const BOOKMARKS_STORAGE_KEY = 'chronicle_bookmarks';
+
+/** A saved viewport bookmark */
+export interface Bookmark {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  zoom: number;
+  /** Default bookmarks cannot be deleted */
+  isDefault?: boolean;
+}
+
+/** Pre-seeded default bookmarks */
+const DEFAULT_BOOKMARKS: Bookmark[] = [
+  { id: 'default-ancient', name: 'Ancient Civilizations', x: -(-3000 - (-5000)) * CANVAS_CONSTANTS.PIXELS_PER_YEAR * 0.3 + 960, y: 80, zoom: 0.3, isDefault: true },
+  { id: 'default-industrial', name: 'Industrial Revolution', x: -(1800 - (-5000)) * CANVAS_CONSTANTS.PIXELS_PER_YEAR * 0.3 + 960, y: 80, zoom: 0.3, isDefault: true },
+  { id: 'default-wars', name: 'World Wars', x: -(1939 - (-5000)) * CANVAS_CONSTANTS.PIXELS_PER_YEAR * 0.3 + 960, y: 80, zoom: 0.3, isDefault: true },
+];
+
+/** Load bookmarks from localStorage, falling back to defaults */
+function loadBookmarks(): Bookmark[] {
+  try {
+    const raw = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Bookmark[];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch { /* ignore */ }
+  return [...DEFAULT_BOOKMARKS];
+}
+
+/** Persist bookmarks to localStorage */
+function saveBookmarks(bookmarks: Bookmark[]): void {
+  localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks));
+}
+
+/** All event categories for default active set */
+const ALL_CATEGORIES: EventCategory[] = ['war', 'discovery', 'political', 'cultural', 'natural', 'person'];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Canvas coordinate math
@@ -78,6 +122,15 @@ interface AppState {
   // Mock backend notice
   usingMockData: boolean;
   setUsingMockData: (v: boolean) => void;
+
+  // Bookmarks
+  bookmarks: Bookmark[];
+  addBookmark: (bm: Omit<Bookmark, 'id' | 'isDefault'>) => void;
+  removeBookmark: (id: string) => void;
+
+  // Category filter
+  activeCategories: Set<EventCategory>;
+  toggleCategory: (cat: EventCategory) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -116,4 +169,30 @@ export const useAppStore = create<AppState>((set) => ({
 
   usingMockData: false,
   setUsingMockData: (usingMockData) => set({ usingMockData }),
+
+  // Bookmarks
+  bookmarks: loadBookmarks(),
+  addBookmark: (bm) =>
+    set((s) => {
+      const newBookmark: Bookmark = { ...bm, id: `bm-${Date.now()}` };
+      const updated = [...s.bookmarks, newBookmark];
+      saveBookmarks(updated);
+      return { bookmarks: updated };
+    }),
+  removeBookmark: (id) =>
+    set((s) => {
+      const updated = s.bookmarks.filter((b) => b.id !== id);
+      saveBookmarks(updated);
+      return { bookmarks: updated };
+    }),
+
+  // Category filter
+  activeCategories: new Set<EventCategory>(ALL_CATEGORIES),
+  toggleCategory: (cat) =>
+    set((s) => {
+      const next = new Set(s.activeCategories);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return { activeCategories: next };
+    }),
 }));
