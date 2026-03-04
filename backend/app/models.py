@@ -10,7 +10,7 @@ Matches the architecture doc exactly:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, date
+from datetime import datetime
 from typing import List, Optional
 
 from geoalchemy2 import Geometry
@@ -49,10 +49,12 @@ class Event(Base):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     title_alt: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
 
-    # Date handling
-    date_exact: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    date_earliest: Mapped[date] = mapped_column(Date, nullable=False)
-    date_latest: Mapped[date] = mapped_column(Date, nullable=False)
+    # Date handling — stored as text-decoded strings to support BCE dates
+    # (Python datetime.date only supports year >= 1; asyncpg is configured
+    # to decode PostgreSQL date/timestamp columns as plain strings)
+    date_exact: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
+    date_earliest: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
+    date_latest: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
     date_confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     date_circa: Mapped[bool] = mapped_column(Boolean, default=False)
     date_disputed: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -205,7 +207,7 @@ class Source(Base):
     editors: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
     publication: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     publisher: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    publication_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    publication_date: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
     isbn: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     doi: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     page_numbers: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

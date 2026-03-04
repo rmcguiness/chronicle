@@ -3,7 +3,7 @@ Pydantic v2 response schemas — aligned exactly with the frontend API contract.
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -20,7 +20,7 @@ class SourceOut(BaseModel):
     title: str
     author: Optional[str] = None
     publication: Optional[str] = None
-    publication_date: Optional[date] = None
+    publication_date: Optional[str] = None
     source_type: str
     reliability_tier: Optional[int] = None
     peer_reviewed: bool = False
@@ -125,9 +125,9 @@ class EventDetailOut(BaseModel):
     title: str
     title_alt: Optional[List[str]] = None
 
-    date_exact: Optional[date] = None
-    date_earliest: date
-    date_latest: date
+    date_exact: Optional[str] = None
+    date_earliest: Optional[str] = None
+    date_latest: Optional[str] = None
     date_confidence: Optional[float] = None
     date_circa: bool = False
     date_disputed: bool = False
