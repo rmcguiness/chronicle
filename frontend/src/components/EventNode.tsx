@@ -8,18 +8,32 @@ import { useAppStore } from '../store';
 function EventNode({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
   const [hovered, setHovered] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
+  /**
+   * Tooltip position + whether to render above (true) or below (false) the node.
+   * We flip to below when the node is in the top 200px of the viewport so the
+   * tooltip doesn't render off-screen above.
+   */
+  const [tooltipPos, setTooltipPos] = useState<{
+    top: number;
+    left: number;
+    above: boolean;
+  } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
   const rfZoom = useAppStore((s) => s.rfZoom);
+
+  /** Minimum pixels from top before we flip the tooltip to render below. */
+  const TOOLTIP_FLIP_THRESHOLD = 200;
 
   const handleMouseEnter = useCallback(() => {
     setHovered(true);
     if (nodeRef.current) {
       const rect = nodeRef.current.getBoundingClientRect();
+      const above = rect.top > TOOLTIP_FLIP_THRESHOLD;
       setTooltipPos({
-        top: rect.top - 8,
+        top: above ? rect.top - 8 : rect.bottom + 8,
         left: rect.left + rect.width / 2,
+        above,
       });
     }
   }, []);
@@ -106,7 +120,8 @@ function EventNode({ data: rawData, selected }: NodeProps) {
             position: 'fixed',
             top: tooltipPos.top,
             left: tooltipPos.left,
-            transform: 'translate(-50%, -100%)',
+            /* Flip transform based on whether we render above or below the node */
+            transform: tooltipPos.above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
             backgroundColor: 'rgba(7,14,34,0.97)',
             border: `1px solid ${color}66`,
             borderRadius: 8,
@@ -126,7 +141,7 @@ function EventNode({ data: rawData, selected }: NodeProps) {
             {data.year_approx} · {data.category}
           </div>
           <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-            Importance: {data.importance_score}/10
+            Importance: {Math.round(data.importance_score * 100)}%
             {data.geo_modern ? ` · ${data.geo_modern}` : ''}
           </div>
           {data.perspective_count && (

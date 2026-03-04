@@ -30,6 +30,17 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 
 const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
 
+/**
+ * Initial react-flow viewport. Used for BOTH the defaultViewport prop and
+ * the rfTransform useState initial value so they are always in sync on first
+ * render. Mismatching them causes nodes to render off-screen.
+ *
+ * x = viewportW/2 - year500_canvasX * zoom
+ *   ≈ 960/2 - (500 - (-5000)) * 10 * 0.1
+ *   = 480 - 5500 = -4540  → centers ~500 CE at load
+ */
+const INITIAL_VIEWPORT = { x: -4540, y: 80, zoom: 0.1 };
+
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
@@ -295,7 +306,7 @@ function CanvasInner() {
   // ── WebGL tier state ─────────────────────────────────────────────────────
   // Start centered near year 500 CE at zoom 0.1 (century-level tick view, ~2000 years visible)
   // x = viewportW/2 - year500_canvasX * zoom = 960 - (500-(-5000))*10*0.1 = 960 - 5500 = -4540
-  const [rfTransform, setRfTransform] = useState({ x: -4540, y: 80, zoom: 0.1 });
+  const [rfTransform, setRfTransform] = useState(INITIAL_VIEWPORT);
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -468,7 +479,7 @@ function CanvasInner() {
           onMoveEnd={onMoveEnd}
           minZoom={0.05}
           maxZoom={4}
-          defaultViewport={{ x: 20, y: 80, zoom: 0.22 }}
+          defaultViewport={INITIAL_VIEWPORT}
           style={{ background: 'transparent' }}
           proOptions={{ hideAttribution: true }}
           fitViewOptions={{ padding: 0.3 }}
