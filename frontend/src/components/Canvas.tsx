@@ -1,4 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+/**
+ * Canvas.tsx
+ *
+ * The main interactive timeline canvas.  Owns the ReactFlow instance, all
+ * data-fetching, the swim-lane overlay (backgrounds + sticky labels + collapse
+ * toggles), the WebGL fallback layer, and the timeline ruler.
+ *
+ * Responsibilities:
+ *   - Fetch tile data (events + causality links) for the current viewport
+ *   - Convert events ↔ ReactFlow nodes, links ↔ edges
+ *   - Render region swim-lane backgrounds with expand/collapse toggles
+ *   - Render a sticky timeline ruler overlay
+ *   - Fall back to a WebGL (deck.gl) ScatterplotLayer when event count exceeds
+ *     GL_THRESHOLD to maintain 60fps at scale
+ *
+ * Does NOT:
+ *   - Render the detail panel (DetailPanel.tsx)
+ *   - Manage search state (SearchBar.tsx)
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -20,16 +40,24 @@ import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
-import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
+import {
+  CONNECTION_COLORS,
+  importanceThreshold,
+  classifyRegion,
+  regionBandIndex,
+} from '../utils/categories';
 import {
   computeBandLayout,
+  computeScreenLayout,
   defaultBandLayout,
   getBandByIndex,
+  COLLAPSED_BAND_HEIGHT_PX,
 } from '../utils/bandDensity';
 import type { BandLayout } from '../utils/bandDensity';
 import { resolveCollisions } from '../utils/collisionResolution';
-import { CANVAS_CONSTANTS, REGIONS } from '../types';
-import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
+import { useCollapsedBands } from '../hooks/useCollapsedBands';
+import { CANVAS_CONSTANTS } from '../types';
+import type { HistoricalEvent, CausalityLink, CanvasViewport, Region } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -41,33 +69,41 @@ const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
  * Initial react-flow viewport. Used for BOTH the defaultViewport prop and
  * the rfTransform useState initial value so they are always in sync on first
  * render. Mismatching them causes nodes to render off-screen.
- *
- * x = viewportW/2 - year500_canvasX * zoom
- *   ≈ 960/2 - (500 - (-5000)) * 10 * 0.1
- *   = 480 - 5500 = -4540  → centers ~500 CE at load
  */
 const INITIAL_VIEWPORT = { x: -4540, y: 80, zoom: 0.1 };
 
+/** Width (px) of the sticky label strip on the left edge of the canvas. */
+const LABEL_STRIP_WIDTH = 72;
+
+/** Duration (ms) for the band collapse/expand CSS height transition. */
+const BAND_TRANSITION_MS = 220;
+
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
+
+/** Alternating background colours for region swim-lane bands. */
+const BAND_COLORS: readonly string[] = [
+  'rgba(255,255,255,0.02)',
+  'rgba(255,255,255,0.04)',
+  'rgba(255,255,255,0.02)',
+  'rgba(255,255,255,0.04)',
+  'rgba(255,255,255,0.02)',
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Convert events + links → react-flow nodes + edges
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Compute Y position within the appropriate region swim lane.
- *
- * @param event     - The historical event to position
- * @param rfZoom    - Current react-flow zoom level (controls label visibility)
- * @param bandLayout - Dynamic band layout from computeBandLayout; determines
- *                     each band's top and height in canvas space
- * @returns A react-flow Node with position derived from dynamic band heights
+ * Convert a historical event to a ReactFlow node.
+ * Y position is derived from the event's region band index and dynamic band
+ * layout (density-based). Nodes in collapsed bands are marked hidden.
  */
 function eventToNode(
   event: HistoricalEvent,
   rfZoom: number,
   bandLayout: BandLayout[],
+  collapsedBands: Set<Region>,
 ): Node {
   const x = (event.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
   const region = classifyRegion(event.lat, event.lng);
@@ -75,9 +111,7 @@ function eventToNode(
   const band = getBandByIndex(bandLayout, bandIdx);
 
   const padding = 30;
-  // Clamp usable height so we never get negative values when a band is tiny
   const usable = Math.max(0, band.height - 2 * padding);
-  // Use longitude for intra-band spread (distributes events vertically)
   const lngNorm = Math.max(0, Math.min(1, (event.lng + 180) / 360));
   const y = band.top + padding + lngNorm * usable;
 
@@ -88,9 +122,11 @@ function eventToNode(
     data: { ...event, showLabel: rfZoom >= 0.6 },
     selectable: true,
     draggable: false,
+    hidden: collapsedBands.has(region),
   };
 }
 
+/** Convert a causality link to a ReactFlow edge. */
 function linkToEdge(link: CausalityLink): Edge {
   const color = CONNECTION_COLORS[link.connection_type] ?? '#6b7280';
   return {
@@ -115,6 +151,40 @@ function linkToEdge(link: CausalityLink): Edge {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ChevronIcon — inline SVG chevron for band toggle
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ChevronIconProps {
+  collapsed: boolean;
+}
+
+function ChevronIcon({ collapsed }: ChevronIconProps) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      aria-hidden="true"
+      style={{
+        flexShrink: 0,
+        transform: collapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+        transition: `transform ${BAND_TRANSITION_MS}ms ease`,
+        color: 'rgba(255,255,255,0.45)',
+      }}
+    >
+      <path
+        d="M3 2 L7 5 L3 8"
+        stroke="currentColor"
+        fill="none"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Timeline Ruler (sticky overlay — renders outside react-flow)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -126,15 +196,13 @@ interface TimelineRulerProps {
 function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
   const { x: offsetX, zoom } = rfTransform;
 
-  // Determine tick interval based on zoom
   let tickInterval: number;
-  if (zoom < 0.15) tickInterval = 100;       // centuries
+  if (zoom < 0.15) tickInterval = 100;
   else if (zoom < 0.5) tickInterval = 50;
-  else if (zoom < 1.0) tickInterval = 10;     // decades
+  else if (zoom < 1.0) tickInterval = 10;
   else if (zoom < 2.0) tickInterval = 5;
-  else tickInterval = 1;                       // years
+  else tickInterval = 1;
 
-  // Visible year range
   const yearLeft = Math.floor(-offsetX / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN);
   const yearRight = Math.ceil((width - offsetX) / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN);
   const startYear = Math.floor(yearLeft / tickInterval) * tickInterval;
@@ -162,7 +230,6 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
         transform: 'translateY(-50%)',
       }}
     >
-      {/* Main horizontal line */}
       <div
         style={{
           position: 'absolute',
@@ -173,7 +240,6 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
           backgroundColor: 'rgba(255,255,255,0.12)',
         }}
       />
-      {/* Ticks */}
       {ticks.map((t) => {
         const isMajor = t.year % (tickInterval * 5 === 0 ? tickInterval * 5 : tickInterval >= 100 ? 100 : 50) === 0;
         const tickH = isMajor ? 16 : 8;
@@ -211,105 +277,137 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Region Swim Lane Labels (sticky left overlay)
+// Region Swim Lane Overlay (backgrounds + sticky labels + collapse toggles)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Minimum rendered band height (px) below which the rotated label is hidden. */
-const LABEL_MIN_SCREEN_HEIGHT = 60;
-
-interface SwimLaneLabelsProps {
+interface SwimLaneOverlayProps {
   rfTransform: { x: number; y: number; zoom: number };
-  /** Dynamic band layout — determines each band's canvas top & height. */
   bandLayout: BandLayout[];
+  collapsedBands: Set<Region>;
+  onToggleBand: (region: Region) => void;
 }
 
-const BAND_COLORS = [
-  'rgba(255,255,255,0.02)',
-  'rgba(255,255,255,0.04)',
-  'rgba(255,255,255,0.02)',
-  'rgba(255,255,255,0.04)',
-  'rgba(255,255,255,0.02)',
-];
-
-/**
- * Renders swim-lane band backgrounds and sticky region labels.
- * Band heights come from the dynamic bandLayout prop, so busy regions
- * automatically receive more vertical space.
- */
-function SwimLaneOverlay({ rfTransform, bandLayout }: SwimLaneLabelsProps) {
+function SwimLaneOverlay({ rfTransform, bandLayout, collapsedBands, onToggleBand }: SwimLaneOverlayProps) {
   const { y: offsetY, zoom } = rfTransform;
+
+  const layout = computeScreenLayout(collapsedBands, zoom, bandLayout);
+
+  const transitionStyle = `height ${BAND_TRANSITION_MS}ms ease, min-height ${BAND_TRANSITION_MS}ms ease`;
 
   return (
     <>
-      {/* Band backgrounds — height driven by dynamic layout */}
-      {REGIONS.map((region, idx) => {
-        const band = getBandByIndex(bandLayout, idx);
-        const bandTop = band.top * zoom + offsetY;
-        const bandH = band.height * zoom;
-        return (
-          <div
-            key={region.id}
-            style={{
-              position: 'absolute',
-              top: bandTop,
-              left: 0,
-              right: 0,
-              height: bandH,
-              backgroundColor: BAND_COLORS[idx],
-              borderBottom: '1px solid rgba(255,255,255,0.04)',
-              pointerEvents: 'none',
-              zIndex: 0,
-            }}
-          />
-        );
-      })}
-
-      {/* Sticky labels — suppressed when the rendered band is too narrow */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
+          top: offsetY,
           left: 0,
-          bottom: 0,
-          width: 48,
-          zIndex: 12,
+          right: 0,
+          display: 'flex',
+          flexDirection: 'column',
           pointerEvents: 'none',
+          zIndex: 0,
         }}
       >
-        {REGIONS.map((region, idx) => {
-          const band = getBandByIndex(bandLayout, idx);
-          const bandTop = band.top * zoom + offsetY;
-          const bandH = band.height * zoom;
-          // Hide label when the band is too small to render it legibly
-          if (bandH < LABEL_MIN_SCREEN_HEIGHT) return null;
-          let labelTop = bandTop + bandH / 2;
-          // Clamp label within band bounds
-          labelTop = Math.max(bandTop + 20, Math.min(bandTop + bandH - 20, labelTop));
-          // Hide label when entirely off-screen
-          if (labelTop < -40 || labelTop > window.innerHeight + 40) return null;
+        {layout.map(({ region, screenHeight }, idx) => (
+          <div
+            key={region}
+            style={{
+              height: screenHeight,
+              minHeight: screenHeight,
+              overflow: 'hidden',
+              transition: transitionStyle,
+              backgroundColor: BAND_COLORS[idx % BAND_COLORS.length],
+              borderBottom: '1px solid rgba(255,255,255,0.04)',
+            }}
+          />
+        ))}
+      </div>
 
-          return (
-            <div
-              key={region.id}
+      <div
+        style={{
+          position: 'absolute',
+          top: offsetY,
+          left: 0,
+          width: LABEL_STRIP_WIDTH,
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 12,
+        }}
+      >
+        {layout.map(({ region, label, screenHeight, isCollapsed }) => (
+          <div
+            key={region}
+            style={{
+              height: screenHeight,
+              minHeight: screenHeight,
+              overflow: 'hidden',
+              transition: transitionStyle,
+              position: 'relative',
+            }}
+          >
+            <button
+              onClick={() => onToggleBand(region)}
+              title={isCollapsed ? `Expand ${label}` : `Collapse ${label}`}
+              aria-label={isCollapsed ? `Expand ${label}` : `Collapse ${label}`}
               style={{
                 position: 'absolute',
-                top: labelTop,
-                left: 8,
-                transform: 'translateY(-50%) rotate(-90deg)',
-                transformOrigin: 'center center',
-                fontSize: 10,
-                fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                color: 'rgba(255,255,255,0.3)',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                whiteSpace: 'nowrap',
-                userSelect: 'none',
+                top: 0,
+                left: 0,
+                width: LABEL_STRIP_WIDTH,
+                height: COLLAPSED_BAND_HEIGHT_PX,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '0 6px',
+                background: 'rgba(15,17,23,0.6)',
+                border: 'none',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                cursor: 'pointer',
+                zIndex: 13,
+                borderRadius: 0,
               }}
             >
-              {region.label}
-            </div>
-          );
-        })}
+              <ChevronIcon collapsed={isCollapsed} />
+              <span
+                style={{
+                  fontSize: 9,
+                  fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                  color: 'rgba(255,255,255,0.4)',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  userSelect: 'none',
+                }}
+              >
+                {label}
+              </span>
+            </button>
+
+            {!isCollapsed && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: screenHeight / 2,
+                  left: 8,
+                  transform: 'translateY(-50%) rotate(-90deg)',
+                  transformOrigin: 'center center',
+                  fontSize: 9,
+                  fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                  color: 'rgba(255,255,255,0.15)',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                }}
+              >
+                {label}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </>
   );
@@ -337,14 +435,11 @@ function CanvasInner() {
   const setUsingMockData = useAppStore((s) => s.setUsingMockData);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
-  // ── WebGL tier state ─────────────────────────────────────────────────────
-  // Start centered near year 500 CE at zoom 0.1 (century-level tick view, ~2000 years visible)
-  // x = viewportW/2 - year500_canvasX * zoom = 960 - (500-(-5000))*10*0.1 = 960 - 5500 = -4540
+  const { collapsedBands, toggleBand } = useCollapsedBands();
+
   const [rfTransform, setRfTransform] = useState(INITIAL_VIEWPORT);
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
 
-  // ── Dynamic band layout ──────────────────────────────────────────────────
-  // Initialised with equal-height fallback; recomputed whenever the event set changes
   const [bandLayout, setBandLayout] = useState<BandLayout[]>(() => defaultBandLayout());
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -358,9 +453,16 @@ function CanvasInner() {
     return () => obs.disconnect();
   }, []);
 
+  const webGLVisibleEvents = useMemo(
+    () =>
+      allFilteredEvents.filter(
+        (e) => !collapsedBands.has(classifyRegion(e.lat, e.lng)),
+      ),
+    [allFilteredEvents, collapsedBands],
+  );
+
   const useWebGL = allFilteredEvents.length > GL_THRESHOLD;
 
-  // Debounce tile fetch key
   const [tileKey, setTileKey] = useState<CanvasViewport>(viewport);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -375,7 +477,6 @@ function CanvasInner() {
     scheduleTileFetch();
   }, [scheduleTileFetch]);
 
-  // Tile query
   const { data: tileData, isLoading } = useQuery({
     queryKey: ['tiles', tileKey],
     queryFn: () => fetchTiles(tileKey),
@@ -383,48 +484,43 @@ function CanvasInner() {
     retry: 1,
   });
 
-  // Keep a ref to rfZoom so build-nodes effect can read current value
-  // without having rfZoom as a dependency (which would cause constant rebuilds)
   const rfZoomRef = useRef(rfZoom);
   useEffect(() => { rfZoomRef.current = rfZoom; }, [rfZoom]);
 
-  // Keep a ref to bandLayout for the same reason — avoids spurious flyover triggers
   const bandLayoutRef = useRef<BandLayout[]>(bandLayout);
   useEffect(() => { bandLayoutRef.current = bandLayout; }, [bandLayout]);
 
-  // Build nodes + edges when tile data arrives — rfZoom intentionally excluded
-  // from deps; positions are static per-event, LOD is handled by the effect below
   useEffect(() => {
     if (!tileData) return;
 
     const currentZoom = rfZoomRef.current;
     const threshold = importanceThreshold(currentZoom);
     const filteredEvents = tileData.events.filter(
-      (e) => e.importance_score >= threshold
+      (e) => e.importance_score >= threshold,
     );
 
     setAllFilteredEvents(filteredEvents);
-    setVisibleEvents(filteredEvents);
+    setVisibleEvents(
+      filteredEvents.filter((e) => !collapsedBands.has(classifyRegion(e.lat, e.lng))),
+    );
 
     const isMock = filteredEvents.some((e) => String(e.id).length < 10);
     setUsingMockData(isMock);
 
-    // Recompute dynamic band heights based on the new event density
     const newBandLayout = computeBandLayout(filteredEvents);
     setBandLayout(newBandLayout);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
       const rawNodes = filteredEvents.map((e) =>
-        eventToNode(e, currentZoom, newBandLayout),
+        eventToNode(e, currentZoom, newBandLayout, collapsedBands),
       );
-      // Apply Y-axis collision resolution so clustered nodes are pushed apart within their band
       const newNodes = resolveCollisions(rawNodes);
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
           (l) =>
             eventIds.has(String(l.cause_event_id)) &&
-            eventIds.has(String(l.effect_event_id))
+            eventIds.has(String(l.effect_event_id)),
         )
         .map(linkToEdge);
 
@@ -434,28 +530,37 @@ function CanvasInner() {
       setNodes([]);
       setEdges([]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tileData, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
 
-  // Re-apply LOD when zoom changes (ReactFlow mode only)
   useEffect(() => {
     if (!tileData || useWebGL) return;
     const threshold = importanceThreshold(rfZoom);
     setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        hidden: (n.data as HistoricalEvent).importance_score < threshold,
-      }))
+      nds.map((n) => {
+        const evt = n.data as HistoricalEvent;
+        const region = classifyRegion(evt.lat, evt.lng);
+        return {
+          ...n,
+          hidden: evt.importance_score < threshold || collapsedBands.has(region),
+        };
+      }),
     );
-  }, [rfZoom, tileData, setNodes, useWebGL]);
+  }, [rfZoom, collapsedBands, tileData, setNodes, useWebGL]);
 
-  // Flyover animation — centres the viewport on the target event's canvas position
+  useEffect(() => {
+    setVisibleEvents(
+      allFilteredEvents.filter(
+        (e) => !collapsedBands.has(classifyRegion(e.lat, e.lng)),
+      ),
+    );
+  }, [collapsedBands, allFilteredEvents, setVisibleEvents]);
+
   useEffect(() => {
     if (!flyToEvent) return;
     const x = (flyToEvent.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
     const region = classifyRegion(flyToEvent.lat, flyToEvent.lng);
     const bandIdx = regionBandIndex(region);
-    // Use dynamic layout so the flyover lands in the correct (density-adjusted) band
     const band = getBandByIndex(bandLayoutRef.current, bandIdx);
     const y = band.top + band.height / 2;
 
@@ -467,16 +572,11 @@ function CanvasInner() {
     setFlyToEvent(null);
   }, [flyToEvent, reactFlow, setFlyToEvent]);
 
-  // Track RF viewport
   const onMoveHandler: OnMove = useCallback(
     (_event, rfVp) => {
-      // Only update visual overlays (timeline ruler, swim lane labels) — do NOT
-      // update rfZoom here. Updating store state every frame causes the build-nodes
-      // effect to fire continuously, rebuilding the entire nodes array mid-interaction
-      // and corrupting React-Flow's internal state.
       setRfTransform({ x: rfVp.x, y: rfVp.y, zoom: rfVp.zoom });
     },
-    []
+    [],
   );
 
   const onMoveEnd: OnMove = useCallback(
@@ -490,8 +590,6 @@ function CanvasInner() {
       const yearMin = Math.floor(leftX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
       const yearMax = Math.ceil(rightX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
 
-      // Update rfZoom here (after interaction ends) so the build-nodes effect
-      // only fires once per gesture, not on every animation frame
       setRfZoom(rfViewport.zoom);
 
       setViewport({
@@ -502,23 +600,25 @@ function CanvasInner() {
         zoom: rfViewport.zoom,
       });
     },
-    [containerSize, setViewport, setRfZoom]
+    [containerSize, setViewport, setRfZoom],
   );
 
-  // WebGL click handler
   const handleWebGLClick = useCallback(
     (event: HistoricalEvent) => {
       setSelectedEvent(event.slug);
     },
-    [setSelectedEvent]
+    [setSelectedEvent],
   );
 
   return (
     <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      {/* Swim lane backgrounds + labels (behind everything) */}
-      <SwimLaneOverlay rfTransform={rfTransform} bandLayout={bandLayout} />
+      <SwimLaneOverlay
+        rfTransform={rfTransform}
+        bandLayout={bandLayout}
+        collapsedBands={collapsedBands}
+        onToggleBand={toggleBand}
+      />
 
-      {/* React Flow — always rendered for pan/zoom interaction */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
         <ReactFlow
           nodes={nodes}
@@ -548,9 +648,8 @@ function CanvasInner() {
             style={{ opacity: 0.5 }}
           />
 
-          {/* Status panel */}
           <Panel position="top-left">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 16, marginLeft: LABEL_STRIP_WIDTH }}>
               {isLoading && (
                 <div
                   style={{
@@ -589,10 +688,9 @@ function CanvasInner() {
         </ReactFlow>
       </div>
 
-      {/* ── WebGL overlay (deck.gl) — active when events > GL_THRESHOLD ── */}
       {useWebGL && (
         <WebGLEventLayer
-          events={allFilteredEvents}
+          events={webGLVisibleEvents}
           rfViewport={rfTransform}
           width={containerSize.width}
           height={containerSize.height}
@@ -600,7 +698,6 @@ function CanvasInner() {
         />
       )}
 
-      {/* Timeline ruler (sticky overlay on top) */}
       <TimelineRuler rfTransform={rfTransform} width={containerSize.width} />
     </div>
   );

@@ -2,11 +2,13 @@
  * bandDensity.ts
  *
  * Single-responsibility module for computing swim-lane band heights based on
- * event density. Busier bands receive proportionally more vertical space, while
- * every band is guaranteed a minimum floor height so labels remain visible.
+ * event density AND collapse state. Busier bands receive proportionally more
+ * vertical space, while every band is guaranteed a minimum floor height so
+ * labels remain visible. Collapsed bands receive a fixed minimal height.
  *
- * Owns:  density counting, proportional height allocation, cumulative layout
- * Does NOT own: rendering, coordinate transforms, React state
+ * Owns:  density counting, proportional height allocation, cumulative layout,
+ *        collapsed band height
+ * Does NOT own: rendering, coordinate transforms, React state, toggle logic
  */
 
 import { classifyRegion } from './categories';
@@ -19,6 +21,12 @@ import type { HistoricalEvent, Region } from '../types';
 
 /** Minimum pixel height per band (canvas units at zoom=1). Keeps labels legible. */
 export const MIN_BAND_HEIGHT = 80;
+
+/**
+ * Minimum height (in screen pixels) for a collapsed band.
+ * Enough to show the label and toggle button, but nothing else.
+ */
+export const COLLAPSED_BAND_HEIGHT_PX = 24;
 
 /**
  * Default per-band height used when no events are loaded yet (equal-height
@@ -42,10 +50,30 @@ export const DEFAULT_TOTAL_HEIGHT =
 export interface BandLayout {
   /** Region id — matches REGIONS[i].id */
   region: Region;
+  /** Display label for the band. */
+  label: string;
   /** Top Y coordinate in canvas space (px at zoom=1) */
   top: number;
   /** Height of this band in canvas space (px at zoom=1) */
   height: number;
+  /** Whether this band is currently collapsed. */
+  isCollapsed: boolean;
+}
+
+/**
+ * Screen-space layout entry with pixel heights (used for rendering overlays).
+ */
+export interface BandLayoutEntry {
+  /** Region identifier. */
+  region: Region;
+  /** Display label for the band. */
+  label: string;
+  /** Allocated height of this band in screen pixels. */
+  screenHeight: number;
+  /** Cumulative top offset from the layout origin in screen pixels. */
+  screenTop: number;
+  /** Whether this band is currently collapsed. */
+  isCollapsed: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -83,9 +111,9 @@ export function countEventsPerRegion(
  *  3. When no events are present (cold start), all bands get equal height.
  *  4. Accumulate tops so callers receive absolute canvas Y coordinates.
  *
- * @param events     - The visible/filtered event set used for density sampling
- * @param totalHeight - Total canvas height to distribute (default: 5 × 200 = 1000)
- * @param minHeight   - Minimum height floor per band (default: MIN_BAND_HEIGHT = 80)
+ * @param events       - The visible/filtered event set used for density sampling
+ * @param totalHeight  - Total canvas height to distribute (default: 5 × 200 = 1000)
+ * @param minHeight    - Minimum height floor per band (default: MIN_BAND_HEIGHT = 80)
  * @returns Ordered array of BandLayout entries (same order as REGIONS constant)
  */
 export function computeBandLayout(
@@ -103,7 +131,6 @@ export function computeBandLayout(
 
   // Compute each band's height: floor + proportional share of extra space
   const heights: number[] = REGIONS.map((r) => {
-    // When no events loaded yet, distribute equally so initial layout is clean
     const fraction =
       totalEvents > 0 ? counts[r.id] / totalEvents : 1 / n;
     return minHeight + fraction * distributedHeight;
@@ -113,11 +140,59 @@ export function computeBandLayout(
   const layout: BandLayout[] = [];
   let y = 0;
   for (let i = 0; i < n; i++) {
-    layout.push({ region: REGIONS[i].id, top: y, height: heights[i] });
+    layout.push({
+      region: REGIONS[i].id,
+      label: REGIONS[i].label,
+      top: y,
+      height: heights[i],
+      isCollapsed: false,
+    });
     y += heights[i];
   }
 
   return layout;
+}
+
+/**
+ * Compute the screen-space layout for all region swim-lane bands, taking
+ * collapse state into account.
+ *
+ * Collapsed bands receive {@link COLLAPSED_BAND_HEIGHT_PX} (a fixed, zoom-
+ * independent height so the label is always legible). Expanded bands receive
+ * their dynamic density-based height × zoom.
+ *
+ * @param collapsedBands - Set of region IDs that are currently collapsed.
+ * @param zoom           - Current ReactFlow zoom level (scales expanded height).
+ * @param bandLayout     - Canvas-space layout from computeBandLayout.
+ * @param offsetY        - Canvas Y pan offset in screen pixels (default 0).
+ * @returns              An ordered array of {@link BandLayoutEntry}, one per
+ *                       region, in the same order as {@link REGIONS}.
+ */
+export function computeScreenLayout(
+  collapsedBands: Set<Region>,
+  zoom: number,
+  bandLayout: BandLayout[],
+  offsetY = 0,
+): BandLayoutEntry[] {
+  let cursor = offsetY;
+
+  return bandLayout.map((band) => {
+    const isCollapsed = collapsedBands.has(band.region);
+    const screenHeight = isCollapsed
+      ? COLLAPSED_BAND_HEIGHT_PX
+      : band.height * zoom;
+
+    const entry: BandLayoutEntry = {
+      region: band.region,
+      label: band.label,
+      screenTop: cursor,
+      screenHeight,
+      isCollapsed,
+    };
+
+    cursor += screenHeight;
+    return entry;
+  });
 }
 
 /**
