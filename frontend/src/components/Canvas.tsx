@@ -21,6 +21,7 @@ import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
+import { resolveCollisions } from '../utils/collisionResolution';
 import { CANVAS_CONSTANTS, REGIONS } from '../types';
 import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 
@@ -353,7 +354,9 @@ function CanvasInner() {
     setUsingMockData(isMock);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
+      const rawNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
+      // Apply Y-axis collision resolution so clustered nodes are pushed apart within their band
+      const newNodes = resolveCollisions(rawNodes);
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
