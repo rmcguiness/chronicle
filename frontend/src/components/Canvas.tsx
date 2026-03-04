@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
-import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
+import CanvasEventLayer, { CANVAS_LAYER_THRESHOLD } from './CanvasEventLayer';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
@@ -29,6 +29,9 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
+
+/** Extra pixels beyond viewport edges to include nodes (prevents pop-in) */
+const VIEWPORT_CULL_BUFFER_PX = 200;
 
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
@@ -288,13 +291,15 @@ function CanvasInner() {
   const setUsingMockData = useAppStore((s) => s.setUsingMockData);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
-  // ── WebGL tier state ─────────────────────────────────────────────────────
+  // ── Canvas overlay state ─────────────────────────────────────────────────────
   // Start centered near year 500 CE at zoom 0.1 (century-level tick view, ~2000 years visible)
   // x = viewportW/2 - year500_canvasX * zoom = 960 - (500-(-5000))*10*0.1 = 960 - 5500 = -4540
   const [rfTransform, setRfTransform] = useState({ x: -4540, y: 80, zoom: 0.1 });
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  /** Canvas-space X bounds for viewport culling (updated on onMoveEnd) */
+  const viewportXBoundsRef = useRef({ left: -Infinity, right: Infinity });
 
   useEffect(() => {
     const obs = new ResizeObserver((entries) => {
@@ -305,7 +310,7 @@ function CanvasInner() {
     return () => obs.disconnect();
   }, []);
 
-  const useWebGL = allFilteredEvents.length > GL_THRESHOLD;
+  const useCanvasLayer = allFilteredEvents.length > CANVAS_LAYER_THRESHOLD;
 
   // Debounce tile fetch key
   const [tileKey, setTileKey] = useState<CanvasViewport>(viewport);
@@ -352,8 +357,15 @@ function CanvasInner() {
     const isMock = filteredEvents.some((e) => String(e.id).length < 10);
     setUsingMockData(isMock);
 
-    if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
+    if (filteredEvents.length <= CANVAS_LAYER_THRESHOLD) {
+      const { left: cullLeft, right: cullRight } = viewportXBoundsRef.current;
+      const newNodes = filteredEvents.map((e) => {
+        const node = eventToNode(e, currentZoom);
+        const inView =
+          node.position.x >= cullLeft - VIEWPORT_CULL_BUFFER_PX &&
+          node.position.x <= cullRight + VIEWPORT_CULL_BUFFER_PX;
+        return { ...node, hidden: !inView };
+      });
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
@@ -374,7 +386,7 @@ function CanvasInner() {
 
   // Re-apply LOD when zoom changes (ReactFlow mode only)
   useEffect(() => {
-    if (!tileData || useWebGL) return;
+    if (!tileData || useCanvasLayer) return;
     const threshold = importanceThreshold(rfZoom);
     setNodes((nds) =>
       nds.map((n) => ({
@@ -382,7 +394,7 @@ function CanvasInner() {
         hidden: (n.data as HistoricalEvent).importance_score < threshold,
       }))
     );
-  }, [rfZoom, tileData, setNodes, useWebGL]);
+  }, [rfZoom, tileData, setNodes, useCanvasLayer]);
 
   // Flyover animation
   useEffect(() => {
@@ -438,8 +450,8 @@ function CanvasInner() {
     [containerSize, setViewport, setRfZoom]
   );
 
-  // WebGL click handler
-  const handleWebGLClick = useCallback(
+  // Canvas layer click handler
+  const handleCanvasClick = useCallback(
     (event: HistoricalEvent) => {
       setSelectedEvent(event.slug);
     },
@@ -522,14 +534,14 @@ function CanvasInner() {
         </ReactFlow>
       </div>
 
-      {/* ── WebGL overlay (deck.gl) — active when events > GL_THRESHOLD ── */}
-      {useWebGL && (
-        <WebGLEventLayer
+      {/* ── Canvas 2D overlay — active when events > CANVAS_LAYER_THRESHOLD ── */}
+      {useCanvasLayer && (
+        <CanvasEventLayer
           events={allFilteredEvents}
           rfViewport={rfTransform}
           width={containerSize.width}
           height={containerSize.height}
-          onEventClick={handleWebGLClick}
+          onEventClick={handleCanvasClick}
         />
       )}
 

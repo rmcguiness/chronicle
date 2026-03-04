@@ -3,10 +3,14 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
+  useStore,
   type EdgeProps,
 } from '@xyflow/react';
 import { CONNECTION_COLORS, CONNECTION_LABELS } from '../utils/categories';
 import type { ConnectionType } from '../types';
+
+/** Minimum stroke width in screen pixels, prevents edges from vanishing at low zoom. */
+const MIN_STROKE_WIDTH_PX = 2;
 
 interface CausalityEdgeData {
   connection_type: ConnectionType;
@@ -31,6 +35,7 @@ function CausalityEdge({
   const connectionType: ConnectionType = data?.connection_type ?? 'leads_to';
   const color = CONNECTION_COLORS[connectionType] ?? '#6b7280';
   const strength = data?.strength ?? 0.5;
+  const zoom = useStore((s) => s.transform[2]);
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -41,7 +46,10 @@ function CausalityEdge({
     targetPosition,
   });
 
-  const strokeWidth = Math.max(1.5, strength * 4);
+  // Compensate stroke width so it never falls below MIN_STROKE_WIDTH_PX on screen.
+  // React Flow applies the zoom transform to the SVG, so we divide by zoom.
+  const baseStrokeWidth = Math.max(1.5, strength * 4);
+  const strokeWidth = Math.max(baseStrokeWidth, MIN_STROKE_WIDTH_PX / zoom);
 
   return (
     <>

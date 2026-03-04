@@ -108,12 +108,22 @@ export function evidenceLabel(score: number): string {
 // LOD (Level of Detail) threshold by react-flow zoom
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Compute the minimum importance score threshold based on react-flow zoom level.
+ * At low zoom (zoomed out, e.g. 0.05) → high threshold (~0.9), showing only major events.
+ * At high zoom (zoomed in, e.g. 1.0+) → low threshold (0.3), showing all detail.
+ * @param rfZoom - React Flow zoom level (typically 0.05–4.0)
+ * @returns Importance threshold in [0.3, 0.9]
+ */
 export function importanceThreshold(rfZoom: number): number {
-  if (rfZoom <= 0.3) return 0.9;
-  if (rfZoom <= 0.5) return 0.7;
-  if (rfZoom <= 1.0) return 0.5;
-  if (rfZoom <= 2.0) return 0.3;
-  return 0;
+  /** Minimum threshold at max zoom — always show events scoring ≥ 0.3 */
+  const MIN_THRESHOLD = 0.3;
+  /** Maximum threshold at min zoom — only show events scoring ≥ 0.9 */
+  const MAX_THRESHOLD = 0.9;
+  /** Scaling factor mapping zoom to threshold reduction */
+  const ZOOM_SCALE = 0.8;
+
+  return Math.max(MIN_THRESHOLD, MAX_THRESHOLD - rfZoom * ZOOM_SCALE);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
