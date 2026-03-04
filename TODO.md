@@ -52,25 +52,28 @@ Each task should be a single PR. Always branch from `main`, open a PR, never pus
 Use `year_approx`, lat/lng, `importance_score` 0.4-1.0, proper categories and region tags.
 **Files:** `backend/scripts/seed_extended.py`
 
-### [DATA-02] Wikipedia / Grokipedia integration for event detail content
+### [DATA-02] Grokipedia / Wikipedia integration for event detail content
 **Problem:** Events only have short blurbs. Ryan wants in-depth reading per event.
+**Data source:** Grokipedia (https://grokipedia.com/) — AI-powered encyclopedia using Grok. Use as primary source; fall back to Wikipedia REST API (`en.wikipedia.org/api/rest_v1/page/summary/{title}`) if Grokipedia has no page for the event.
 **Task:**
-- Add a `wikipedia_slug` column to the `events` table (migration in `backend/alembic/`)
-- Add a `GET /api/events/{slug}/article` endpoint that fetches the Wikipedia article summary + first 3 sections via the Wikipedia REST API (`en.wikipedia.org/api/rest_v1/page/summary/{title}`)
-- Cache responses in a new `article_cache` DB table (TTL 7 days) to avoid hammering Wikipedia
-- Return: `{ title, summary, sections: [{heading, content}], source_url, last_updated }`
-**Files:** `backend/app/routers/events.py`, `backend/app/models.py`, new `backend/app/services/wikipedia.py`
+- Add `wikipedia_slug` and `grokipedia_slug` columns to the `events` table (Alembic migration)
+- Add `GET /api/events/{slug}/article` endpoint:
+  1. Try Grokipedia first: fetch `https://grokipedia.com/{grokipedia_slug}` and parse article content
+  2. Fall back to Wikipedia REST API summary + sections if Grokipedia returns 404
+- Cache responses in a new `article_cache` DB table (TTL 7 days)
+- Return: `{ title, summary, sections: [{heading, content}], source_url, source: "grokipedia"|"wikipedia", last_updated }`
+- Research Grokipedia's URL structure and whether it has a scrape-friendly HTML layout before implementing
+**Files:** `backend/app/routers/events.py`, `backend/app/models.py`, new `backend/app/services/article.py`
 
-### [DATA-03] Event detail page in frontend
-**Problem:** No dedicated reading page — events only show a side panel blurb.
-**Task:** Create `/event/:slug` route in the frontend:
-- Full-page layout: title + date + region + category badge
-- Map thumbnail (static image or small Leaflet map showing location)
-- "Read More" section that fetches `/api/events/{slug}/article` and renders sections with headings
-- Perspectives panel (existing `perspectives` data)
-- Connected events graph (horizontal mini-timeline of `connected_events`)
-- "Back to timeline" button that returns to the canvas centered on this event
-**Files:** `frontend/src/pages/EventDetail.tsx` (new), `frontend/src/App.tsx` (add route), `frontend/src/api/client.ts`
+### [DATA-03] Event detail side panel in frontend
+**Design decision:** Wide slide-in side panel (not a separate route) so the user can still see other events on the canvas for historical context while reading.
+**Task:**
+- Create `frontend/src/components/EventDetailPanel.tsx` — a fixed-position right-side panel (~480px wide), slides in with CSS transition when an event is selected
+- Sections: header (title, date display, category badge, importance stars), location (geo_modern + geo_era_label), article content (fetches `/api/events/{slug}/article`), perspectives, connected events list
+- Connected events rendered as a mini horizontal timeline at the bottom of the panel — click to select that event (which updates the selected event and re-fetches)
+- Close button collapses the panel; clicking empty canvas area also closes
+- Replace the existing basic detail panel (`DetailPanel.tsx`) with this component
+**Files:** `frontend/src/components/EventDetailPanel.tsx` (new), `frontend/src/App.tsx`, `frontend/src/store/index.ts` (panel open/close state)
 
 ---
 
@@ -116,6 +119,8 @@ Zooming in progressively splits clusters → groups of related events → indivi
 **Clustering algorithm:** For Tier 1 and 2, use a simple 1D sweep along the X axis — bin events into fixed time windows, pick the highest `importance_score` event as the cluster representative, attach the rest as children. On click/expand, animate children fanning out from the representative node.
 
 **Data needed:** `date_display` field is already in `HistoricalEvent` (optional string). Backend already stores `date_exact` as text. No schema changes needed for Tier 4.
+
+**Cluster expand behavior (confirmed):** Auto-zoom into the time window. When user clicks a cluster, animate the viewport to zoom into that century/decade window so the child events expand into view naturally. This avoids UI crowding from in-place expansion.
 
 **Why this works:** It matches how humans think about history — you start at the big picture (World Wars, Industrial Revolution) and zoom into specifics (Battle of Stalingrad, specific dates). Related events that happen within days naturally surface together at high zoom.
 
