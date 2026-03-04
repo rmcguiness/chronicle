@@ -5,7 +5,6 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
-  type Node,
   type Edge,
   type OnMove,
   MarkerType,
@@ -16,13 +15,15 @@ import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 
 import EventNode from './EventNode';
+import ClusterNode from './ClusterNode';
 import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
+import { clusterEvents, getZoomTier, type ZoomTier } from '../utils/clustering';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
 import { CANVAS_CONSTANTS, REGIONS } from '../types';
-import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
+import type { HistoricalEvent, CausalityLink, CanvasViewport, Region } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -30,34 +31,16 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 
 const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
 
-const NODE_TYPES = { event: EventNode };
+const NODE_TYPES = { event: EventNode, cluster: ClusterNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Convert events + links → react-flow nodes + edges
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Compute Y position within the appropriate region swim lane */
-function eventToNode(event: HistoricalEvent, rfZoom: number): Node {
-  const x = (event.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
-  const region = classifyRegion(event.lat, event.lng);
-  const bandIdx = regionBandIndex(region);
-  const bandTop = bandIdx * BAND_HEIGHT;
-  const padding = 30;
-  const usable = BAND_HEIGHT - 2 * padding;
-  // Use longitude for intra-band spread
-  const lngNorm = Math.max(0, Math.min(1, (event.lng + 180) / 360));
-  const y = bandTop + padding + lngNorm * usable;
-
-  return {
-    id: String(event.id),
-    type: 'event',
-    position: { x, y },
-    data: { ...event, showLabel: rfZoom >= 0.6 },
-    selectable: true,
-    draggable: false,
-  };
-}
+// Individual event → ReactFlow node conversion is handled by utils/clustering.ts
+// (`clusterEvents`), which also produces Macro/Meso cluster nodes.
+// The only canvas-local concern below is edge conversion.
 
 function linkToEdge(link: CausalityLink): Edge {
   const color = CONNECTION_COLORS[link.connection_type] ?? '#6b7280';
@@ -335,6 +318,19 @@ function CanvasInner() {
   const rfZoomRef = useRef(rfZoom);
   useEffect(() => { rfZoomRef.current = rfZoom; }, [rfZoom]);
 
+  /**
+   * Tracks the last rendered zoom tier so the re-cluster effect can detect
+   * boundary crossings and skip a full rebuild when still within the same tier.
+   * Initial value matches the `defaultViewport` zoom (0.22 → 'meso').
+   */
+  const tierRef = useRef<ZoomTier>(getZoomTier(0.22));
+
+  /**
+   * No-op empty Set used as a stable reference when band collapse is not active
+   * in this version.  Passed to `clusterEvents` to satisfy its API.
+   */
+  const emptyCollapsedRef = useRef(new Set<Region>());
+
   // Build nodes + edges when tile data arrives — rfZoom intentionally excluded
   // from deps; positions are static per-event, LOD is handled by the effect below
   useEffect(() => {
@@ -353,7 +349,12 @@ function CanvasInner() {
     setUsingMockData(isMock);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
+      // Build nodes via the clustering module — respects the current zoom tier
+      const newNodes = clusterEvents(filteredEvents, currentZoom, emptyCollapsedRef.current);
+      tierRef.current = getZoomTier(currentZoom);
+
+      // Only attach edges on individual-event tiers; cluster nodes aggregate
+      // multiple events so per-event edge IDs are not valid targets.
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
@@ -364,7 +365,9 @@ function CanvasInner() {
         .map(linkToEdge);
 
       setNodes(newNodes);
-      setEdges(newEdges);
+      // Show edges only in standard / detail tier (individual event nodes)
+      const tier = getZoomTier(currentZoom);
+      setEdges(tier === 'standard' || tier === 'detail' ? newEdges : []);
     } else {
       setNodes([]);
       setEdges([]);
@@ -372,17 +375,56 @@ function CanvasInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tileData, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
 
-  // Re-apply LOD when zoom changes (ReactFlow mode only)
+  // Re-cluster / re-apply LOD when zoom changes (ReactFlow mode only).
+  //
+  // Strategy:
+  //   • If the zoom crossed a tier boundary → full node rebuild via clusterEvents
+  //     (e.g. macro cluster nodes must change to individual event nodes).
+  //   • Within the same Standard / Detail tier → cheap visibility-only update
+  //     (toggle `hidden` flag and `showLabel` without rebuilding every node).
+  //   • Within the same Macro / Meso tier → also do a full rebuild since event
+  //     importance filtering may have changed the bucket counts.
   useEffect(() => {
     if (!tileData || useWebGL) return;
-    const threshold = importanceThreshold(rfZoom);
-    setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        hidden: (n.data as HistoricalEvent).importance_score < threshold,
-      }))
-    );
-  }, [rfZoom, tileData, setNodes, useWebGL]);
+
+    const newTier = getZoomTier(rfZoom);
+    const tierChanged = newTier !== tierRef.current;
+    tierRef.current = newTier;
+
+    if (tierChanged || newTier === 'macro' || newTier === 'meso') {
+      // Full rebuild: node types have changed or cluster counts need refreshing
+      const threshold = importanceThreshold(rfZoom);
+      const refiltered = allFilteredEvents.filter(
+        (e) => e.importance_score >= threshold,
+      );
+      setNodes(clusterEvents(refiltered, rfZoom, emptyCollapsedRef.current));
+      // Edges only make sense on individual-event tiers
+      if (newTier === 'standard' || newTier === 'detail') {
+        const eventIds = new Set(refiltered.map((e) => String(e.id)));
+        const newEdges = (tileData.links ?? [])
+          .filter(
+            (l) =>
+              eventIds.has(String(l.cause_event_id)) &&
+              eventIds.has(String(l.effect_event_id)),
+          )
+          .map(linkToEdge);
+        setEdges(newEdges);
+      } else {
+        setEdges([]);
+      }
+    } else {
+      // Same standard/detail tier: just toggle visibility + showLabel
+      const threshold = importanceThreshold(rfZoom);
+      const showLabel = newTier === 'detail';
+      setNodes((nds) =>
+        nds.map((n) => ({
+          ...n,
+          hidden: (n.data as HistoricalEvent).importance_score < threshold,
+          data: { ...n.data, showLabel },
+        })),
+      );
+    }
+  }, [rfZoom, tileData, allFilteredEvents, setNodes, setEdges, useWebGL]);
 
   // Flyover animation
   useEffect(() => {
