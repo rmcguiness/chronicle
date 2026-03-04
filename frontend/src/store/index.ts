@@ -91,9 +91,9 @@ export const useAppStore = create<AppState>((set) => ({
 
   detailPanelOpen: false,
   setDetailPanelOpen: (detailPanelOpen) =>
-    set((s) => ({
+    set((_s) => ({
       detailPanelOpen,
-      ...(detailPanelOpen ? {} : { selectedEventSlug: null }),
+      ...(!detailPanelOpen ? { selectedEventSlug: null } : {}),
     })),
 
   viewport: {

@@ -30,8 +30,14 @@ import {
 /** Panel width in pixels. */
 const PANEL_WIDTH = 480;
 
-/** Z-index — above canvas, below modals. */
-const PANEL_Z_INDEX = 50;
+/** Z-index — must be above the timeline scrubber (z-index 100). */
+const PANEL_Z_INDEX = 110;
+
+/**
+ * Height of the TimelineScrubber bar at the bottom of the screen (px).
+ * Panel bottom is offset by this amount so content is never hidden behind it.
+ */
+const SCRUBBER_HEIGHT = 84;
 
 /** CSS transition duration for the slide animation. */
 const SLIDE_TRANSITION = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -493,7 +499,6 @@ export default function EventDetailPanel() {
   const selectedEventSlug = useAppStore((s) => s.selectedEventSlug);
   const detailPanelOpen = useAppStore((s) => s.detailPanelOpen);
   const setDetailPanelOpen = useAppStore((s) => s.setDetailPanelOpen);
-  const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', selectedEventSlug],
@@ -517,8 +522,8 @@ export default function EventDetailPanel() {
         position: 'fixed',
         top: 0,
         right: 0,
+        bottom: SCRUBBER_HEIGHT,
         width: PANEL_WIDTH,
-        height: '100vh',
         backgroundColor: BG_COLOR,
         backdropFilter: 'blur(16px)',
         borderLeft: `1px solid ${BORDER_COLOR}`,
@@ -622,7 +627,8 @@ export default function EventDetailPanel() {
       </div>
 
       {/* ── Scrollable content ────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+      {/* minHeight: 0 is required for overflow-y:auto to work inside a flex column */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 20px' }}>
         {error && (
           <div
             style={{
