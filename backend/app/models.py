@@ -50,10 +50,18 @@ class Event(Base):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     title_alt: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
 
-    # Date handling — keep real Date columns for DDL/indexes (deferred so they are
-    # NOT selected automatically), then expose text-cast column_property versions
-    # for reads. BCE dates like '2560-01-01 BC' crash asyncpg's date decoder
-    # (ordinal must be >= 1); CAST to TEXT avoids that entirely.
+    # ── BCE date handling (verified end-to-end FIX-BCE) ──────────────────────
+    # Python's datetime.date requires ordinal >= 1 (year >= 1 CE). PostgreSQL
+    # stores BCE dates fine (e.g. '2560-01-01 BC'), but asyncpg's date decoder
+    # raises OverflowError when it tries to convert them into datetime.date.
+    #
+    # Fix: declare the underlying Date columns as deferred (not fetched by
+    # default) and expose CAST(col AS TEXT) versions via column_property.
+    # All date reads arrive as plain strings; no Python date object is ever
+    # created. The BCE/CE distinction is tracked separately via is_bce + year_approx.
+    #
+    # Do NOT change these back to mapped_column(Date, ...) — that will re-introduce
+    # the asyncpg OverflowError on any event with year < 1 CE.
     _date_exact = mapped_column("date_exact", String, nullable=True, deferred=True)
     _date_earliest = mapped_column("date_earliest", String, nullable=True, deferred=True)
     _date_latest = mapped_column("date_latest", String, nullable=True, deferred=True)
