@@ -442,6 +442,49 @@ class EditLog(Base):
 
 
 # ────────────────────────────────────────────
+# WIKIPEDIA SUMMARY CACHE
+# ────────────────────────────────────────────
+class WikipediaCache(Base):
+    """
+    Caches Wikipedia REST API summary responses keyed by event slug.
+
+    - Owns NO business logic — that lives in wiki_service.py.
+    - A NULL wiki_summary means Wikipedia has no matching article.
+    - wiki_fetched_at tracks when we last attempted the fetch (even on 404).
+    """
+
+    __tablename__ = "wikipedia_cache"
+
+    # The event slug is the primary key — one cache entry per event
+    slug: Mapped[str] = mapped_column(Text, primary_key=True)
+
+    # Wikipedia page title used to build the API URL (may differ from slug)
+    wiki_title: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Canonical Wikipedia article URL (e.g. https://en.wikipedia.org/wiki/…)
+    wiki_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Plain-text extract from the Wikipedia summary endpoint
+    wiki_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Thumbnail image URL returned by the Wikipedia summary endpoint
+    wiki_thumbnail_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Thumbnail dimensions for responsive rendering
+    wiki_thumbnail_width: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    wiki_thumbnail_height: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # When the cache entry was last populated (or attempted)
+    wiki_fetched_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    __table_args__ = (
+        Index("idx_wikipedia_cache_fetched", "wiki_fetched_at"),
+    )
+
+
+# ────────────────────────────────────────────
 # CANVAS TILE CACHE
 # ────────────────────────────────────────────
 class CanvasTile(Base):
