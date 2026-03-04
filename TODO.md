@@ -151,7 +151,7 @@ Zooming in progressively splits clusters → groups of related events → indivi
 ---
 
 ## Fix Queue (known bugs)
-- [ ] BCE date fix verified end-to-end: `GET /api/events/{slug}` on a BCE event should return 200, not 422
+- [x] BCE date fix verified end-to-end: `GET /api/events/{slug}` on a BCE event returns 200 ✓ (FIX-BCE — asyncpg OverflowError resolved via CAST(date AS TEXT) column_property; wiki endpoint also returns 200 with `found: false` when no wikipedia_slug is set)
 - [ ] Initial react-flow viewport doesn't match `defaultViewport` prop consistently across screen sizes — use `fitView` instead with padding
 - [ ] Search results don't scroll when there are many matches (overflow hidden on search panel)
 - [ ] Causality edge arrows not visible at zoom < 0.3 (strokeWidth too thin to see)
