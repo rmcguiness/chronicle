@@ -46,7 +46,15 @@ import {
   classifyRegion,
   regionBandIndex,
 } from '../utils/categories';
-import { computeBandLayout, COLLAPSED_BAND_HEIGHT_PX } from '../utils/bandDensity';
+import {
+  computeBandLayout,
+  computeScreenLayout,
+  defaultBandLayout,
+  getBandByIndex,
+  COLLAPSED_BAND_HEIGHT_PX,
+} from '../utils/bandDensity';
+import type { BandLayout } from '../utils/bandDensity';
+import { resolveCollisions } from '../utils/collisionResolution';
 import { useCollapsedBands } from '../hooks/useCollapsedBands';
 import { CANVAS_CONSTANTS } from '../types';
 import type { HistoricalEvent, CausalityLink, CanvasViewport, Region } from '../types';
@@ -55,7 +63,14 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport, Region } from '../
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
+const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
+
+/**
+ * Initial react-flow viewport. Used for BOTH the defaultViewport prop and
+ * the rfTransform useState initial value so they are always in sync on first
+ * render. Mismatching them causes nodes to render off-screen.
+ */
+const INITIAL_VIEWPORT = { x: -4540, y: 80, zoom: 0.1 };
 
 /** Width (px) of the sticky label strip on the left edge of the canvas. */
 const LABEL_STRIP_WIDTH = 72;
@@ -81,27 +96,24 @@ const BAND_COLORS: readonly string[] = [
 
 /**
  * Convert a historical event to a ReactFlow node.
- * Y position is derived from the event's region band index and longitude spread.
- *
- * @param event   - The event to convert.
- * @param rfZoom  - Current ReactFlow zoom (controls label LOD).
- * @param collapsedBands - Set of currently-collapsed region IDs.
- * @returns A ReactFlow `Node` with `hidden` set for collapsed regions.
+ * Y position is derived from the event's region band index and dynamic band
+ * layout (density-based). Nodes in collapsed bands are marked hidden.
  */
 function eventToNode(
   event: HistoricalEvent,
   rfZoom: number,
+  bandLayout: BandLayout[],
   collapsedBands: Set<Region>,
 ): Node {
   const x = (event.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
   const region = classifyRegion(event.lat, event.lng);
   const bandIdx = regionBandIndex(region);
-  const bandTop = bandIdx * BAND_HEIGHT;
+  const band = getBandByIndex(bandLayout, bandIdx);
+
   const padding = 30;
-  const usable = BAND_HEIGHT - 2 * padding;
-  // Use longitude for intra-band spread to reduce overlap
+  const usable = Math.max(0, band.height - 2 * padding);
   const lngNorm = Math.max(0, Math.min(1, (event.lng + 180) / 360));
-  const y = bandTop + padding + lngNorm * usable;
+  const y = band.top + padding + lngNorm * usable;
 
   return {
     id: String(event.id),
@@ -114,12 +126,7 @@ function eventToNode(
   };
 }
 
-/**
- * Convert a causality link to a ReactFlow edge.
- *
- * @param link - The causality link to convert.
- * @returns A styled ReactFlow `Edge`.
- */
+/** Convert a causality link to a ReactFlow edge. */
 function linkToEdge(link: CausalityLink): Edge {
   const color = CONNECTION_COLORS[link.connection_type] ?? '#6b7280';
   return {
@@ -148,16 +155,9 @@ function linkToEdge(link: CausalityLink): Edge {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ChevronIconProps {
-  /** When true the chevron points right (collapsed); false points down (expanded). */
   collapsed: boolean;
 }
 
-/**
- * A simple right-pointing chevron SVG that rotates 90° when the band is
- * expanded, providing a visual cue for the current toggle state.
- *
- * @param props - {@link ChevronIconProps}
- */
 function ChevronIcon({ collapsed }: ChevronIconProps) {
   return (
     <svg
@@ -193,24 +193,16 @@ interface TimelineRulerProps {
   width: number;
 }
 
-/**
- * A sticky horizontal timeline ruler rendered as a screen-space overlay.
- * Tick intervals adapt to the current zoom level.
- *
- * @param props - {@link TimelineRulerProps}
- */
 function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
   const { x: offsetX, zoom } = rfTransform;
 
-  // Determine tick interval based on zoom
   let tickInterval: number;
-  if (zoom < 0.15) tickInterval = 100;       // centuries
+  if (zoom < 0.15) tickInterval = 100;
   else if (zoom < 0.5) tickInterval = 50;
-  else if (zoom < 1.0) tickInterval = 10;     // decades
+  else if (zoom < 1.0) tickInterval = 10;
   else if (zoom < 2.0) tickInterval = 5;
-  else tickInterval = 1;                       // years
+  else tickInterval = 1;
 
-  // Visible year range
   const yearLeft = Math.floor(-offsetX / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN);
   const yearRight = Math.ceil((width - offsetX) / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN);
   const startYear = Math.floor(yearLeft / tickInterval) * tickInterval;
@@ -238,7 +230,6 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
         transform: 'translateY(-50%)',
       }}
     >
-      {/* Main horizontal line */}
       <div
         style={{
           position: 'absolute',
@@ -249,7 +240,6 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
           backgroundColor: 'rgba(255,255,255,0.12)',
         }}
       />
-      {/* Ticks */}
       {ticks.map((t) => {
         const isMajor = t.year % (tickInterval * 5 === 0 ? tickInterval * 5 : tickInterval >= 100 ? 100 : 50) === 0;
         const tickH = isMajor ? 16 : 8;
@@ -292,44 +282,20 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
 
 interface SwimLaneOverlayProps {
   rfTransform: { x: number; y: number; zoom: number };
-  /** Set of region IDs whose bands are currently collapsed. */
+  bandLayout: BandLayout[];
   collapsedBands: Set<Region>;
-  /**
-   * Callback invoked when the user clicks a band's toggle button.
-   *
-   * @param region - The region whose band was toggled.
-   */
   onToggleBand: (region: Region) => void;
 }
 
-/**
- * Renders the region swim-lane visual layer: alternating background stripes,
- * sticky left-edge labels, and per-band collapse/expand toggle buttons.
- *
- * Band heights animate smoothly via CSS `height` transitions.  Collapsed bands
- * show only a {@link COLLAPSED_BAND_HEIGHT_PX}-tall header strip.
- *
- * Layout is computed by {@link computeBandLayout} so height distribution
- * respects the collapsed state of each band.
- *
- * @param props - {@link SwimLaneOverlayProps}
- */
-function SwimLaneOverlay({ rfTransform, collapsedBands, onToggleBand }: SwimLaneOverlayProps) {
+function SwimLaneOverlay({ rfTransform, bandLayout, collapsedBands, onToggleBand }: SwimLaneOverlayProps) {
   const { y: offsetY, zoom } = rfTransform;
 
-  // computeBandLayout without offsetY — we'll position the flex container at
-  // top: offsetY so the container scroll-follows the canvas Y pan.
-  const layout = computeBandLayout(collapsedBands, zoom);
+  const layout = computeScreenLayout(collapsedBands, zoom, bandLayout);
 
   const transitionStyle = `height ${BAND_TRANSITION_MS}ms ease, min-height ${BAND_TRANSITION_MS}ms ease`;
 
   return (
     <>
-      {/*
-       * Band backgrounds — a flex column positioned at `top: offsetY` so it
-       * pans vertically with the canvas.  Each child's height transitions
-       * smoothly when its band is collapsed/expanded.
-       */}
       <div
         style={{
           position: 'absolute',
@@ -357,11 +323,6 @@ function SwimLaneOverlay({ rfTransform, collapsedBands, onToggleBand }: SwimLane
         ))}
       </div>
 
-      {/*
-       * Sticky label strip — same flex-column structure, positioned at
-       * left: 0 so it doesn't scroll horizontally.  Contains one clickable
-       * toggle row per band.
-       */}
       <div
         style={{
           position: 'absolute',
@@ -384,10 +345,6 @@ function SwimLaneOverlay({ rfTransform, collapsedBands, onToggleBand }: SwimLane
               position: 'relative',
             }}
           >
-            {/*
-             * Toggle button — always pinned to the top of the band strip so it
-             * remains visible and clickable regardless of the band's height.
-             */}
             <button
               onClick={() => onToggleBand(region)}
               title={isCollapsed ? `Expand ${label}` : `Collapse ${label}`}
@@ -428,12 +385,6 @@ function SwimLaneOverlay({ rfTransform, collapsedBands, onToggleBand }: SwimLane
               </span>
             </button>
 
-            {/*
-             * Vertical rotated label — shown in the centre of expanded bands to
-             * provide orientation context when scrolled far to the right where
-             * the toggle button might scroll off the top of the viewport.
-             * Hidden when collapsed (no room).
-             */}
             {!isCollapsed && (
               <div
                 style={{
@@ -466,11 +417,6 @@ function SwimLaneOverlay({ rfTransform, collapsedBands, onToggleBand }: SwimLane
 // Inner Canvas (has access to ReactFlow instance)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Inner canvas component — must be rendered inside a `ReactFlowProvider`.
- * Handles all data fetching, node/edge construction, viewport tracking,
- * and event filtering for collapsed bands.
- */
 function CanvasInner() {
   const reactFlow = useReactFlow();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -489,13 +435,12 @@ function CanvasInner() {
   const setUsingMockData = useAppStore((s) => s.setUsingMockData);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
-  // Collapse/expand state — persisted to localStorage
   const { collapsedBands, toggleBand } = useCollapsedBands();
 
-  // ── WebGL tier state ─────────────────────────────────────────────────────
-  // Start centred near year 500 CE at zoom 0.1 (century-level view)
-  const [rfTransform, setRfTransform] = useState({ x: -4540, y: 80, zoom: 0.1 });
+  const [rfTransform, setRfTransform] = useState(INITIAL_VIEWPORT);
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
+
+  const [bandLayout, setBandLayout] = useState<BandLayout[]>(() => defaultBandLayout());
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
@@ -508,11 +453,6 @@ function CanvasInner() {
     return () => obs.disconnect();
   }, []);
 
-  // ── WebGL events: filter out collapsed regions ───────────────────────────
-  /**
-   * Events visible in the WebGL layer — `allFilteredEvents` minus events
-   * belonging to currently-collapsed bands.
-   */
   const webGLVisibleEvents = useMemo(
     () =>
       allFilteredEvents.filter(
@@ -523,7 +463,6 @@ function CanvasInner() {
 
   const useWebGL = allFilteredEvents.length > GL_THRESHOLD;
 
-  // ── Tile fetch debouncing ────────────────────────────────────────────────
   const [tileKey, setTileKey] = useState<CanvasViewport>(viewport);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -538,7 +477,6 @@ function CanvasInner() {
     scheduleTileFetch();
   }, [scheduleTileFetch]);
 
-  // ── Tile query ───────────────────────────────────────────────────────────
   const { data: tileData, isLoading } = useQuery({
     queryKey: ['tiles', tileKey],
     queryFn: () => fetchTiles(tileKey),
@@ -546,14 +484,12 @@ function CanvasInner() {
     retry: 1,
   });
 
-  // Keep a ref to rfZoom so the node-build effect can read the current value
-  // without rfZoom as a dependency (avoids constant rebuilds on every frame).
   const rfZoomRef = useRef(rfZoom);
   useEffect(() => { rfZoomRef.current = rfZoom; }, [rfZoom]);
 
-  // ── Build nodes + edges when tile data arrives ───────────────────────────
-  // rfZoom intentionally excluded from deps; positions are static per-event.
-  // LOD and collapse visibility are applied via the effect below.
+  const bandLayoutRef = useRef<BandLayout[]>(bandLayout);
+  useEffect(() => { bandLayoutRef.current = bandLayout; }, [bandLayout]);
+
   useEffect(() => {
     if (!tileData) return;
 
@@ -571,10 +507,14 @@ function CanvasInner() {
     const isMock = filteredEvents.some((e) => String(e.id).length < 10);
     setUsingMockData(isMock);
 
+    const newBandLayout = computeBandLayout(filteredEvents);
+    setBandLayout(newBandLayout);
+
     if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) =>
-        eventToNode(e, currentZoom, collapsedBands),
+      const rawNodes = filteredEvents.map((e) =>
+        eventToNode(e, currentZoom, newBandLayout, collapsedBands),
       );
+      const newNodes = resolveCollisions(rawNodes);
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
@@ -590,12 +530,9 @@ function CanvasInner() {
       setNodes([]);
       setEdges([]);
     }
-    // collapsedBands intentionally captured once here; the visibility-update
-    // effect below handles subsequent collapse toggles without rebuilding nodes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tileData, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
 
-  // ── Re-apply LOD + collapse visibility when zoom or collapse state changes ─
   useEffect(() => {
     if (!tileData || useWebGL) return;
     const threshold = importanceThreshold(rfZoom);
@@ -611,7 +548,6 @@ function CanvasInner() {
     );
   }, [rfZoom, collapsedBands, tileData, setNodes, useWebGL]);
 
-  // ── Update visibleEvents when collapse state changes ─────────────────────
   useEffect(() => {
     setVisibleEvents(
       allFilteredEvents.filter(
@@ -620,13 +556,13 @@ function CanvasInner() {
     );
   }, [collapsedBands, allFilteredEvents, setVisibleEvents]);
 
-  // ── Flyover animation ────────────────────────────────────────────────────
   useEffect(() => {
     if (!flyToEvent) return;
     const x = (flyToEvent.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
     const region = classifyRegion(flyToEvent.lat, flyToEvent.lng);
     const bandIdx = regionBandIndex(region);
-    const y = bandIdx * BAND_HEIGHT + BAND_HEIGHT / 2;
+    const band = getBandByIndex(bandLayoutRef.current, bandIdx);
+    const y = band.top + band.height / 2;
 
     reactFlow.setViewport({ x: 0, y: 0, zoom: 0.3 }, { duration: 500 });
     setTimeout(() => {
@@ -636,12 +572,8 @@ function CanvasInner() {
     setFlyToEvent(null);
   }, [flyToEvent, reactFlow, setFlyToEvent]);
 
-  // ── Track RF viewport ────────────────────────────────────────────────────
   const onMoveHandler: OnMove = useCallback(
     (_event, rfVp) => {
-      // Only update visual overlays — do NOT update rfZoom here.
-      // Updating store state every frame causes the build-nodes effect to fire
-      // continuously, rebuilding the entire node array mid-interaction.
       setRfTransform({ x: rfVp.x, y: rfVp.y, zoom: rfVp.zoom });
     },
     [],
@@ -658,8 +590,6 @@ function CanvasInner() {
       const yearMin = Math.floor(leftX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
       const yearMax = Math.ceil(rightX / PIXELS_PER_YEAR + BASE_YEAR_MIN);
 
-      // Update rfZoom after interaction ends so the build-nodes effect only
-      // fires once per gesture, not on every animation frame.
       setRfZoom(rfViewport.zoom);
 
       setViewport({
@@ -673,7 +603,6 @@ function CanvasInner() {
     [containerSize, setViewport, setRfZoom],
   );
 
-  // ── WebGL click handler ──────────────────────────────────────────────────
   const handleWebGLClick = useCallback(
     (event: HistoricalEvent) => {
       setSelectedEvent(event.slug);
@@ -683,14 +612,13 @@ function CanvasInner() {
 
   return (
     <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      {/* Swim lane backgrounds + labels (behind everything) */}
       <SwimLaneOverlay
         rfTransform={rfTransform}
+        bandLayout={bandLayout}
         collapsedBands={collapsedBands}
         onToggleBand={toggleBand}
       />
 
-      {/* React Flow — always rendered for pan/zoom interaction */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
         <ReactFlow
           nodes={nodes}
@@ -703,7 +631,7 @@ function CanvasInner() {
           onMoveEnd={onMoveEnd}
           minZoom={0.05}
           maxZoom={4}
-          defaultViewport={{ x: 20, y: 80, zoom: 0.22 }}
+          defaultViewport={INITIAL_VIEWPORT}
           style={{ background: 'transparent' }}
           proOptions={{ hideAttribution: true }}
           fitViewOptions={{ padding: 0.3 }}
@@ -720,9 +648,7 @@ function CanvasInner() {
             style={{ opacity: 0.5 }}
           />
 
-          {/* Status panel */}
           <Panel position="top-left">
-            {/* Offset below the label strip to avoid overlap */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 16, marginLeft: LABEL_STRIP_WIDTH }}>
               {isLoading && (
                 <div
@@ -762,7 +688,6 @@ function CanvasInner() {
         </ReactFlow>
       </div>
 
-      {/* WebGL overlay (deck.gl) — active when events > GL_THRESHOLD */}
       {useWebGL && (
         <WebGLEventLayer
           events={webGLVisibleEvents}
@@ -773,7 +698,6 @@ function CanvasInner() {
         />
       )}
 
-      {/* Timeline ruler (sticky overlay on top) */}
       <TimelineRuler rfTransform={rfTransform} width={containerSize.width} />
     </div>
   );
@@ -783,10 +707,6 @@ function CanvasInner() {
 // Exported Canvas wrapper (provides ReactFlow context)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Top-level Canvas component.  Provides a `ReactFlowProvider` context and
- * renders the full-screen timeline canvas.
- */
 export default function Canvas() {
   return (
     <div

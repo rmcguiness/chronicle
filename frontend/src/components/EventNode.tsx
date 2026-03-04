@@ -1,4 +1,5 @@
-import { memo, useState } from 'react';
+import { memo, useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import type { HistoricalEvent } from '../types';
@@ -7,8 +8,40 @@ import { useAppStore } from '../store';
 function EventNode({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
   const [hovered, setHovered] = useState(false);
+  /**
+   * Tooltip position + whether to render above (true) or below (false) the node.
+   * We flip to below when the node is in the top 200px of the viewport so the
+   * tooltip doesn't render off-screen above.
+   */
+  const [tooltipPos, setTooltipPos] = useState<{
+    top: number;
+    left: number;
+    above: boolean;
+  } | null>(null);
+  const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
   const rfZoom = useAppStore((s) => s.rfZoom);
+
+  /** Minimum pixels from top before we flip the tooltip to render below. */
+  const TOOLTIP_FLIP_THRESHOLD = 200;
+
+  const handleMouseEnter = useCallback(() => {
+    setHovered(true);
+    if (nodeRef.current) {
+      const rect = nodeRef.current.getBoundingClientRect();
+      const above = rect.top > TOOLTIP_FLIP_THRESHOLD;
+      setTooltipPos({
+        top: above ? rect.top - 8 : rect.bottom + 8,
+        left: rect.left + rect.width / 2,
+        above,
+      });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setHovered(false);
+    setTooltipPos(null);
+  }, []);
 
   const color = CATEGORY_COLORS[data.category] ?? '#6b7280';
   const icon = CATEGORY_ICONS[data.category] ?? '●';
@@ -20,11 +53,11 @@ function EventNode({ data: rawData, selected }: NodeProps) {
 
   return (
     <div
+      ref={nodeRef}
       style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onClick={() => setSelectedEvent(data.slug)}
-      title={`${data.title} (${data.year_approx})`}
     >
       {/* Invisible handles for edges */}
       <Handle type="target" position={Position.Left} style={{ opacity: 0, width: 1, height: 1, minWidth: 1 }} />
@@ -80,38 +113,44 @@ function EventNode({ data: rawData, selected }: NodeProps) {
         </div>
       )}
 
-      {/* Hover tooltip */}
-      {hovered && (
+      {/* Hover tooltip — rendered as a portal so it's not affected by canvas zoom */}
+      {hovered && tooltipPos && createPortal(
         <div
           style={{
-            position: 'absolute',
-            bottom: size + 10,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            position: 'fixed',
+            top: tooltipPos.top,
+            left: tooltipPos.left,
+            /* Flip transform based on whether we render above or below the node */
+            transform: tooltipPos.above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+            backgroundColor: 'rgba(7,14,34,0.97)',
             border: `1px solid ${color}66`,
             borderRadius: 8,
-            padding: '8px 12px',
-            minWidth: 160,
-            maxWidth: 220,
-            zIndex: 1000,
+            padding: '10px 14px',
+            width: 280,
+            zIndex: 10000,
             pointerEvents: 'none',
             boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            fontSize: 13,
+            lineHeight: 1.4,
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>
+          <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>
             {data.title}
           </div>
-          <div style={{ fontSize: 11, color: '#94a3b8' }}>
-            {data.year_approx}
+          <div style={{ fontSize: 12, color: '#94a3b8' }}>
+            {data.year_approx} · {data.category}
+          </div>
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+            Importance: {Math.round(data.importance_score * 100)}%
             {data.geo_modern ? ` · ${data.geo_modern}` : ''}
           </div>
           {data.perspective_count && (
-            <div style={{ fontSize: 10, color, marginTop: 3, fontWeight: 600 }}>
+            <div style={{ fontSize: 11, color, marginTop: 4, fontWeight: 600 }}>
               {data.perspective_count} perspective{data.perspective_count > 1 ? 's' : ''} · click to explore
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

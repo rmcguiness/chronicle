@@ -47,6 +47,10 @@ interface AppState {
   selectedEventSlug: string | null;
   setSelectedEvent: (slug: string | null) => void;
 
+  // Detail panel open state
+  detailPanelOpen: boolean;
+  setDetailPanelOpen: (v: boolean) => void;
+
   // Viewport / transform
   viewport: CanvasViewport;
   setViewport: (viewport: Partial<CanvasViewport>) => void;
@@ -82,7 +86,15 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
   selectedEventSlug: null,
-  setSelectedEvent: (slug) => set({ selectedEventSlug: slug }),
+  setSelectedEvent: (slug) =>
+    set({ selectedEventSlug: slug, detailPanelOpen: slug !== null }),
+
+  detailPanelOpen: false,
+  setDetailPanelOpen: (detailPanelOpen) =>
+    set((_s) => ({
+      detailPanelOpen,
+      ...(!detailPanelOpen ? { selectedEventSlug: null } : {}),
+    })),
 
   viewport: {
     year_min: -800,

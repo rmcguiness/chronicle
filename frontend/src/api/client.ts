@@ -452,4 +452,39 @@ export async function searchEvents(q: string, limit = 10): Promise<SearchResult[
     .map((e) => ({ ...e }));
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Article types & fetcher
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single section from a Wikipedia article. */
+export interface ArticleSection {
+  heading: string;
+  content: string;
+}
+
+/** Response shape from GET /api/events/{slug}/article. */
+export interface ArticleResponse {
+  title: string;
+  summary: string | null;
+  sections: ArticleSection[];
+  source_url: string | null;
+  source: string;
+}
+
+/**
+ * Fetch the Wikipedia article summary for an event.
+ * Returns null if the backend is unavailable.
+ */
+export async function fetchArticle(slug: string): Promise<ArticleResponse | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<ArticleResponse>(`/api/events/${slug}/article`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export type { Perspective, ConnectedEvent };

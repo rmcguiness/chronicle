@@ -136,6 +136,10 @@ export function regionBandIndex(region: Region): number {
 /**
  * Compute canvas-space Y for an event based on its region band.
  * Uses longitude for vertical spread within the band to avoid overlap.
+ *
+ * @deprecated Uses the legacy fixed BAND_HEIGHT constant.
+ * For dynamic density-based heights use `computeBandLayout` + `getBandByIndex`
+ * from `utils/bandDensity` instead.
  */
 export function eventBandY(lat: number, lng: number): number {
   const region = classifyRegion(lat, lng);
