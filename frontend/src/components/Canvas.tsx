@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -8,7 +8,6 @@ import {
   type Node,
   type Edge,
   type OnMove,
-  MarkerType,
   Panel,
   ReactFlowProvider,
 } from '@xyflow/react';
@@ -18,6 +17,9 @@ import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
+import CategoryFilterBar, { ALL_CATEGORIES } from './CategoryFilterBar';
+import { useCategoryFilter } from '../hooks/useCategoryFilter';
+import { useViewportCulling } from '../hooks/useViewportCulling';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
@@ -70,12 +72,6 @@ function linkToEdge(link: CausalityLink): Edge {
       connection_type: link.connection_type,
       strength: link.strength,
       description: link.description,
-    },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color,
-      width: 16,
-      height: 16,
     },
     animated: link.connection_type === 'causes',
     style: { stroke: color },
@@ -277,6 +273,11 @@ function CanvasInner() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
 
+  // PERF-02: Cull off-screen nodes — only visible nodes (+ buffer) reach ReactFlow.
+  // `nodes` remains the source of truth for data; `visibleNodes` is render-only.
+  // Edges are handled automatically by ReactFlow when their source/target is absent.
+  const visibleNodes = useViewportCulling(nodes);
+
   const viewport = useAppStore((s) => s.viewport);
   const setViewport = useAppStore((s) => s.setViewport);
   const rfZoom = useAppStore((s) => s.rfZoom);
@@ -287,6 +288,10 @@ function CanvasInner() {
   const usingMockData = useAppStore((s) => s.usingMockData);
   const setUsingMockData = useAppStore((s) => s.setUsingMockData);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+
+  // ── Category filter ─────────────────────────────────────────────────────
+  // All categories active by default; state persisted to localStorage.
+  const { activeCategories, toggleCategory, setAll, clearAll } = useCategoryFilter(ALL_CATEGORIES);
 
   // ── WebGL tier state ─────────────────────────────────────────────────────
   // Start centered near year 500 CE at zoom 0.1 (century-level tick view, ~2000 years visible)
@@ -330,6 +335,21 @@ function CanvasInner() {
     retry: 1,
   });
 
+  /**
+   * Event count per category from raw tile data (before importance filtering)
+   * so the filter-bar pill counts reflect total events available per category.
+   */
+  const eventCounts = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const cat of ALL_CATEGORIES) counts[cat] = 0;
+    if (tileData) {
+      for (const e of tileData.events) {
+        if (e.category in counts) counts[e.category]++;
+      }
+    }
+    return counts;
+  }, [tileData]);
+
   // Keep a ref to rfZoom so build-nodes effect can read current value
   // without having rfZoom as a dependency (which would cause constant rebuilds)
   const rfZoomRef = useRef(rfZoom);
@@ -342,8 +362,9 @@ function CanvasInner() {
 
     const currentZoom = rfZoomRef.current;
     const threshold = importanceThreshold(currentZoom);
+    // Apply both importance-score threshold AND active-category filter.
     const filteredEvents = tileData.events.filter(
-      (e) => e.importance_score >= threshold
+      (e) => e.importance_score >= threshold && activeCategories.has(e.category)
     );
 
     setAllFilteredEvents(filteredEvents);
@@ -370,19 +391,24 @@ function CanvasInner() {
       setEdges([]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tileData, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
+  }, [tileData, activeCategories, setNodes, setEdges, setVisibleEvents, setUsingMockData]);
 
-  // Re-apply LOD when zoom changes (ReactFlow mode only)
+  // Re-apply LOD when zoom changes (ReactFlow mode only).
+  // Also enforces category visibility so a zoom change never reveals events
+  // that were filtered out by the category filter.
   useEffect(() => {
     if (!tileData || useWebGL) return;
     const threshold = importanceThreshold(rfZoom);
     setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        hidden: (n.data as HistoricalEvent).importance_score < threshold,
-      }))
+      nds.map((n) => {
+        const event = n.data as HistoricalEvent;
+        return {
+          ...n,
+          hidden: event.importance_score < threshold || !activeCategories.has(event.category),
+        };
+      })
     );
-  }, [rfZoom, tileData, setNodes, useWebGL]);
+  }, [rfZoom, tileData, activeCategories, setNodes, useWebGL]);
 
   // Flyover animation
   useEffect(() => {
@@ -454,7 +480,7 @@ function CanvasInner() {
       {/* React Flow — always rendered for pan/zoom interaction */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
         <ReactFlow
-          nodes={nodes}
+          nodes={visibleNodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -535,6 +561,15 @@ function CanvasInner() {
 
       {/* Timeline ruler (sticky overlay on top) */}
       <TimelineRuler rfTransform={rfTransform} width={containerSize.width} />
+
+      {/* Category filter bar — fixed just below the search bar, above the canvas */}
+      <CategoryFilterBar
+        activeCategories={activeCategories}
+        eventCounts={eventCounts}
+        toggleCategory={toggleCategory}
+        setAll={setAll}
+        clearAll={clearAll}
+      />
     </div>
   );
 }
