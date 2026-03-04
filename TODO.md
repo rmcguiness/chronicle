@@ -103,6 +103,24 @@ Use `year_approx`, lat/lng, `importance_score` 0.4-1.0, proper categories and re
 
 ## Features
 
+### [FEAT-00] Zoom-based event clustering and daily-level resolution
+**Idea:** At low zoom (century/decade view) nearby events cluster into a single bubble showing a count badge.
+Zooming in progressively splits clusters → groups of related events → individual events → daily precision.
+
+**Approach — 4 zoom tiers:**
+- Tier 1 (zoom < 0.15): cluster events within the same ~100-year window into a single node. Badge shows count + dominant category color.
+- Tier 2 (zoom 0.15–0.5): decade grouping. Events within ~10 years collapse into a small group chip. Clicking expands in place.
+- Tier 3 (zoom 0.5–2.0): individual events, year-level labels, current behavior.
+- Tier 4 (zoom > 2.0): daily resolution. `date_display` shown on node. Events on the same day stack vertically with a shared date header.
+
+**Clustering algorithm:** For Tier 1 and 2, use a simple 1D sweep along the X axis — bin events into fixed time windows, pick the highest `importance_score` event as the cluster representative, attach the rest as children. On click/expand, animate children fanning out from the representative node.
+
+**Data needed:** `date_display` field is already in `HistoricalEvent` (optional string). Backend already stores `date_exact` as text. No schema changes needed for Tier 4.
+
+**Why this works:** It matches how humans think about history — you start at the big picture (World Wars, Industrial Revolution) and zoom into specifics (Battle of Stalingrad, specific dates). Related events that happen within days naturally surface together at high zoom.
+
+**Files:** `frontend/src/components/Canvas.tsx` (eventToNode, LOD effects), new `frontend/src/utils/cluster.ts`, `frontend/src/components/EventNode.tsx` (cluster variant render)
+
 ### [FEAT-01] Timeline bookmarks / named views
 **Task:** Let users save the current viewport (year range, zoom, visible regions) as a named bookmark. Store in localStorage. Show as a dropdown in the top-right corner. "Ancient Civilizations", "World Wars", "Industrial Revolution" etc.
 **Files:** `frontend/src/components/` (new `BookmarksMenu.tsx`), `frontend/src/store/index.ts`
