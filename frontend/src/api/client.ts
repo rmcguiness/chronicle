@@ -8,6 +8,8 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  WikiData,
+  WikiDataNotFound,
 } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -425,6 +427,31 @@ export async function fetchEventConnections(slug: string): Promise<CausalityLink
   );
 }
 
+/**
+ * Fetch Wikipedia summary data for a historical event.
+ *
+ * Calls `GET /api/events/{slug}/wiki`.
+ * Returns a discriminated union — check `result.found` before accessing `summary`.
+ *
+ * @param slug - The event slug (URL-safe identifier).
+ * @returns WikiData when a Wikipedia article is found, WikiDataNotFound otherwise.
+ */
+export async function fetchWikiData(slug: string): Promise<WikiData | WikiDataNotFound> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get(`/api/events/${slug}/wiki`);
+      return data as WikiData | WikiDataNotFound;
+    } catch {
+      // fall through to not-found fallback
+    }
+  }
+
+  // Offline / backend unavailable — return graceful not-found
+  return { found: false };
+}
+
 export async function searchEvents(q: string, limit = 10): Promise<SearchResult[]> {
   if (!q.trim()) return [];
 
@@ -452,4 +479,4 @@ export async function searchEvents(q: string, limit = 10): Promise<SearchResult[
     .map((e) => ({ ...e }));
 }
 
-export type { Perspective, ConnectedEvent };
+export type { Perspective, ConnectedEvent, WikiData, WikiDataNotFound };

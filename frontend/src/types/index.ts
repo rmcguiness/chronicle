@@ -82,8 +82,44 @@ export interface Perspective {
 }
 
 export interface EventDetail extends HistoricalEvent {
+  /** Full ISO date string when an exact date is known. */
+  date_exact?: string;
+  /** Earliest bound for uncertain dates. */
+  date_earliest?: string;
+  /** Latest bound for uncertain dates. */
+  date_latest?: string;
+  /** Confidence level (0–1) for the date. */
+  date_confidence?: number;
+  /** True if the date is approximate (circa). */
+  date_circa?: boolean;
+  /** True if the date is historically disputed. */
+  date_disputed?: boolean;
+  /** Human-readable notes about the date. */
+  date_notes?: string;
+  /** True if the year is BCE. */
+  is_bce?: boolean;
+  /** Alternative titles / spellings. */
+  title_alt?: string[];
   perspectives: Perspective[];
   connected_events: ConnectedEvent[];
+}
+
+// ─── Wikipedia integration ───────────────────────────────────────────────────
+
+/**
+ * Response from GET /api/events/{slug}/wiki.
+ * `found` is the discriminator — when false, all other fields are absent.
+ */
+export interface WikiData {
+  found: true;
+  title: string;
+  summary: string;
+  thumbnail?: string;
+  url: string;
+}
+
+export interface WikiDataNotFound {
+  found: false;
 }
 
 export interface ConnectedEvent {
