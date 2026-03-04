@@ -21,6 +21,12 @@ import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
+import {
+  computeBandLayout,
+  defaultBandLayout,
+  getBandByIndex,
+} from '../utils/bandDensity';
+import type { BandLayout } from '../utils/bandDensity';
 import { CANVAS_CONSTANTS, REGIONS } from '../types';
 import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 
@@ -28,7 +34,7 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport } from '../types';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { PIXELS_PER_YEAR, BASE_YEAR_MIN, BAND_HEIGHT } = CANVAS_CONSTANTS;
+const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
 
 /**
  * Initial react-flow viewport. Used for BOTH the defaultViewport prop and
@@ -48,17 +54,31 @@ const EDGE_TYPES = { causality: CausalityEdge };
 // Convert events + links → react-flow nodes + edges
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Compute Y position within the appropriate region swim lane */
-function eventToNode(event: HistoricalEvent, rfZoom: number): Node {
+/**
+ * Compute Y position within the appropriate region swim lane.
+ *
+ * @param event     - The historical event to position
+ * @param rfZoom    - Current react-flow zoom level (controls label visibility)
+ * @param bandLayout - Dynamic band layout from computeBandLayout; determines
+ *                     each band's top and height in canvas space
+ * @returns A react-flow Node with position derived from dynamic band heights
+ */
+function eventToNode(
+  event: HistoricalEvent,
+  rfZoom: number,
+  bandLayout: BandLayout[],
+): Node {
   const x = (event.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
   const region = classifyRegion(event.lat, event.lng);
   const bandIdx = regionBandIndex(region);
-  const bandTop = bandIdx * BAND_HEIGHT;
+  const band = getBandByIndex(bandLayout, bandIdx);
+
   const padding = 30;
-  const usable = BAND_HEIGHT - 2 * padding;
-  // Use longitude for intra-band spread
+  // Clamp usable height so we never get negative values when a band is tiny
+  const usable = Math.max(0, band.height - 2 * padding);
+  // Use longitude for intra-band spread (distributes events vertically)
   const lngNorm = Math.max(0, Math.min(1, (event.lng + 180) / 360));
-  const y = bandTop + padding + lngNorm * usable;
+  const y = band.top + padding + lngNorm * usable;
 
   return {
     id: String(event.id),
@@ -193,8 +213,13 @@ function TimelineRuler({ rfTransform, width }: TimelineRulerProps) {
 // Region Swim Lane Labels (sticky left overlay)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Minimum rendered band height (px) below which the rotated label is hidden. */
+const LABEL_MIN_SCREEN_HEIGHT = 60;
+
 interface SwimLaneLabelsProps {
   rfTransform: { x: number; y: number; zoom: number };
+  /** Dynamic band layout — determines each band's canvas top & height. */
+  bandLayout: BandLayout[];
 }
 
 const BAND_COLORS = [
@@ -205,15 +230,21 @@ const BAND_COLORS = [
   'rgba(255,255,255,0.02)',
 ];
 
-function SwimLaneOverlay({ rfTransform }: SwimLaneLabelsProps) {
+/**
+ * Renders swim-lane band backgrounds and sticky region labels.
+ * Band heights come from the dynamic bandLayout prop, so busy regions
+ * automatically receive more vertical space.
+ */
+function SwimLaneOverlay({ rfTransform, bandLayout }: SwimLaneLabelsProps) {
   const { y: offsetY, zoom } = rfTransform;
 
   return (
     <>
-      {/* Band backgrounds */}
+      {/* Band backgrounds — height driven by dynamic layout */}
       {REGIONS.map((region, idx) => {
-        const bandTop = idx * BAND_HEIGHT * zoom + offsetY;
-        const bandH = BAND_HEIGHT * zoom;
+        const band = getBandByIndex(bandLayout, idx);
+        const bandTop = band.top * zoom + offsetY;
+        const bandH = band.height * zoom;
         return (
           <div
             key={region.id}
@@ -232,7 +263,7 @@ function SwimLaneOverlay({ rfTransform }: SwimLaneLabelsProps) {
         );
       })}
 
-      {/* Sticky labels */}
+      {/* Sticky labels — suppressed when the rendered band is too narrow */}
       <div
         style={{
           position: 'absolute',
@@ -245,15 +276,17 @@ function SwimLaneOverlay({ rfTransform }: SwimLaneLabelsProps) {
         }}
       >
         {REGIONS.map((region, idx) => {
-          const bandTop = idx * BAND_HEIGHT * zoom + offsetY;
-          const bandH = BAND_HEIGHT * zoom;
-          // Skip label if band is too small to display legibly
-          if (bandH < 60) return null;
+          const band = getBandByIndex(bandLayout, idx);
+          const bandTop = band.top * zoom + offsetY;
+          const bandH = band.height * zoom;
+          // Hide label when the band is too small to render it legibly
+          if (bandH < LABEL_MIN_SCREEN_HEIGHT) return null;
           let labelTop = bandTop + bandH / 2;
           // Clamp label within band bounds
           labelTop = Math.max(bandTop + 20, Math.min(bandTop + bandH - 20, labelTop));
-          // Only show if in view
+          // Hide label when entirely off-screen
           if (labelTop < -40 || labelTop > window.innerHeight + 40) return null;
+
           return (
             <div
               key={region.id}
@@ -308,6 +341,10 @@ function CanvasInner() {
   // x = viewportW/2 - year500_canvasX * zoom = 960 - (500-(-5000))*10*0.1 = 960 - 5500 = -4540
   const [rfTransform, setRfTransform] = useState(INITIAL_VIEWPORT);
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
+
+  // ── Dynamic band layout ──────────────────────────────────────────────────
+  // Initialised with equal-height fallback; recomputed whenever the event set changes
+  const [bandLayout, setBandLayout] = useState<BandLayout[]>(() => defaultBandLayout());
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
@@ -350,6 +387,10 @@ function CanvasInner() {
   const rfZoomRef = useRef(rfZoom);
   useEffect(() => { rfZoomRef.current = rfZoom; }, [rfZoom]);
 
+  // Keep a ref to bandLayout for the same reason — avoids spurious flyover triggers
+  const bandLayoutRef = useRef<BandLayout[]>(bandLayout);
+  useEffect(() => { bandLayoutRef.current = bandLayout; }, [bandLayout]);
+
   // Build nodes + edges when tile data arrives — rfZoom intentionally excluded
   // from deps; positions are static per-event, LOD is handled by the effect below
   useEffect(() => {
@@ -367,8 +408,14 @@ function CanvasInner() {
     const isMock = filteredEvents.some((e) => String(e.id).length < 10);
     setUsingMockData(isMock);
 
+    // Recompute dynamic band heights based on the new event density
+    const newBandLayout = computeBandLayout(filteredEvents);
+    setBandLayout(newBandLayout);
+
     if (filteredEvents.length <= GL_THRESHOLD) {
-      const newNodes = filteredEvents.map((e) => eventToNode(e, currentZoom));
+      const newNodes = filteredEvents.map((e) =>
+        eventToNode(e, currentZoom, newBandLayout),
+      );
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
         .filter(
@@ -399,13 +446,15 @@ function CanvasInner() {
     );
   }, [rfZoom, tileData, setNodes, useWebGL]);
 
-  // Flyover animation
+  // Flyover animation — centres the viewport on the target event's canvas position
   useEffect(() => {
     if (!flyToEvent) return;
     const x = (flyToEvent.year_approx - BASE_YEAR_MIN) * PIXELS_PER_YEAR;
     const region = classifyRegion(flyToEvent.lat, flyToEvent.lng);
     const bandIdx = regionBandIndex(region);
-    const y = bandIdx * BAND_HEIGHT + BAND_HEIGHT / 2;
+    // Use dynamic layout so the flyover lands in the correct (density-adjusted) band
+    const band = getBandByIndex(bandLayoutRef.current, bandIdx);
+    const y = band.top + band.height / 2;
 
     reactFlow.setViewport({ x: 0, y: 0, zoom: 0.3 }, { duration: 500 });
     setTimeout(() => {
@@ -464,7 +513,7 @@ function CanvasInner() {
   return (
     <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       {/* Swim lane backgrounds + labels (behind everything) */}
-      <SwimLaneOverlay rfTransform={rfTransform} />
+      <SwimLaneOverlay rfTransform={rfTransform} bandLayout={bandLayout} />
 
       {/* React Flow — always rendered for pan/zoom interaction */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
