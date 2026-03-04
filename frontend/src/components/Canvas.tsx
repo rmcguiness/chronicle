@@ -8,7 +8,6 @@ import {
   type Node,
   type Edge,
   type OnMove,
-  MarkerType,
   Panel,
   ReactFlowProvider,
 } from '@xyflow/react';
@@ -70,12 +69,6 @@ function linkToEdge(link: CausalityLink): Edge {
       connection_type: link.connection_type,
       strength: link.strength,
       description: link.description,
-    },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color,
-      width: 16,
-      height: 16,
     },
     animated: link.connection_type === 'causes',
     style: { stroke: color },
