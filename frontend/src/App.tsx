@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Canvas from './components/Canvas';
 import SearchBar from './components/SearchBar';
-import DetailPanel from './components/DetailPanel';
+import EventDetailPanel from './components/EventDetailPanel';
 import TimelineScrubber from './components/TimelineScrubber';
 import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
@@ -29,7 +29,7 @@ export default function App() {
         <CategoryLegend />
 
         {/* Right detail panel (slides in on event click) */}
-        <DetailPanel />
+        <EventDetailPanel />
 
         {/* Bottom timeline scrubber */}
         <TimelineScrubber />
