@@ -18,6 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
+import BookmarkPanel from './BookmarkPanel';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import { CONNECTION_COLORS, importanceThreshold, classifyRegion, regionBandIndex } from '../utils/categories';
@@ -535,6 +536,9 @@ function CanvasInner() {
 
       {/* Timeline ruler (sticky overlay on top) */}
       <TimelineRuler rfTransform={rfTransform} width={containerSize.width} />
+
+      {/* Bookmark panel — fixed bottom-right, above zoom controls */}
+      <BookmarkPanel />
     </div>
   );
 }
