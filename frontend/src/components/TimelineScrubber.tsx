@@ -1,8 +1,10 @@
 import { useRef, useCallback } from 'react';
 import { useAppStore } from '../store';
+import { CANVAS_CONSTANTS } from '../types';
 
-const OVERALL_MIN = 1800;
-const OVERALL_MAX = 1960;
+const { BASE_YEAR_MIN, BASE_YEAR_MAX } = CANVAS_CONSTANTS;
+const OVERALL_MIN = BASE_YEAR_MIN; // -5000
+const OVERALL_MAX = BASE_YEAR_MAX; // 2100
 
 function yearToPercent(year: number): number {
   return ((year - OVERALL_MIN) / (OVERALL_MAX - OVERALL_MIN)) * 100;
@@ -12,13 +14,19 @@ function percentToYear(pct: number): number {
   return Math.round(OVERALL_MIN + (pct / 100) * (OVERALL_MAX - OVERALL_MIN));
 }
 
-// Decade markers
-const DECADE_MARKERS: number[] = [];
-for (let y = OVERALL_MIN; y <= OVERALL_MAX; y += 10) {
-  DECADE_MARKERS.push(y);
+function yearLabel(year: number): string {
+  if (year < 0) return `${Math.abs(year)} BCE`;
+  if (year === 0) return '1 BCE/CE';
+  return `${year}`;
 }
 
-const CENTURY_MARKERS = [1800, 1850, 1900, 1950];
+// Tick every 500 years
+const TICK_MARKERS: number[] = [];
+for (let y = OVERALL_MIN; y <= OVERALL_MAX; y += 500) TICK_MARKERS.push(y);
+
+// Labels at every 1000 years
+const LABEL_MARKERS: number[] = [];
+for (let y = OVERALL_MIN; y <= OVERALL_MAX; y += 1000) LABEL_MARKERS.push(y);
 
 export default function TimelineScrubber() {
   const viewport = useAppStore((s) => s.viewport);
@@ -75,10 +83,10 @@ export default function TimelineScrubber() {
     const dYears = Math.round((dx / rect.width) * (OVERALL_MAX - OVERALL_MIN));
 
     if (dragging.current === 'min') {
-      const newMin = Math.max(OVERALL_MIN, Math.min(dragStart.current.yearMax - 5, dragStart.current.yearMin + dYears));
+      const newMin = Math.max(OVERALL_MIN, Math.min(dragStart.current.yearMax - 50, dragStart.current.yearMin + dYears));
       setViewport({ year_min: newMin });
     } else if (dragging.current === 'max') {
-      const newMax = Math.min(OVERALL_MAX, Math.max(dragStart.current.yearMin + 5, dragStart.current.yearMax + dYears));
+      const newMax = Math.min(OVERALL_MAX, Math.max(dragStart.current.yearMin + 50, dragStart.current.yearMax + dYears));
       setViewport({ year_max: newMax });
     } else if (dragging.current === 'range') {
       const span = dragStart.current.yearMax - dragStart.current.yearMin;
@@ -109,6 +117,8 @@ export default function TimelineScrubber() {
     setViewport({ year_min: newMin, year_max: newMax });
   };
 
+  const span = yearMax - yearMin;
+
   return (
     <div
       style={{
@@ -127,13 +137,13 @@ export default function TimelineScrubber() {
       {/* Year range indicator */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace' }}>
-          {yearMin}
+          {yearLabel(yearMin)}
         </span>
         <span style={{ fontSize: 11, color: '#475569', letterSpacing: '0.05em' }}>
-          TIMELINE — {yearMax - yearMin} year span
+          TIMELINE — {span.toLocaleString()} year span
         </span>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace' }}>
-          {yearMax}
+          {yearLabel(yearMax)}
         </span>
       </div>
 
@@ -143,7 +153,7 @@ export default function TimelineScrubber() {
         onClick={onTrackClick}
         style={{
           position: 'relative',
-          height: 32,
+          height: 36,
           cursor: 'crosshair',
         }}
       >
@@ -160,21 +170,35 @@ export default function TimelineScrubber() {
           }}
         />
 
-        {/* Decade markers */}
-        {DECADE_MARKERS.map((year) => {
+        {/* BCE/CE divider (year 0) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 4,
+            left: `${yearToPercent(0)}%`,
+            width: 2,
+            height: 24,
+            backgroundColor: 'rgba(251,191,36,0.5)',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* 500-year tick marks */}
+        {TICK_MARKERS.map((year) => {
           const pct = yearToPercent(year);
-          const isCentury = CENTURY_MARKERS.includes(year);
+          const isMajor = year % 1000 === 0;
           return (
             <div
               key={year}
               style={{
                 position: 'absolute',
-                top: isCentury ? 6 : 9,
+                top: isMajor ? 6 : 9,
                 left: `${pct}%`,
                 width: 1,
-                height: isCentury ? 18 : 12,
-                backgroundColor: isCentury
-                  ? 'rgba(255,255,255,0.3)'
+                height: isMajor ? 18 : 12,
+                backgroundColor: isMajor
+                  ? 'rgba(255,255,255,0.25)'
                   : 'rgba(255,255,255,0.1)',
                 transform: 'translateX(-50%)',
                 pointerEvents: 'none',
@@ -183,8 +207,8 @@ export default function TimelineScrubber() {
           );
         })}
 
-        {/* Century labels */}
-        {CENTURY_MARKERS.map((year) => (
+        {/* 1000-year labels */}
+        {LABEL_MARKERS.map((year) => (
           <div
             key={`label-${year}`}
             style={{
@@ -192,14 +216,15 @@ export default function TimelineScrubber() {
               top: 26,
               left: `${yearToPercent(year)}%`,
               transform: 'translateX(-50%)',
-              fontSize: 9,
-              color: 'rgba(255,255,255,0.3)',
+              fontSize: 8,
+              color: year === 0 ? 'rgba(251,191,36,0.6)' : 'rgba(255,255,255,0.25)',
               fontFamily: 'monospace',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.03em',
               pointerEvents: 'none',
+              whiteSpace: 'nowrap',
             }}
           >
-            {year}
+            {year === 0 ? 'CE' : yearLabel(year)}
           </div>
         ))}
 

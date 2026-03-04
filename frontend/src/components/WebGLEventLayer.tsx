@@ -148,6 +148,7 @@ export default function WebGLEventLayer({
         getCursor={({ isDragging }) =>
           isDragging ? 'grabbing' : 'crosshair'
         }
+        deviceProps={{ type: 'webgl' }}
       />
 
       {/* WebGL mode badge */}

@@ -85,8 +85,8 @@ export const useAppStore = create<AppState>((set) => ({
   setSelectedEvent: (slug) => set({ selectedEventSlug: slug }),
 
   viewport: {
-    year_min: 1850,
-    year_max: 1960,
+    year_min: -800,
+    year_max: 1500,
     lat_min: -10,
     lat_max: 70,
     zoom: 5,
