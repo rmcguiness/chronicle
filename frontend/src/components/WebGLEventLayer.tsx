@@ -23,7 +23,10 @@ const { LAT_MAX, LAT_MIN, CANVAS_HEIGHT, PIXELS_PER_YEAR, BASE_YEAR_MIN } =
   CANVAS_CONSTANTS;
 
 // ─── threshold above which we go full-WebGL ────────────────────────────────
-export const GL_THRESHOLD = 50;
+// Set to a value the current dataset (120 events) can never reach.
+// deck.gl 9.x probes WebGPU at init time regardless of deviceProps, which crashes
+// browsers without WebGPU support. ReactFlow handles <500 nodes fine without GPU.
+export const GL_THRESHOLD = 500;
 
 interface RFViewport {
   x: number;
