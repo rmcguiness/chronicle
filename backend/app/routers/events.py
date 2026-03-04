@@ -1,13 +1,17 @@
 """
-GET /api/events/{slug}        — full event detail with perspectives + connected events
+GET /api/events/{slug}          — full event detail with perspectives + connected events
 GET /api/events/{slug}/connections — causality connections (flat list)
+GET /api/events/{slug}/article   — Wikipedia article summary for an event
 """
 from __future__ import annotations
 
+from urllib.parse import quote as url_quote
 from uuid import UUID
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from geoalchemy2.functions import ST_X, ST_Y
+from pydantic import BaseModel
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -233,3 +237,78 @@ async def get_connections(
             for lnk in links
         ]
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Article endpoint — fetches from Wikipedia REST API with in-memory cache
+# ─────────────────────────────────────────────────────────────────────────────
+
+_article_cache: dict[str, "ArticleResponse"] = {}
+
+
+class ArticleSection(BaseModel):
+    """A single section heading + body from the article."""
+    heading: str
+    content: str
+
+
+class ArticleResponse(BaseModel):
+    """Wikipedia article summary returned by GET /api/events/{slug}/article."""
+    title: str
+    summary: str | None
+    sections: list[ArticleSection]
+    source_url: str | None
+    source: str
+
+
+@router.get("/{slug}/article", response_model=ArticleResponse)
+async def get_event_article(
+    slug: str, db: AsyncSession = Depends(get_db)
+) -> ArticleResponse:
+    """Fetch a Wikipedia article summary for the given event.
+
+    Results are cached in memory (no TTL for this iteration).
+    Returns an empty article body if Wikipedia has no matching page.
+    """
+    if slug in _article_cache:
+        return _article_cache[slug]
+
+    event = await _get_event_by_slug(slug, db)
+    encoded_title = url_quote(event.title, safe="")
+
+    wiki_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{encoded_title}"
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(wiki_url)
+
+        if resp.status_code == 200:
+            data = resp.json()
+            result = ArticleResponse(
+                title=data.get("title", event.title),
+                summary=data.get("extract"),
+                sections=[],
+                source_url=data.get("content_urls", {})
+                .get("desktop", {})
+                .get("page"),
+                source="wikipedia",
+            )
+        else:
+            result = ArticleResponse(
+                title=event.title,
+                summary=None,
+                sections=[],
+                source_url=None,
+                source="wikipedia",
+            )
+    except httpx.HTTPError:
+        result = ArticleResponse(
+            title=event.title,
+            summary=None,
+            sections=[],
+            source_url=None,
+            source="wikipedia",
+        )
+
+    _article_cache[slug] = result
+    return result
