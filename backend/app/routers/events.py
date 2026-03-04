@@ -1,10 +1,12 @@
 """
-GET /api/events/{slug}          — full event detail with perspectives + connected events
+GET /api/events/{slug}             — full event detail with perspectives + connected events
 GET /api/events/{slug}/connections — causality connections (flat list)
-GET /api/events/{slug}/article   — Wikipedia article summary for an event
+GET /api/events/{slug}/article     — Wikipedia article summary for an event
+GET /api/events/{slug}/wiki        — Wikipedia summary (cached, TTL 7 days)
 """
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from urllib.parse import quote as url_quote
 from uuid import UUID
 
@@ -17,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import CausalityLink, Event, Perspective, Source
+from app.models import CausalityLink, Event, Perspective, Source, WikipediaCache
 from app.schemas import (
     CausalityLinkItem,
     ConnectedEventItem,
@@ -25,8 +27,13 @@ from app.schemas import (
     EventDetailOut,
     PerspectiveOut,
     SourceOut,
+    WikiSummaryOut,
     _LINK_TYPE_MAP,
 )
+from app.services.wiki_service import fetch_wikipedia_summary
+
+# Wikipedia cache TTL: re-fetch after 7 days
+_WIKI_CACHE_TTL = timedelta(days=7)
 
 router = APIRouter(prefix="/api/events", tags=["events"])
 
@@ -312,3 +319,106 @@ async def get_event_article(
 
     _article_cache[slug] = result
     return result
+
+
+@router.get("/{slug}/wiki", response_model=WikiSummaryOut)
+async def get_event_wiki(
+    slug: str, db: AsyncSession = Depends(get_db)
+) -> WikiSummaryOut:
+    """
+    GET /api/events/{slug}/wiki
+
+    Returns a Wikipedia article summary for the event.
+
+    Cache strategy:
+    - Checks the ``wikipedia_cache`` table first.
+    - If a fresh entry exists (fetched within the last 7 days), returns it immediately.
+    - Otherwise fetches from the Wikipedia REST API, updates the cache, then returns.
+    - Events with no matching Wikipedia article return ``{"found": false}``.
+
+    The Wikipedia title used for the lookup is, in preference order:
+    1. ``Event.wikipedia_slug`` (explicit override set during data import)
+    2. The event ``slug`` itself (hyphens converted to underscores)
+    """
+    # ── 1. Verify event exists ───────────────────────────────────────────────
+    ev_stmt = select(Event.wikipedia_slug).where(Event.slug == slug)
+    ev_result = await db.execute(ev_stmt)
+    ev_row = ev_result.fetchone()
+    if ev_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    # ── 2. Check cache ────────────────────────────────────────────────────────
+    cache_stmt = select(WikipediaCache).where(WikipediaCache.slug == slug)
+    cache_result = await db.execute(cache_stmt)
+    cache_entry: WikipediaCache | None = cache_result.scalar_one_or_none()
+
+    now = datetime.now(tz=timezone.utc)
+    cache_is_fresh = (
+        cache_entry is not None
+        and cache_entry.wiki_fetched_at is not None
+        and (now - cache_entry.wiki_fetched_at) < _WIKI_CACHE_TTL
+    )
+
+    if cache_is_fresh:
+        assert cache_entry is not None  # narrowing for type checkers
+        found = cache_entry.wiki_summary is not None
+        return WikiSummaryOut(
+            found=found,
+            wiki_url=cache_entry.wiki_url,
+            wiki_title=cache_entry.wiki_title,
+            summary=cache_entry.wiki_summary,
+            thumbnail_url=cache_entry.wiki_thumbnail_url,
+            thumbnail_width=cache_entry.wiki_thumbnail_width,
+            thumbnail_height=cache_entry.wiki_thumbnail_height,
+            fetched_at=cache_entry.wiki_fetched_at,
+        )
+
+    # ── 3. Determine Wikipedia title ─────────────────────────────────────────
+    # Prefer the explicit wikipedia_slug on the event; fall back to the event slug.
+    wiki_title_raw: str = ev_row.wikipedia_slug or slug
+    # Normalise to Wikipedia title convention: underscores instead of hyphens
+    wiki_title = wiki_title_raw.replace("-", "_")
+
+    # ── 4. Fetch from Wikipedia ──────────────────────────────────────────────
+    wiki_result = await fetch_wikipedia_summary(wiki_title)
+
+    # ── 5. Upsert cache entry ────────────────────────────────────────────────
+    if cache_entry is None:
+        cache_entry = WikipediaCache(slug=slug)
+        db.add(cache_entry)
+
+    cache_entry.wiki_fetched_at = now
+
+    if wiki_result is not None:
+        cache_entry.wiki_title = wiki_result.title
+        cache_entry.wiki_url = wiki_result.wiki_url
+        cache_entry.wiki_summary = wiki_result.summary
+        cache_entry.wiki_thumbnail_url = wiki_result.thumbnail_url
+        cache_entry.wiki_thumbnail_width = wiki_result.thumbnail_width
+        cache_entry.wiki_thumbnail_height = wiki_result.thumbnail_height
+    else:
+        # No article found — store a NULL summary so we don't hammer Wikipedia
+        # again until the TTL expires
+        cache_entry.wiki_title = None
+        cache_entry.wiki_url = None
+        cache_entry.wiki_summary = None
+        cache_entry.wiki_thumbnail_url = None
+        cache_entry.wiki_thumbnail_width = None
+        cache_entry.wiki_thumbnail_height = None
+
+    await db.commit()
+
+    # ── 6. Build response ─────────────────────────────────────────────────────
+    if wiki_result is None:
+        return WikiSummaryOut(found=False, fetched_at=now)
+
+    return WikiSummaryOut(
+        found=True,
+        wiki_url=wiki_result.wiki_url,
+        wiki_title=wiki_result.title,
+        summary=wiki_result.summary,
+        thumbnail_url=wiki_result.thumbnail_url,
+        thumbnail_width=wiki_result.thumbnail_width,
+        thumbnail_height=wiki_result.thumbnail_height,
+        fetched_at=now,
+    )

@@ -192,3 +192,25 @@ class HealthResponse(BaseModel):
     status: str
     db: str
     events_count: int
+
+
+# ────────────────────────────────────────────
+# Wikipedia cache — GET /api/events/{slug}/wiki
+# ────────────────────────────────────────────
+class WikiSummaryOut(BaseModel):
+    """
+    Wikipedia summary response for an event.
+
+    ``found`` is False when no Wikipedia article exists for this event;
+    all other fields will be None in that case.
+    """
+
+    found: bool
+    wiki_url: Optional[str] = None
+    wiki_title: Optional[str] = None
+    summary: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    thumbnail_width: Optional[int] = None
+    thumbnail_height: Optional[int] = None
+    # ISO 8601 timestamp of when the cache was last populated
+    fetched_at: Optional[datetime] = None
