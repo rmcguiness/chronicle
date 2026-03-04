@@ -236,7 +236,11 @@ function SwimLaneOverlay({ rfTransform }: SwimLaneLabelsProps) {
         {REGIONS.map((region, idx) => {
           const bandTop = idx * BAND_HEIGHT * zoom + offsetY;
           const bandH = BAND_HEIGHT * zoom;
-          const labelTop = bandTop + bandH / 2;
+          // Skip label if band is too small to display legibly
+          if (bandH < 60) return null;
+          let labelTop = bandTop + bandH / 2;
+          // Clamp label within band bounds
+          labelTop = Math.max(bandTop + 20, Math.min(bandTop + bandH - 20, labelTop));
           // Only show if in view
           if (labelTop < -40 || labelTop > window.innerHeight + 40) return null;
           return (
