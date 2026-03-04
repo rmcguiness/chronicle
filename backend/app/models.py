@@ -18,7 +18,6 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     Column,
-    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -27,10 +26,12 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    cast,
+    literal_column,
     text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -49,12 +50,16 @@ class Event(Base):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     title_alt: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
 
-    # Date handling — stored as text-decoded strings to support BCE dates
-    # (Python datetime.date only supports year >= 1; asyncpg is configured
-    # to decode PostgreSQL date/timestamp columns as plain strings)
-    date_exact: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
-    date_earliest: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
-    date_latest: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
+    # Date handling — keep real Date columns for DDL/indexes (deferred so they are
+    # NOT selected automatically), then expose text-cast column_property versions
+    # for reads. BCE dates like '2560-01-01 BC' crash asyncpg's date decoder
+    # (ordinal must be >= 1); CAST to TEXT avoids that entirely.
+    _date_exact = mapped_column("date_exact", String, nullable=True, deferred=True)
+    _date_earliest = mapped_column("date_earliest", String, nullable=True, deferred=True)
+    _date_latest = mapped_column("date_latest", String, nullable=True, deferred=True)
+    date_exact: Mapped[Optional[str]] = column_property(cast(_date_exact, Text))
+    date_earliest: Mapped[Optional[str]] = column_property(cast(_date_earliest, Text))
+    date_latest: Mapped[Optional[str]] = column_property(cast(_date_latest, Text))
     date_confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     date_circa: Mapped[bool] = mapped_column(Boolean, default=False)
     date_disputed: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -207,7 +212,7 @@ class Source(Base):
     editors: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
     publication: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     publisher: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    publication_date: Mapped[Optional[str]] = mapped_column(Date, nullable=True)
+    publication_date: Mapped[Optional[str]] = column_property(cast(literal_column("publication_date"), Text))
     isbn: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     doi: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     page_numbers: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
