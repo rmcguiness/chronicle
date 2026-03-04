@@ -1,5 +1,7 @@
 # Chronicle
 
+![CI](https://github.com/rmcguiness/chronicle/actions/workflows/ci.yml/badge.svg)
+
 **Open-source immutable historical timeline.**  
 An infinite canvas where history is explored spatially — time on the X axis, geography on the Y axis, causality as visual connections.
 
