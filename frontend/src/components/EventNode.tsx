@@ -20,7 +20,6 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
-  const rfZoom = useAppStore((s) => s.rfZoom);
 
   /** Minimum pixels from top before we flip the tooltip to render below. */
   const TOOLTIP_FLIP_THRESHOLD = 200;
@@ -45,7 +44,10 @@ function EventNode({ data: rawData, selected }: NodeProps) {
 
   const color = CATEGORY_COLORS[data.category] ?? '#6b7280';
   const icon = CATEGORY_ICONS[data.category] ?? '●';
-  const showLabel = rfZoom >= 0.6;
+  // showLabel is set by clusterEvents() based on the active zoom tier:
+  //   Standard tier (0.4–1.2) → false  (no label to reduce clutter)
+  //   Detail tier   (≥ 1.2)   → true   (event name shown below node)
+  const showLabel = data.showLabel ?? false;
 
   // Node size scales with importance and zoom
   const baseSize = 20 + data.importance_score * 20;

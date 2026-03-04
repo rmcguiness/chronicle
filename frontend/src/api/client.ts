@@ -488,3 +488,20 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 }
 
 export type { Perspective, ConnectedEvent };
+
+/**
+ * Fetch Wikipedia data for an event, returning a WikiData | WikiDataNotFound
+ * discriminated union compatible with EventDetailPage.
+ */
+export async function fetchWikiData(
+  slug: string,
+): Promise<{ found: true; title: string; summary: string; thumbnail?: string; url: string } | { found: false }> {
+  const result = await fetchArticle(slug);
+  if (!result || !result.summary) return { found: false };
+  return {
+    found: true,
+    title: result.title,
+    summary: result.summary,
+    url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
+  };
+}
