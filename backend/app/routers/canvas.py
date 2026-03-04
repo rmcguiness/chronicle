@@ -34,6 +34,12 @@ async def get_tiles(
         default=None,
         description='Bounding box "west,south,east,north" in WGS84',
     ),
+    limit: int = Query(default=500, ge=1, le=2000, description="Max events to return"),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+    min_importance: float = Query(
+        default=0.0, ge=0.0, le=1.0,
+        description="Minimum importance_score filter (LOD threshold)",
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> CanvasTileResponse:
     """
@@ -46,6 +52,7 @@ async def get_tiles(
         Event.year_approx <= year_max,
         Event.zoom_min <= zoom,
         Event.review_status == "approved",
+        Event.importance_score >= min_importance,
     ]
 
     # Parse and apply bounding box filter
@@ -89,7 +96,8 @@ async def get_tiles(
         .outerjoin(persp_count_sq, Event.id == persp_count_sq.c.event_id)
         .where(and_(*conditions))
         .order_by(Event.importance_score.desc())
-        .limit(500)
+        .offset(offset)
+        .limit(limit)
     )
 
     result = await db.execute(stmt)
