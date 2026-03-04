@@ -45,12 +45,14 @@ async def get_tiles(
     """
     Returns events + causality links for the canvas tile.
     Only returns events whose zoom_min <= requested zoom.
-    Ordered by importance_score DESC, capped at 500 per request.
+    Ordered by importance_score DESC.
+    Supports pagination via limit/offset and LOD via min_importance.
     """
     conditions = [
         Event.year_approx >= year_min,
         Event.year_approx <= year_max,
         Event.zoom_min <= zoom,
+        Event.importance_score >= min_importance,
         Event.review_status == "approved",
         Event.importance_score >= min_importance,
     ]
