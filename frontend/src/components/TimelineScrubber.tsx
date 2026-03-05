@@ -22,15 +22,12 @@ import { CANVAS_CONSTANTS } from '../types';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { BASE_YEAR_MIN, BASE_YEAR_MAX } = CANVAS_CONSTANTS;
+const { BASE_YEAR_MIN, BASE_YEAR_MAX, CANVAS_WIDTH } = CANVAS_CONSTANTS;
 
 /** Full historical range shown in the scrubber track. */
 const FULL_MIN = BASE_YEAR_MIN; // -5000
 const FULL_MAX = BASE_YEAR_MAX; // 2100
 const FULL_SPAN = FULL_MAX - FULL_MIN; // 7100
-
-/** Canvas width used by NetworkView (must stay in sync). */
-const CANVAS_WIDTH = 15_000;
 
 /** Minimum time span allowed (prevents collapsing the window to nothing). */
 const MIN_TIME_SPAN = 50;

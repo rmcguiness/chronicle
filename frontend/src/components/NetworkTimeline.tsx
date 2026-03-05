@@ -17,13 +17,14 @@
  */
 
 import { useAppStore } from '../store';
+import { CANVAS_CONSTANTS } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Constants (must stay in sync with NetworkView layout)
+// Constants (from shared CANVAS_CONSTANTS)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Total canvas width in pixels — matches NetworkView's CANVAS_WIDTH. */
-const CANVAS_WIDTH = 15_000;
+/** Total canvas width in pixels — from shared constants. */
+const { CANVAS_WIDTH } = CANVAS_CONSTANTS;
 
 /** Maximum number of ticks to render — prevents runaway loops. */
 const MAX_TICK_COUNT = 2000;

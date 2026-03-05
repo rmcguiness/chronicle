@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Handle, Position, useViewport, type NodeProps } from "@xyflow/react";
+import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "../utils/categories";
 import type { HistoricalEvent } from "../types";
 import { useAppStore } from "../store";
@@ -20,9 +20,6 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
-
-  // Read ReactFlow zoom to counterscale node size (canvas is ~15 000 px wide)
-  const { zoom: rfZoom } = useViewport();
 
   /** Minimum pixels from top before we flip the tooltip to render below. */
   const TOOLTIP_FLIP_THRESHOLD = 200;
@@ -52,22 +49,15 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   //   Detail tier   (≥ 1.2)   → true   (event name shown below node)
   const showLabel = data.showLabel ?? false;
 
-  /** Counterscaled node size — target screen appearance in px (28–40 px). */
-  const NODE_SIZE_BASE = 28;
-  const NODE_SIZE_IMPORTANCE_RANGE = 12;
-  const TARGET_SCREEN_SIZE = Math.round(
-    NODE_SIZE_BASE + (data.importance_score ?? 0.5) * NODE_SIZE_IMPORTANCE_RANGE,
-  );
-  /** Minimum canvas size to prevent nodes from collapsing to zero. */
-  const MIN_CANVAS_SIZE = 16;
-  const size = Math.max(MIN_CANVAS_SIZE, Math.round(TARGET_SCREEN_SIZE / Math.max(0.01, rfZoom)));
+  /** Fixed node size in canvas px — 20–40px based on importance. No zoom math needed. */
+  const NODE_SIZE_BASE = 20;
+  const NODE_SIZE_IMPORTANCE_RANGE = 20;
+  const size = Math.round(NODE_SIZE_BASE + (data.importance_score ?? 0.5) * NODE_SIZE_IMPORTANCE_RANGE);
 
   return (
     <div
       ref={nodeRef}
       style={{
-        width: size,
-        height: size,
         position: "relative",
         display: "flex",
         flexDirection: "column",

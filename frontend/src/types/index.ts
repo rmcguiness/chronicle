@@ -206,4 +206,6 @@ export const CANVAS_CONSTANTS = {
   // Legacy lat bounds (used by store coordinate helpers)
   LAT_MIN: -60,
   LAT_MAX: 75,
+  // Total canvas width in pixels — kept narrow so fitView lands near zoom ≈ 1
+  CANVAS_WIDTH: 2_000,
 };

@@ -44,8 +44,8 @@ import { CANVAS_CONSTANTS } from '../types';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Total canvas width in pixels — kept wide for smooth pan / zoom. */
-const CANVAS_WIDTH = 15_000;
+/** Total canvas width in pixels — from shared constants. */
+const { CANVAS_WIDTH } = CANVAS_CONSTANTS;
 
 /** Viewport to request all events from the tile endpoint. */
 const FULL_VIEWPORT = {
@@ -127,7 +127,7 @@ function isPositionVisible(
  * @param year    - Year (negative = BCE).
  * @param yearMin - Left edge of the viewport year range (from scrubber).
  * @param yearMax - Right edge of the viewport year range (from scrubber).
- * @returns X pixel on the 15 000 px canvas.
+ * @returns X pixel on the canvas.
  */
 function yearToX(year: number, yearMin: number, yearMax: number): number {
   const span = yearMax - yearMin;
@@ -195,7 +195,7 @@ function dateToFractionalYear(dateStr: string, fallback: number): number {
  * @param event   - The historical event.
  * @param yearMin - Left edge of the viewport year range.
  * @param yearMax - Right edge of the viewport year range.
- * @returns X pixel on the 15 000 px canvas.
+ * @returns X pixel on the canvas.
  */
 function eventToX(
   event: HistoricalEvent,
@@ -840,11 +840,7 @@ function NetworkViewInner() {
         edgeTypes={EDGE_TYPES}
         minZoom={0.02}
         maxZoom={4}
-        defaultViewport={{
-          x: 0,
-          y: typeof window !== 'undefined' ? window.innerHeight / 2 : 400,
-          zoom: 0.08,
-        }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}
