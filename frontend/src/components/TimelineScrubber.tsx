@@ -51,31 +51,8 @@ export default function TimelineScrubber() {
     return percentToYear(pct);
   }, []);
 
-  const onMinMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    dragging.current = 'min';
-    dragStart.current = { x: e.clientX, yearMin, yearMax };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  };
-
-  const onMaxMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    dragging.current = 'max';
-    dragStart.current = { x: e.clientX, yearMin, yearMax };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  };
-
-  const onRangeMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).dataset.handle) return;
-    e.preventDefault();
-    dragging.current = 'range';
-    dragStart.current = { x: e.clientX, yearMin, yearMax };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  };
-
+  // Declare onMouseMove + onMouseUp BEFORE the mousedown handlers so the
+  // react-hooks/immutability rule sees them as initialized at point of use.
   const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragging.current || !trackRef.current) return;
     const rect = trackRef.current.getBoundingClientRect();
@@ -101,8 +78,35 @@ export default function TimelineScrubber() {
   const onMouseUp = useCallback(() => {
     dragging.current = null;
     window.removeEventListener('mousemove', onMouseMove);
+    // Self-reference is intentional: removes this exact listener instance.
+    // eslint-disable-next-line react-hooks/immutability
     window.removeEventListener('mouseup', onMouseUp);
   }, [onMouseMove]);
+
+  const onMinMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = 'min';
+    dragStart.current = { x: e.clientX, yearMin, yearMax };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const onMaxMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = 'max';
+    dragStart.current = { x: e.clientX, yearMin, yearMax };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const onRangeMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).dataset.handle) return;
+    e.preventDefault();
+    dragging.current = 'range';
+    dragStart.current = { x: e.clientX, yearMin, yearMax };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
 
   // Click on track to jump
   const onTrackClick = (e: React.MouseEvent) => {
