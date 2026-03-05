@@ -89,9 +89,8 @@ def compute_depths_and_signs(events, outgoing, incoming):
 
         for child in outgoing[node_id]:
             if child not in assignment:
-                # Children alternate sign relative to parent at each level
-                child_sign = sign if depth % 2 == 0 else -sign
-                queue.append((child, depth + 1, child_sign))
+                # Inherit sign unchanged — entire causal chain stays on same side of spine
+                queue.append((child, depth + 1, sign))
 
     return assignment
 
