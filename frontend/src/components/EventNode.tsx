@@ -49,9 +49,9 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   //   Detail tier   (≥ 1.2)   → true   (event name shown below node)
   const showLabel = data.showLabel ?? false;
 
-  // Node size scales with importance and zoom
-  const baseSize = 20 + data.importance_score * 20;
-  const size = Math.max(16, Math.min(48, baseSize));
+  // nodeSize is computed in NetworkView and passed via data; fall back gracefully
+  const size = (data as HistoricalEvent & { showLabel?: boolean; nodeSize?: number }).nodeSize
+    ?? Math.max(16, Math.min(48, 20 + (data.importance_score ?? 0.5) * 20));
 
   return (
     <div

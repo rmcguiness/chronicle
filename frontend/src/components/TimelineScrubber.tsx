@@ -29,13 +29,13 @@ const LABEL_MARKERS: number[] = [];
 for (let y = OVERALL_MIN; y <= OVERALL_MAX; y += 1000) LABEL_MARKERS.push(y);
 
 export default function TimelineScrubber() {
-  const viewport = useAppStore((s) => s.viewport);
-  const setViewport = useAppStore((s) => s.setViewport);
+  const timeViewport = useAppStore((s) => s.timeViewport);
+  const setTimeViewport = useAppStore((s) => s.setTimeViewport);
 
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const yearMin = Math.max(OVERALL_MIN, viewport.year_min);
-  const yearMax = Math.min(OVERALL_MAX, viewport.year_max);
+  const yearMin = Math.max(OVERALL_MIN, timeViewport.yearMin);
+  const yearMax = Math.min(OVERALL_MAX, timeViewport.yearMax);
 
   const minPct = yearToPercent(yearMin);
   const maxPct = yearToPercent(yearMax);
@@ -61,19 +61,19 @@ export default function TimelineScrubber() {
 
     if (dragging.current === 'min') {
       const newMin = Math.max(OVERALL_MIN, Math.min(dragStart.current.yearMax - 50, dragStart.current.yearMin + dYears));
-      setViewport({ year_min: newMin });
+      setTimeViewport({ yearMin: newMin, yearMax: dragStart.current.yearMax });
     } else if (dragging.current === 'max') {
       const newMax = Math.min(OVERALL_MAX, Math.max(dragStart.current.yearMin + 50, dragStart.current.yearMax + dYears));
-      setViewport({ year_max: newMax });
+      setTimeViewport({ yearMin: dragStart.current.yearMin, yearMax: newMax });
     } else if (dragging.current === 'range') {
       const span = dragStart.current.yearMax - dragStart.current.yearMin;
       let newMin = Math.round(dragStart.current.yearMin + dYears);
       let newMax = newMin + span;
       if (newMin < OVERALL_MIN) { newMin = OVERALL_MIN; newMax = OVERALL_MIN + span; }
       if (newMax > OVERALL_MAX) { newMax = OVERALL_MAX; newMin = OVERALL_MAX - span; }
-      setViewport({ year_min: newMin, year_max: newMax });
+      setTimeViewport({ yearMin: newMin, yearMax: newMax });
     }
-  }, [setViewport]);
+  }, [setTimeViewport]);
 
   const onMouseUp = useCallback(() => {
     dragging.current = null;
@@ -118,7 +118,7 @@ export default function TimelineScrubber() {
     let newMax = Math.round(year + halfSpan);
     if (newMin < OVERALL_MIN) { newMin = OVERALL_MIN; newMax = OVERALL_MIN + span; }
     if (newMax > OVERALL_MAX) { newMax = OVERALL_MAX; newMin = OVERALL_MAX - span; }
-    setViewport({ year_min: newMin, year_max: newMax });
+    setTimeViewport({ yearMin: newMin, yearMax: newMax });
   };
 
   const span = yearMax - yearMin;

@@ -130,9 +130,8 @@ export default function NetworkTimeline({ viewport }: NetworkTimelineProps) {
   const { x: vpX, zoom: rfZoom } = viewport;
   const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
 
-  // Subscribe to the scrubber year range from the Zustand store
-  const yearMin = useAppStore((s) => s.viewport.year_min);
-  const yearMax = useAppStore((s) => s.viewport.year_max);
+  // Subscribe to the timeViewport — single source of truth for visible year range
+  const { yearMin, yearMax } = useAppStore((s) => s.timeViewport);
   const span = yearMax - yearMin;
 
   // ── coordinate conversions (dynamic mapping) ────────────────────────────

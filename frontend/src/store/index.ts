@@ -224,6 +224,10 @@ interface AppState {
   onThisDayOpen: boolean;
   /** Toggle or set the "On This Day" panel open state. */
   setOnThisDayOpen: (v: boolean) => void;
+
+  /** The currently visible year range on the network canvas. Single source of truth for X mapping, node sizing, and the minimap. */
+  timeViewport: { yearMin: number; yearMax: number };
+  setTimeViewport: (v: { yearMin: number; yearMax: number }) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -323,4 +327,8 @@ export const useAppStore = create<AppState>((set) => ({
   // On This Day panel
   onThisDayOpen: false,
   setOnThisDayOpen: (onThisDayOpen) => set({ onThisDayOpen }),
+
+  // Time viewport — visible year range on the network canvas
+  timeViewport: { yearMin: -800, yearMax: 1500 },
+  setTimeViewport: (timeViewport) => set({ timeViewport }),
 }));
