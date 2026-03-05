@@ -2,21 +2,21 @@
  * App — root application component.
  *
  * Owns: React Query client, top-level routing, TimelineScrubber placement.
- * Does NOT own: canvas state, event selection, individual page layout.
+ * Does NOT own: network view state, event selection, individual page layout.
  *
- * The TimelineScrubber is rendered in both timeline and network modes:
- * in timeline mode it controls the canvas viewport, and in network mode
- * it acts as a time-range filter for visible event nodes.
+ * The TimelineScrubber acts as a time-range filter for visible event nodes
+ * in the network view.
+ *
+ * Note: The original canvas-based timeline view has been archived to
+ * src/archive/timeline/ in favour of the network view as the sole display.
  *
  * Routes:
- *  /              → Canvas timeline view (existing map + panels)
+ *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Canvas from './components/Canvas';
 import NetworkView from './components/NetworkView';
-import ViewToggle from './components/ViewToggle';
 import SearchBar from './components/SearchBar';
 import EventDetailPanel from './components/EventDetailPanel';
 import TimelineScrubber from './components/TimelineScrubber';
@@ -27,7 +27,6 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
-import { useAppStore } from './store';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -40,23 +39,17 @@ const queryClient = new QueryClient({
 });
 
 /**
- * Full-screen main view — switches between Timeline (canvas) and Network
- * (force-directed graph) based on the Zustand viewMode state.
+ * Full-screen main view — renders the network graph with all overlaid UI panels.
  * Mounts `usePermalink` to enable shareable URL hash links.
  */
 function MainView() {
-  const viewMode = useAppStore((s) => s.viewMode);
-
   // Activates hash ↔ store sync: read on mount, write on change, listen for hashchange
   usePermalink();
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
-      {/* Background canvas or network graph */}
-      {viewMode === 'timeline' ? <Canvas /> : <NetworkView />}
-
-      {/* View mode toggle (top-right) */}
-      <ViewToggle />
+      {/* Network causality graph — the primary view */}
+      <NetworkView />
 
       {/* Top search bar */}
       <SearchBar />
