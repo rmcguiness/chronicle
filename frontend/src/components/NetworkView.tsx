@@ -2,15 +2,15 @@
  * NetworkView.tsx
  *
  * Chronological graph view of historical events and their causality links.
- * Events are positioned left-to-right by year_approx using a d3-force
- * simulation (X pinned to year, Y organic via repulsion + link forces).
- * Connected event chains cluster near Y = 0, while isolated nodes drift
- * gently above / below for visual separation.
+ * Events are positioned left-to-right by year_approx using a deterministic
+ * tree layout (X pinned to year, Y branching off a center spine by causal
+ * depth). Root events sit on the spine; their effects branch above/below,
+ * making causal chains easy to trace visually.
  *
  * A fixed timeline spine (NetworkTimeline) overlays the viewport at 50 %
  * screen height, providing persistent year-reference tick marks.
  *
- * Owns: force-directed layout computation, ReactFlow rendering, viewport
+ * Owns: tree layout computation, ReactFlow rendering, viewport
  *   filtering (events outside the scrubber range are hidden).
  * Does NOT own: event detail panel, data fetching strategy, view mode
  *   toggling, timeline scrubber (rendered by App.tsx).
@@ -31,17 +31,6 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
-import {
-  forceSimulation,
-  forceX,
-  forceY,
-  forceLink,
-  forceManyBody,
-  forceCollide,
-  type SimulationNodeDatum,
-  type SimulationLinkDatum,
-} from 'd3-force';
-
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
@@ -67,23 +56,20 @@ const FULL_VIEWPORT = {
   zoom: 10,
 };
 
-/** Number of ticks to run the force simulation to completion. */
-const SIMULATION_TICKS = 300;
+/** Vertical spacing between causal depth levels (px). */
+const DEPTH_SPACING = 160;
 
-/** Force-link resting distance (px). */
-const LINK_DISTANCE = 120;
+/** Maximum causal depth for layout purposes (deeper nodes are capped). */
+const MAX_DEPTH = 4;
 
-/** Force-link strength (mainly affects Y since X is pinned). */
-const LINK_STRENGTH = 0.2;
+/** Gentle Y offset for isolated (unlinked) nodes. */
+const ISOLATED_Y_NUDGE = 80;
 
-/** Charge repulsion strength (negative = repel). */
-const CHARGE_STRENGTH = -200;
+/** Number of collision-resolution passes. */
+const COLLISION_PASSES = 3;
 
-/** Extra collision padding beyond node radius (px). */
-const COLLISION_PADDING = 10;
-
-/** Y-offset for isolated (unlinked) nodes. */
-const ISOLATED_Y_OFFSET = 120;
+/** Multiplier for collision spread distance relative to node radius. */
+const COLLISION_SPREAD_FACTOR = 2.5;
 
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
@@ -118,20 +104,44 @@ function nodeRadius(importance: number): number {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// d3-force simulation types
+// Tree layout types
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface ForceNode extends SimulationNodeDatum {
-  id: string;
-  targetX: number;
-  targetY: number;
-  radius: number;
-  isConnected: boolean;
-  event: HistoricalEvent;
+/** Adjacency info for a single node in the causal graph. */
+interface AdjacencyEntry {
+  outgoing: Set<string>;
+  incoming: Set<string>;
 }
 
-interface ForceLink extends SimulationLinkDatum<ForceNode> {
-  causalityLink: CausalityLink;
+/** Y-depth multipliers by BFS depth. Depth 0 is on the spine (Y=0). */
+const DEPTH_Y_MULTIPLIERS: Record<number, number> = {
+  0: 0,
+  1: 1.0,
+  2: 1.8,
+  3: 2.4,
+};
+
+/**
+ * Get the Y-multiplier for a given causal depth.
+ * Depths beyond 3 use a constant cap to prevent runaway offsets.
+ *
+ * @param depth - BFS causal depth (0 = root).
+ * @returns Multiplier to apply to DEPTH_SPACING.
+ */
+function depthMultiplier(depth: number): number {
+  if (depth in DEPTH_Y_MULTIPLIERS) return DEPTH_Y_MULTIPLIERS[depth];
+  return 2.8; // cap for depth >= 4
+}
+
+/**
+ * Deterministic sign (+1 or -1) derived from a node id.
+ * Uses the last 4 hex characters of the UUID to pick a side.
+ *
+ * @param id - Node id string (UUID).
+ * @returns +1 or -1.
+ */
+function deterministicSign(id: string): number {
+  return parseInt(id.slice(-4), 16) % 2 === 0 ? 1 : -1;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -139,118 +149,174 @@ interface ForceLink extends SimulationLinkDatum<ForceNode> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Run a d3-force simulation to compute organic Y positions while pinning X
- * to the chronological year.  Connected events cluster near Y = 0; isolated
- * nodes float gently above / below.
+ * Compute a deterministic tree layout for historical events and causality links.
+ *
+ * Root events (no incoming causal links) sit on the Y=0 spine. Events they
+ * cause branch above or below the spine at increasing depth, keeping entire
+ * causal chains on the same side for visual coherence. Isolated nodes get a
+ * gentle Y nudge.
+ *
+ * X is always pinned to yearToX(year_approx).
  *
  * @param events - Filtered historical events.
- * @param links  - All causality links (will be filtered to visible set).
+ * @param links  - All causality links (will be filtered to the visible set).
  * @returns ReactFlow-compatible nodes and edges.
  */
-function computeForceLayout(
+function computeTreeLayout(
   events: HistoricalEvent[],
   links: CausalityLink[],
 ): { nodes: Node[]; edges: Edge[] } {
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
-  // Determine which nodes participate in at least one link
-  const connectedIds = new Set<string>();
+  // ── 1. Filter links to visible nodes ────────────────────────────────────
+
   const validLinks = links.filter((l) => {
     const causeId = String(l.cause_event_id);
     const effectId = String(l.effect_event_id);
-    const valid = nodeIdSet.has(causeId) && nodeIdSet.has(effectId);
-    if (valid) {
-      connectedIds.add(causeId);
-      connectedIds.add(effectId);
-    }
-    return valid;
+    return nodeIdSet.has(causeId) && nodeIdSet.has(effectId);
   });
 
-  // Build force-simulation nodes
-  const forceNodes: ForceNode[] = events.map((event) => {
+  // ── 2. Build adjacency map ──────────────────────────────────────────────
+
+  const adjacency = new Map<string, AdjacencyEntry>();
+  for (const id of nodeIdSet) {
+    adjacency.set(id, { outgoing: new Set(), incoming: new Set() });
+  }
+  for (const l of validLinks) {
+    const causeId = String(l.cause_event_id);
+    const effectId = String(l.effect_event_id);
+    adjacency.get(causeId)!.outgoing.add(effectId);
+    adjacency.get(effectId)!.incoming.add(causeId);
+  }
+
+  // ── 3. BFS to compute causal depth ─────────────────────────────────────
+
+  /** depth per node id; -1 = isolated (no links at all). */
+  const depthMap = new Map<string, number>();
+  /** Inherited branch sign per node id (above or below spine). */
+  const signMap = new Map<string, number>();
+
+  // Root nodes: no incoming links AND at least one outgoing link
+  const bfsQueue: string[] = [];
+  for (const [id, adj] of adjacency) {
+    if (adj.incoming.size === 0 && adj.outgoing.size > 0) {
+      depthMap.set(id, 0);
+      signMap.set(id, 0); // roots sit on the spine
+      bfsQueue.push(id);
+    }
+  }
+
+  // BFS from all roots simultaneously
+  let head = 0;
+  while (head < bfsQueue.length) {
+    const currentId = bfsQueue[head++];
+    const currentDepth = depthMap.get(currentId)!;
+    const currentSign = signMap.get(currentId)!;
+    const childDepth = Math.min(currentDepth + 1, MAX_DEPTH);
+
+    for (const childId of adjacency.get(currentId)!.outgoing) {
+      if (depthMap.has(childId)) continue; // already visited
+      depthMap.set(childId, childDepth);
+
+      // Inherit parent's sign, or pick a deterministic one for depth-1 children of roots
+      const childSign =
+        currentSign !== 0
+          ? currentSign
+          : deterministicSign(childId);
+      signMap.set(childId, childSign);
+      bfsQueue.push(childId);
+    }
+  }
+
+  // Assign depth -1 to isolated nodes (no links) and nodes unreachable from roots
+  for (const id of nodeIdSet) {
+    if (!depthMap.has(id)) {
+      const adj = adjacency.get(id)!;
+      if (adj.incoming.size === 0 && adj.outgoing.size === 0) {
+        depthMap.set(id, -1); // truly isolated
+      } else {
+        // Has links but unreachable from BFS roots (e.g. pure effect with no root ancestor)
+        depthMap.set(id, -1);
+      }
+      signMap.set(id, deterministicSign(id));
+    }
+  }
+
+  // ── 4. Build position map ───────────────────────────────────────────────
+
+  const eventById = new Map(events.map((e) => [String(e.id), e]));
+  const positions = new Map<string, { x: number; y: number; radius: number }>();
+
+  for (const id of nodeIdSet) {
+    const event = eventById.get(id)!;
+    const x = yearToX(event.year_approx);
+    const depth = depthMap.get(id)!;
+    const sign = signMap.get(id)!;
+    const radius = nodeRadius(event.importance_score);
+
+    let y: number;
+    if (depth === -1) {
+      // Isolated node: gentle nudge
+      y = sign * ISOLATED_Y_NUDGE;
+    } else if (depth === 0) {
+      y = 0;
+    } else {
+      y = sign * DEPTH_SPACING * depthMultiplier(depth);
+    }
+
+    positions.set(id, { x, y, radius });
+  }
+
+  // ── 5. Collision resolution ─────────────────────────────────────────────
+
+  const posArray = Array.from(positions.entries());
+  for (let pass = 0; pass < COLLISION_PASSES; pass++) {
+    for (let i = 0; i < posArray.length; i++) {
+      for (let j = i + 1; j < posArray.length; j++) {
+        const [, posA] = posArray[i];
+        const [, posB] = posArray[j];
+        const dx = posA.x - posB.x;
+        const dy = posA.y - posB.y;
+        const minDist = (posA.radius + posB.radius) * COLLISION_SPREAD_FACTOR;
+
+        if (Math.abs(dx) < minDist && Math.abs(dy) < minDist) {
+          const nudge = posA.radius * COLLISION_SPREAD_FACTOR;
+          posA.y -= nudge;
+          posB.y += nudge;
+        }
+      }
+    }
+  }
+
+  // Write resolved positions back
+  for (const [id, pos] of posArray) {
+    positions.set(id, pos);
+  }
+
+  // ── 6. Convert to ReactFlow nodes ───────────────────────────────────────
+
+  const rfNodes: Node[] = events.map((event) => {
     const id = String(event.id);
-    const isConnected = connectedIds.has(id);
-    const targetX = yearToX(event.year_approx);
-
-    // Deterministic sign for isolated nodes based on last hex char of id
-    const lastChar = id.slice(-1);
-    const sign = parseInt(lastChar, 16) % 2 === 0 ? 1 : -1;
-    const targetY = isConnected ? 0 : sign * ISOLATED_Y_OFFSET;
-
+    const pos = positions.get(id)!;
     return {
       id,
-      x: targetX,
-      y: targetY,
-      targetX,
-      targetY,
-      radius: nodeRadius(event.importance_score),
-      isConnected,
-      event,
+      type: 'event',
+      position: { x: pos.x, y: pos.y },
+      data: { ...event, showLabel: true },
+      selectable: true,
+      draggable: true,
     };
   });
 
-  // Build a lookup for force-link source/target resolution
-  const nodeById = new Map(forceNodes.map((n) => [n.id, n]));
+  // ── 7. Convert to ReactFlow edges ───────────────────────────────────────
 
-  // Build force-simulation links
-  const forceLinks: ForceLink[] = validLinks
-    .map((l) => ({
-      source: nodeById.get(String(l.cause_event_id))!,
-      target: nodeById.get(String(l.effect_event_id))!,
-      causalityLink: l,
-    }))
-    .filter((fl) => fl.source && fl.target);
-
-  // ── Run simulation ──────────────────────────────────────────────────────
-
-  const simulation = forceSimulation<ForceNode>(forceNodes)
-    .force(
-      'x',
-      forceX<ForceNode>((d) => d.targetX).strength(1.0),
-    )
-    .force(
-      'y',
-      forceY<ForceNode>((d) => d.targetY).strength((d) =>
-        d.isConnected ? 0.04 : 0.1,
-      ),
-    )
-    .force(
-      'link',
-      forceLink<ForceNode, ForceLink>(forceLinks)
-        .id((d) => d.id)
-        .distance(LINK_DISTANCE)
-        .strength(LINK_STRENGTH),
-    )
-    .force('charge', forceManyBody<ForceNode>().strength(CHARGE_STRENGTH))
-    .force(
-      'collide',
-      forceCollide<ForceNode>((d) => d.radius + COLLISION_PADDING),
-    )
-    .stop();
-
-  // Run synchronously to completion
-  for (let i = 0; i < SIMULATION_TICKS; i++) {
-    simulation.tick();
-  }
-
-  // ── Convert to ReactFlow nodes ──────────────────────────────────────────
-
-  const rfNodes: Node[] = forceNodes.map((n) => ({
-    id: n.id,
-    type: 'event',
-    position: {
-      x: n.x!,
-      y: n.y!,
-    },
-    data: { ...n.event, showLabel: true },
-    selectable: true,
-    draggable: true,
-  }));
-
-  // ── Convert to ReactFlow edges ──────────────────────────────────────────
+  /** Smaller arrowhead size for cleaner visuals. */
+  const ARROWHEAD_SIZE = 8;
 
   const rfEdges: Edge[] = validLinks.map((l) => {
     const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
+    const strength = l.strength ?? 0.5;
+    const baseStrokeWidth = Math.max(0.8, strength * 2.5);
     return {
       id: String(l.id),
       source: String(l.cause_event_id),
@@ -263,12 +329,12 @@ function computeForceLayout(
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
+        width: ARROWHEAD_SIZE,
+        height: ARROWHEAD_SIZE,
         color,
-        width: 18,
-        height: 18,
       },
       animated: l.connection_type === 'causes',
-      style: { stroke: color },
+      style: { stroke: color, strokeWidth: baseStrokeWidth },
       label: l.connection_type,
       labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
       labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
@@ -366,7 +432,7 @@ function NetworkViewInner() {
       return;
     }
 
-    const { nodes: rfNodes, edges: rfEdges } = computeForceLayout(
+    const { nodes: rfNodes, edges: rfEdges } = computeTreeLayout(
       filteredEvents,
       allCausalityLinks,
     );
@@ -542,10 +608,11 @@ function NetworkViewInner() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * NetworkView — force-directed chronological graph of events and causality
- * links.  X is pinned to year; Y is organic via d3-force simulation.
- * A fixed timeline spine overlays the viewport for persistent year reference.
- * Drop-in replacement for the Canvas component when viewMode === 'network'.
+ * NetworkView — deterministic tree-based chronological graph of events and
+ * causality links. X is pinned to year; Y branches off a center spine by
+ * causal depth. A fixed timeline spine overlays the viewport for persistent
+ * year reference. Drop-in replacement for the Canvas component when
+ * viewMode === 'network'.
  */
 export default function NetworkView() {
   return (
