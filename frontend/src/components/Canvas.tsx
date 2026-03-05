@@ -67,11 +67,18 @@ import type { HistoricalEvent, CausalityLink, CanvasViewport, Region } from '../
 const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
 
 /**
- * Initial react-flow viewport. Used for BOTH the defaultViewport prop and
- * the rfTransform useState initial value so they are always in sync on first
- * render. Mismatching them causes nodes to render off-screen.
+ * Padding ratio passed to ReactFlow's `fitView` prop so the initial viewport
+ * adapts consistently across screen sizes instead of using a hardcoded
+ * defaultViewport that only works at one resolution.
  */
-const INITIAL_VIEWPORT = { x: -4540, y: 80, zoom: 0.1 };
+const FIT_VIEW_PADDING = 0.1;
+
+/**
+ * Fallback viewport used only for the local rfTransform state before the
+ * first onMove fires. Not passed to ReactFlow as `defaultViewport` — fitView
+ * handles the initial framing instead.
+ */
+const INITIAL_RF_TRANSFORM = { x: 0, y: 0, zoom: 0.1 };
 
 /** Width (px) of the sticky label strip on the left edge of the canvas. */
 const LABEL_STRIP_WIDTH = 72;
@@ -440,7 +447,7 @@ function CanvasInner() {
 
   const { collapsedBands, toggleBand } = useCollapsedBands();
 
-  const [rfTransform, setRfTransform] = useState(INITIAL_VIEWPORT);
+  const [rfTransform, setRfTransform] = useState(INITIAL_RF_TRANSFORM);
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
 
   const [bandLayout, setBandLayout] = useState<BandLayout[]>(() => defaultBandLayout());
@@ -634,10 +641,11 @@ function CanvasInner() {
           onMoveEnd={onMoveEnd}
           minZoom={0.05}
           maxZoom={4}
-          defaultViewport={INITIAL_VIEWPORT}
+          /* fitView replaces defaultViewport for consistent initial framing across screen sizes */
+          fitView
+          fitViewOptions={{ padding: FIT_VIEW_PADDING }}
           style={{ background: 'transparent' }}
           proOptions={{ hideAttribution: true }}
-          fitViewOptions={{ padding: 0.3 }}
           elementsSelectable={true}
           nodesDraggable={false}
           panOnScroll={false}
