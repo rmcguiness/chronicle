@@ -6,6 +6,9 @@ import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import { MOCK_EVENTS } from '../api/client';
 import type { SearchResult } from '../types';
 
+/** Max height (px) for the search results dropdown before it scrolls. */
+const SEARCH_RESULTS_MAX_HEIGHT_PX = 360;
+
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState<T>(value);
   useEffect(() => {
@@ -15,6 +18,10 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
+/**
+ * Global search bar with typeahead dropdown. Searches events by title,
+ * place, or year and flies the canvas to the selected result.
+ */
 export default function SearchBar() {
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
@@ -170,7 +177,9 @@ export default function SearchBar() {
             borderTop: 'none',
             borderRadius: '0 0 12px 12px',
             boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
-            overflow: 'hidden',
+            /* Cap height and enable scrolling when many search results are returned */
+            maxHeight: SEARCH_RESULTS_MAX_HEIGHT_PX,
+            overflowY: 'auto',
           }}
         >
           {results.length === 0 ? (
