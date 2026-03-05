@@ -88,17 +88,96 @@ const EDGE_TYPES = { causality: CausalityEdge };
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Map a historical year to a canvas X coordinate.
+ * Map a historical year to a canvas X coordinate using the current viewport
+ * year range. When the scrubber is narrowed (e.g. 1939–1945), the full
+ * CANVAS_WIDTH represents only those years — nodes spread out automatically.
  *
- * @param year - Year (negative = BCE).
+ * @param year    - Year (negative = BCE).
+ * @param yearMin - Left edge of the viewport year range (from scrubber).
+ * @param yearMax - Right edge of the viewport year range (from scrubber).
  * @returns X pixel on the 15 000 px canvas.
  */
-function yearToX(year: number): number {
-  return (
-    ((year - CANVAS_CONSTANTS.BASE_YEAR_MIN) /
-      (CANVAS_CONSTANTS.BASE_YEAR_MAX - CANVAS_CONSTANTS.BASE_YEAR_MIN)) *
-    CANVAS_WIDTH
-  );
+function yearToX(year: number, yearMin: number, yearMax: number): number {
+  const span = yearMax - yearMin;
+  if (span <= 0) return 0;
+  return ((year - yearMin) / span) * CANVAS_WIDTH;
+}
+
+/**
+ * Parse a date string (ISO or PostgreSQL BCE format) into a fractional year.
+ *
+ * PostgreSQL returns BCE dates as "3200-01-01 BC" (with " BC" suffix), NOT
+ * as "-3200-01-01". This function handles both formats.
+ *
+ * @param dateStr  - Date string from the backend.
+ * @param fallback - Fallback value if parsing fails.
+ * @returns Fractional year (e.g. 1939.5 for July 1939).
+ */
+function dateToFractionalYear(dateStr: string, fallback: number): number {
+  let str = dateStr.trim();
+  let isBC = false;
+
+  // Handle PostgreSQL " BC" suffix
+  if (str.endsWith(' BC')) {
+    isBC = true;
+    str = str.slice(0, -3).trim();
+  }
+
+  const parts = str.split('-');
+
+  // Handle ISO negative year prefix (leading "-"), e.g. "-3200-01-01"
+  let yearStr: string;
+  let monthStr: string;
+  let dayStr: string | undefined;
+
+  if (parts[0] === '' && parts.length >= 3) {
+    // e.g. "-3200-01-01" splits as ["", "3200", "01", "01"]
+    isBC = true;
+    yearStr = parts[1];
+    monthStr = parts[2];
+    dayStr = parts[3];
+  } else {
+    yearStr = parts[0];
+    monthStr = parts[1];
+    dayStr = parts[2];
+  }
+
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10);
+  const day = dayStr ? parseInt(dayStr, 10) : 1;
+
+  if (isNaN(year) || isNaN(month)) return fallback;
+
+  /** Fraction-of-year constants */
+  const MONTHS_PER_YEAR = 12;
+  const DAYS_PER_YEAR = 365;
+
+  const signedYear = isBC ? -year : year;
+  return signedYear + (month - 1) / MONTHS_PER_YEAR + (day - 1) / DAYS_PER_YEAR;
+}
+
+/**
+ * Compute canvas X for a historical event using its most precise date.
+ * Prefers date_earliest (sub-year precision) over year_approx.
+ *
+ * @param event   - The historical event.
+ * @param yearMin - Left edge of the viewport year range.
+ * @param yearMax - Right edge of the viewport year range.
+ * @returns X pixel on the 15 000 px canvas.
+ */
+function eventToX(
+  event: HistoricalEvent,
+  yearMin: number,
+  yearMax: number,
+): number {
+  if (event.date_earliest) {
+    return yearToX(
+      dateToFractionalYear(event.date_earliest, event.year_approx),
+      yearMin,
+      yearMax,
+    );
+  }
+  return yearToX(event.year_approx, yearMin, yearMax);
 }
 
 /**
@@ -177,13 +256,17 @@ function computeFallbackY(event: HistoricalEvent): number {
  * This is the primary layout path — it avoids all BFS / collision computation
  * on the client, making the network view load instantly with stable positions.
  *
- * @param events - Filtered historical events (must include network_y field).
- * @param links  - All causality links (filtered to visible set internally).
+ * @param events  - Filtered historical events (must include network_y field).
+ * @param links   - All causality links (filtered to visible set internally).
+ * @param yearMin - Left edge of the viewport year range (from scrubber).
+ * @param yearMax - Right edge of the viewport year range (from scrubber).
  * @returns ReactFlow-compatible nodes and edges.
  */
 function buildFromPrecomputed(
   events: HistoricalEvent[],
   links: CausalityLink[],
+  yearMin: number,
+  yearMax: number,
 ): { nodes: Node[]; edges: Edge[] } | null {
   // Check how many events have precomputed positions
   const precomputed = events.filter((e) => e.network_y != null);
@@ -207,7 +290,7 @@ function buildFromPrecomputed(
       id,
       type: 'event',
       position: {
-        x: yearToX(event.year_approx),
+        x: eventToX(event, yearMin, yearMax),
         y: event.network_y ?? computeFallbackY(event),
       },
       data: { ...event, showLabel: true },
@@ -262,15 +345,20 @@ function buildFromPrecomputed(
  * causal chains on the same side for visual coherence. Isolated nodes get a
  * gentle Y nudge.
  *
- * X is always pinned to yearToX(year_approx).
+ * X is dynamically mapped using the viewport year range so that narrowing
+ * the scrubber spreads nodes across the full canvas width.
  *
- * @param events - Filtered historical events.
- * @param links  - All causality links (will be filtered to the visible set).
+ * @param events  - Filtered historical events.
+ * @param links   - All causality links (will be filtered to the visible set).
+ * @param yearMin - Left edge of the viewport year range (from scrubber).
+ * @param yearMax - Right edge of the viewport year range (from scrubber).
  * @returns ReactFlow-compatible nodes and edges.
  */
 function computeTreeLayout(
   events: HistoricalEvent[],
   links: CausalityLink[],
+  yearMin: number,
+  yearMax: number,
 ): { nodes: Node[]; edges: Edge[] } {
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
@@ -355,7 +443,7 @@ function computeTreeLayout(
 
   for (const id of nodeIdSet) {
     const event = eventById.get(id)!;
-    const x = yearToX(event.year_approx);
+    const x = eventToX(event, yearMin, yearMax);
     const depth = depthMap.get(id)!;
     const sign = signMap.get(id)!;
     const radius = nodeRadius(event.importance_score);
@@ -530,7 +618,8 @@ function NetworkViewInner() {
     [allEvents, viewportYearMin, viewportYearMax],
   );
 
-  // Compute layout: prefer precomputed DB positions, fall back to client-side tree
+  // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
+  // Re-runs when the scrubber range changes so nodes reposition dynamically.
   useEffect(() => {
     if (filteredEvents.length === 0) {
       setNodes([]);
@@ -539,7 +628,12 @@ function NetworkViewInner() {
     }
 
     // Try precomputed DB layout first (instant, stable)
-    const precomputed = buildFromPrecomputed(filteredEvents, allCausalityLinks);
+    const precomputed = buildFromPrecomputed(
+      filteredEvents,
+      allCausalityLinks,
+      viewportYearMin,
+      viewportYearMax,
+    );
     if (precomputed) {
       setNodes(precomputed.nodes);
       setEdges(precomputed.edges);
@@ -550,10 +644,12 @@ function NetworkViewInner() {
     const { nodes: rfNodes, edges: rfEdges } = computeTreeLayout(
       filteredEvents,
       allCausalityLinks,
+      viewportYearMin,
+      viewportYearMax,
     );
     setNodes(rfNodes);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {
