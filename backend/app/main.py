@@ -16,6 +16,7 @@ from sqlalchemy import text
 
 from app.database import AsyncSessionLocal
 from app.routers import canvas, events, search
+from app.routers.submit import submit_router, admin_router
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
@@ -60,6 +61,8 @@ app.add_middleware(
 app.include_router(canvas.router)
 app.include_router(events.router)
 app.include_router(search.router)
+app.include_router(submit_router)
+app.include_router(admin_router)
 
 
 # ── Health endpoint ───────────────────────
