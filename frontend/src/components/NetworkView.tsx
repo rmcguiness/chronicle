@@ -65,11 +65,20 @@ const MAX_DEPTH = 4;
 /** Gentle Y offset for isolated (unlinked) nodes. */
 const ISOLATED_Y_NUDGE = 80;
 
+/** Gentle Y offset for isolated nodes in precomputed layout (matches server). */
+const ISOLATED_NUDGE_PX = 90;
+
 /** Number of collision-resolution passes. */
 const COLLISION_PASSES = 3;
 
 /** Multiplier for collision spread distance relative to node radius. */
 const COLLISION_SPREAD_FACTOR = 2.5;
+
+/**
+ * Threshold: if this fraction of events have precomputed network_y,
+ * use DB positions instead of client-side tree layout.
+ */
+const PRECOMPUTED_THRESHOLD = 0.8;
 
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
@@ -145,7 +154,104 @@ function deterministicSign(id: string): number {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Layout engine
+// Precomputed DB layout (preferred path — instant, stable)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Simple fallback Y for events without a precomputed network_y position.
+ * Uses the last 4 hex chars of the UUID for a deterministic above/below nudge.
+ *
+ * @param event - The event needing a fallback Y.
+ * @returns Y offset in pixels.
+ */
+function computeFallbackY(event: HistoricalEvent): number {
+  const tail = String(event.id).slice(-4).replace(/-/g, '');
+  const hval = parseInt(tail, 16);
+  return (hval % 2 === 0 ? 1 : -1) * ISOLATED_NUDGE_PX;
+}
+
+/**
+ * Builds ReactFlow nodes + edges from precomputed network_y values stored in DB.
+ * Falls back to full client-side tree layout when < 80 % of events have network_y.
+ *
+ * This is the primary layout path — it avoids all BFS / collision computation
+ * on the client, making the network view load instantly with stable positions.
+ *
+ * @param events - Filtered historical events (must include network_y field).
+ * @param links  - All causality links (filtered to visible set internally).
+ * @returns ReactFlow-compatible nodes and edges.
+ */
+function buildFromPrecomputed(
+  events: HistoricalEvent[],
+  links: CausalityLink[],
+): { nodes: Node[]; edges: Edge[] } | null {
+  // Check how many events have precomputed positions
+  const precomputed = events.filter((e) => e.network_y != null);
+  if (precomputed.length < events.length * PRECOMPUTED_THRESHOLD) {
+    return null; // fall back to client-side tree layout
+  }
+
+  const nodeIdSet = new Set(events.map((e) => String(e.id)));
+
+  // Filter links to visible nodes
+  const validLinks = links.filter((l) => {
+    const causeId = String(l.cause_event_id);
+    const effectId = String(l.effect_event_id);
+    return nodeIdSet.has(causeId) && nodeIdSet.has(effectId);
+  });
+
+  // Build ReactFlow nodes from DB positions
+  const rfNodes: Node[] = events.map((event) => {
+    const id = String(event.id);
+    return {
+      id,
+      type: 'event',
+      position: {
+        x: yearToX(event.year_approx),
+        y: event.network_y ?? computeFallbackY(event),
+      },
+      data: { ...event, showLabel: true },
+      selectable: true,
+      draggable: true,
+    };
+  });
+
+  // Build ReactFlow edges (same logic as computeTreeLayout)
+  const ARROWHEAD_SIZE = 8;
+  const rfEdges: Edge[] = validLinks.map((l) => {
+    const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
+    const strength = l.strength ?? 0.5;
+    const baseStrokeWidth = Math.max(0.8, strength * 2.5);
+    return {
+      id: String(l.id),
+      source: String(l.cause_event_id),
+      target: String(l.effect_event_id),
+      type: 'causality',
+      data: {
+        connection_type: l.connection_type,
+        strength: l.strength,
+        description: l.description,
+      },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: ARROWHEAD_SIZE,
+        height: ARROWHEAD_SIZE,
+        color,
+      },
+      animated: l.connection_type === 'causes',
+      style: { stroke: color, strokeWidth: baseStrokeWidth },
+      label: l.connection_type,
+      labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
+      labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
+      labelBgPadding: [6, 3] as [number, number],
+    };
+  });
+
+  return { nodes: rfNodes, edges: rfEdges };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Client-side tree layout (fallback when DB positions unavailable)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -424,7 +530,7 @@ function NetworkViewInner() {
     [allEvents, viewportYearMin, viewportYearMax],
   );
 
-  // Compute force-directed layout whenever filtered events or links change
+  // Compute layout: prefer precomputed DB positions, fall back to client-side tree
   useEffect(() => {
     if (filteredEvents.length === 0) {
       setNodes([]);
@@ -432,6 +538,15 @@ function NetworkViewInner() {
       return;
     }
 
+    // Try precomputed DB layout first (instant, stable)
+    const precomputed = buildFromPrecomputed(filteredEvents, allCausalityLinks);
+    if (precomputed) {
+      setNodes(precomputed.nodes);
+      setEdges(precomputed.edges);
+      return;
+    }
+
+    // Fall back to full client-side tree layout
     const { nodes: rfNodes, edges: rfEdges } = computeTreeLayout(
       filteredEvents,
       allCausalityLinks,

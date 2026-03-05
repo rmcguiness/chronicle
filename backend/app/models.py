@@ -85,7 +85,9 @@ class Event(Base):
     geo_era_label: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     geo_modern: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    # Canvas rendering
+    # Canvas rendering — precomputed network layout
+    network_y: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
+
     importance_score: Mapped[float] = mapped_column(Float, default=0.5)
     zoom_min: Mapped[int] = mapped_column(Integer, default=1)
     zoom_max: Mapped[int] = mapped_column(Integer, default=10)

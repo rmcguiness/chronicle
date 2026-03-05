@@ -93,6 +93,7 @@ class CanvasEventItem(BaseModel):
     tags: Optional[List[str]] = None
     perspective_count: Optional[int] = None
     zoom_min: int = 1
+    network_y: Optional[float] = None       # precomputed Y for network view
 
 
 class CanvasTileResponse(BaseModel):
