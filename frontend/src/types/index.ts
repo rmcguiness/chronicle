@@ -48,6 +48,8 @@ export interface HistoricalEvent {
   importance_score: number;
   tags?: string[];
   perspective_count?: number;
+  /** Precomputed Y position for network view (from DB). Null if not yet computed. */
+  network_y?: number | null;
 }
 
 export interface Source {
