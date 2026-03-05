@@ -219,6 +219,11 @@ interface AppState {
   // View mode (timeline vs network)
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+
+  /** Whether the "On This Day" slide-in panel is visible. */
+  onThisDayOpen: boolean;
+  /** Toggle or set the "On This Day" panel open state. */
+  setOnThisDayOpen: (v: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -314,4 +319,8 @@ export const useAppStore = create<AppState>((set) => ({
   // View mode
   viewMode: 'timeline' as ViewMode,
   setViewMode: (viewMode) => set({ viewMode }),
+
+  // On This Day panel
+  onThisDayOpen: false,
+  setOnThisDayOpen: (onThisDayOpen) => set({ onThisDayOpen }),
 }));
