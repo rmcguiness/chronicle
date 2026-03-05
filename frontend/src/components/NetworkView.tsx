@@ -80,40 +80,8 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
 
-/** Buffer in screen px to keep edges visible slightly before nodes enter the viewport. */
-const EDGE_VISIBILITY_BUFFER_PX = 50;
-
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Edge visibility helper
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Check if a canvas-space position is currently visible on screen.
- *
- * @param canvasX - X position in canvas (ReactFlow) coordinates.
- * @param canvasY - Y position in canvas (ReactFlow) coordinates.
- * @param rfVp    - Current ReactFlow viewport { x, y, zoom }.
- * @returns True if the position falls within (or near) the visible screen area.
- */
-function isPositionVisible(
-  canvasX: number,
-  canvasY: number,
-  rfVp: { x: number; y: number; zoom: number },
-): boolean {
-  const screenX = canvasX * rfVp.zoom + rfVp.x;
-  const screenY = canvasY * rfVp.zoom + rfVp.y;
-  const sw = typeof window !== 'undefined' ? window.innerWidth : 1920;
-  const sh = typeof window !== 'undefined' ? window.innerHeight : 1080;
-  return (
-    screenX > -EDGE_VISIBILITY_BUFFER_PX &&
-    screenX < sw + EDGE_VISIBILITY_BUFFER_PX &&
-    screenY > -EDGE_VISIBILITY_BUFFER_PX &&
-    screenY < sh + EDGE_VISIBILITY_BUFFER_PX
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Layout helpers
@@ -299,7 +267,6 @@ function buildFromPrecomputed(
   links: CausalityLink[],
   yearMin: number,
   yearMax: number,
-  rfViewport: { x: number; y: number; zoom: number },
 ): { nodes: Node[]; edges: Edge[] } | null {
   // Check how many events have precomputed positions
   const precomputed = events.filter((e) => e.network_y != null);
@@ -332,24 +299,10 @@ function buildFromPrecomputed(
     };
   });
 
-  // Build a position map for edge visibility checks
-  const nodePositions = new Map<string, { x: number; y: number }>();
-  for (const n of rfNodes) {
-    nodePositions.set(n.id, n.position);
-  }
-
-  // Build ReactFlow edges — only render if both endpoints are currently on screen
+  // Build ReactFlow edges between all visible nodes (no viewport culling —
+  // events are already limited to the current timeViewport).
   const ARROWHEAD_SIZE = 8;
   const rfEdges: Edge[] = validLinks
-    .filter((l) => {
-      const srcPos = nodePositions.get(String(l.cause_event_id));
-      const tgtPos = nodePositions.get(String(l.effect_event_id));
-      if (!srcPos || !tgtPos) return false;
-      return (
-        isPositionVisible(srcPos.x, srcPos.y, rfViewport) &&
-        isPositionVisible(tgtPos.x, tgtPos.y, rfViewport)
-      );
-    })
     .map((l) => {
       const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
       const strength = l.strength ?? 0.5;
@@ -408,7 +361,6 @@ function computeTreeLayout(
   links: CausalityLink[],
   yearMin: number,
   yearMax: number,
-  rfViewport: { x: number; y: number; zoom: number },
 ): { nodes: Node[]; edges: Edge[] } {
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
@@ -552,27 +504,12 @@ function computeTreeLayout(
     };
   });
 
-  // ── 7. Convert to ReactFlow edges (filtered to visible nodes) ────────────
-
-  // Build a position map for edge visibility checks
-  const nodePositions = new Map<string, { x: number; y: number }>();
-  for (const n of rfNodes) {
-    nodePositions.set(n.id, n.position);
-  }
+  // ── 7. Convert to ReactFlow edges (all edges between rendered nodes) ──
 
   /** Smaller arrowhead size for cleaner visuals. */
   const ARROWHEAD_SIZE = 8;
 
   const rfEdges: Edge[] = validLinks
-    .filter((l) => {
-      const srcPos = nodePositions.get(String(l.cause_event_id));
-      const tgtPos = nodePositions.get(String(l.effect_event_id));
-      if (!srcPos || !tgtPos) return false;
-      return (
-        isPositionVisible(srcPos.x, srcPos.y, rfViewport) &&
-        isPositionVisible(tgtPos.x, tgtPos.y, rfViewport)
-      );
-    })
     .map((l) => {
       const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
       const strength = l.strength ?? 0.5;
@@ -645,9 +582,6 @@ function NetworkViewInner() {
   // Keep store's rfViewport in sync with the ReactFlow camera
   const setRfViewportStore = useAppStore((s) => s.setRfViewport);
 
-  // Read current rfViewport from the store for edge visibility culling
-  const rfViewport = useAppStore((s) => s.rfViewport);
-
   /** Throttle onMove store updates to max ~10/sec to avoid 60fps re-renders. */
   const RF_VIEWPORT_THROTTLE_MS = 100;
   const lastRfViewportUpdateRef = useRef(0);
@@ -714,7 +648,6 @@ function NetworkViewInner() {
       allCausalityLinks,
       viewportYearMin,
       viewportYearMax,
-      rfViewport,
     );
     if (precomputed) {
       setNodes(precomputed.nodes);
@@ -728,11 +661,10 @@ function NetworkViewInner() {
       allCausalityLinks,
       viewportYearMin,
       viewportYearMax,
-      rfViewport,
     );
     setNodes(rfNodes);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, rfViewport, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {
@@ -811,7 +743,9 @@ function NetworkViewInner() {
       const canvasX = (e.clientX - rfVp.x) / rfVp.zoom;
       const cursorYear = tv.yearMin + (canvasX / CANVAS_WIDTH) * span;
 
-      const factor = e.deltaY > 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+      // Scroll forward (deltaY < 0) = zoom out (widen year range)
+      // Scroll backward (deltaY > 0) = zoom in (narrow year range)
+      const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
       const newSpan = Math.min(MAX_SPAN, Math.max(MIN_SPAN, span * factor));
 
       const ratio = span > 0 ? (cursorYear - tv.yearMin) / span : 0.5;
@@ -825,8 +759,8 @@ function NetworkViewInner() {
       setTimeViewport({ yearMin: clampedMin, yearMax: clampedMax });
     };
 
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
+    el.addEventListener('wheel', onWheel, { passive: false, capture: true });
+    return () => el.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
   }, [getViewport, setRfViewport, setTimeViewport]);
 
   return (
@@ -838,7 +772,7 @@ function NetworkViewInner() {
         onEdgesChange={onEdgesChange}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
-        minZoom={0.02}
+        minZoom={0.3}
         maxZoom={4}
         defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
