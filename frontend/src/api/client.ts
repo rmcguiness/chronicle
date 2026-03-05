@@ -428,6 +428,30 @@ export async function fetchEventConnections(slug: string): Promise<CausalityLink
   );
 }
 
+/**
+ * Semantic search — calls /api/search/semantic for meaning-based event search.
+ * Falls back to keyword search on error.
+ *
+ * @param q - Natural language query
+ * @param limit - Max results to return
+ * @returns Array of search results ordered by semantic similarity
+ */
+export async function searchEventsSemantic(q: string, limit = 20): Promise<SearchResult[]> {
+  if (!q.trim()) return [];
+
+  const available = await isBackendAvailable();
+  if (!available) return searchEvents(q, limit);
+
+  try {
+    const { data } = await api.get('/api/search/semantic', { params: { q, limit }, timeout: 15000 });
+    const hits = data.results ?? data.hits ?? (Array.isArray(data) ? data : []);
+    return hits as SearchResult[];
+  } catch {
+    // Fall back to keyword search
+    return searchEvents(q, limit);
+  }
+}
+
 export async function searchEvents(q: string, limit = 10): Promise<SearchResult[]> {
   if (!q.trim()) return [];
 

@@ -1,16 +1,21 @@
 """
-GET /api/search?q={query}&limit={n}
-Full-text search using Meilisearch (primary) with PostgreSQL tsvector fallback.
+GET /api/search?q={query}&limit={n}       — keyword search (Meilisearch / PG FTS)
+GET /api/search/semantic?q={query}&limit=20 — semantic vector search (pgvector)
+
+Owns: all search endpoints.
+Does NOT own: embedding generation (see scripts/generate_embeddings.py).
 """
 from __future__ import annotations
 
 import logging
 import os
+import time
+from collections import defaultdict
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from geoalchemy2.functions import ST_X, ST_Y
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -20,6 +25,10 @@ from app.schemas import SearchResponse, SearchResultItem
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["search"])
+
+# ── Rate limiting for semantic search ─────────────────────────────────────────
+SEMANTIC_RATE_LIMIT = 30  # requests per minute
+_semantic_requests: defaultdict[str, list[float]] = defaultdict(list)
 
 # Meilisearch client — optional, gracefully degrades to PG FTS
 _meili_client = None
@@ -287,3 +296,113 @@ async def _search_meili(
             )
         )
     return SearchResponse(results=results)
+
+
+# ── Semantic search ───────────────────────────────────────────────────────────
+
+# Lazy-loaded sentence-transformers model
+_embedding_model = None
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+
+
+def _get_embedding_model():
+    """Lazily load the sentence-transformers model (first call ~2-5s)."""
+    global _embedding_model
+    if _embedding_model is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+            _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+            logger.info("Loaded embedding model: %s", EMBEDDING_MODEL_NAME)
+        except ImportError:
+            logger.error("sentence-transformers not installed — semantic search unavailable")
+            raise HTTPException(
+                status_code=503,
+                detail="Semantic search unavailable: sentence-transformers not installed",
+            )
+        except Exception as exc:
+            logger.error("Failed to load embedding model: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail="Semantic search unavailable: model load failed",
+            )
+    return _embedding_model
+
+
+def _check_rate_limit(client_ip: str) -> None:
+    """Simple in-memory rate limiter: 30 req/min per IP."""
+    now = time.time()
+    window_start = now - 60.0
+    # Prune old entries
+    _semantic_requests[client_ip] = [
+        t for t in _semantic_requests[client_ip] if t > window_start
+    ]
+    if len(_semantic_requests[client_ip]) >= SEMANTIC_RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded (30 req/min)")
+    _semantic_requests[client_ip].append(now)
+
+
+@router.get("/search/semantic", response_model=SearchResponse)
+async def semantic_search(
+    q: str = Query(..., description="Natural language search query"),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+) -> SearchResponse:
+    """
+    Semantic search using pgvector cosine similarity.
+    Embeds the query with all-MiniLM-L6-v2, then finds nearest events.
+    Falls back to keyword search if no embeddings exist yet.
+    """
+    if not q.strip():
+        return SearchResponse(results=[])
+
+    # Rate limit (use a fixed key since we don't have request object)
+    _check_rate_limit("global")
+
+    # Check if any embeddings exist
+    count_result = await db.execute(
+        text("SELECT COUNT(*) FROM events WHERE embedding IS NOT NULL")
+    )
+    embedding_count = count_result.scalar() or 0
+
+    if embedding_count == 0:
+        logger.info("No embeddings found — falling back to keyword search")
+        return await _search_postgres(q, limit, None, None, None, db)
+
+    # Encode query
+    model = _get_embedding_model()
+    query_embedding = model.encode([q])[0]
+    vec_str = "[" + ",".join(str(float(x)) for x in query_embedding) + "]"
+
+    # pgvector cosine similarity search
+    stmt = text("""
+        SELECT id, slug, title, year_approx, geo_modern, event_category,
+               importance_score,
+               ST_X(geo_point) as lng, ST_Y(geo_point) as lat,
+               embedding <=> :query_vec AS distance
+        FROM events
+        WHERE embedding IS NOT NULL
+          AND review_status = 'approved'
+        ORDER BY embedding <=> :query_vec
+        LIMIT :lim
+    """)
+
+    result = await db.execute(stmt, {"query_vec": vec_str, "lim": limit})
+    rows = result.fetchall()
+
+    return SearchResponse(
+        results=[
+            SearchResultItem(
+                id=str(row.id),
+                slug=row.slug,
+                title=row.title,
+                year_approx=row.year_approx,
+                geo_modern=row.geo_modern,
+                category=row.event_category,
+                importance_score=row.importance_score or 0.5,
+                lat=float(row.lat) if row.lat is not None else None,
+                lng=float(row.lng) if row.lng is not None else None,
+                score=float(1.0 - row.distance) if row.distance is not None else 0.0,
+            )
+            for row in rows
+        ]
+    )
