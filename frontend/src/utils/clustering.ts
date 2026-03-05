@@ -135,7 +135,7 @@ function bucketStart(year: number, bucketSize: number): number {
  * @param bucketSize - Bucket width in years.
  * @returns          A display label string.
  */
-function formatBucketLabel(start: number, _bucketSize: number): string {
+function formatBucketLabel(start: number): string {
   if (start < 0) {
     return `${Math.abs(start)}s BC`;
   }
@@ -255,7 +255,7 @@ function buildClusterNodes(
 
     const data: ClusterNodeData = {
       count,
-      bucketLabel: formatBucketLabel(yearStart, bucketSize),
+      bucketLabel: formatBucketLabel(yearStart),
       region,
       yearStart,
       yearEnd,

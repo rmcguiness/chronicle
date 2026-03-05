@@ -388,26 +388,38 @@ function ConnectedEventChip({ event }: { event: ConnectedEvent }) {
 // Article section component
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Combined fetch state for ArticleContent — batched into one object to avoid
+ *  synchronous multi-setState calls inside a useEffect (react-hooks/set-state-in-effect). */
+interface ArticleFetchState {
+  loading: boolean;
+  notFound: boolean;
+  article: ArticleResponse | null;
+}
+
 /** Renders the Wikipedia article content or a fallback message. */
 function ArticleContent({ slug }: { slug: string }) {
-  const [article, setArticle] = useState<ArticleResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [fetchState, setFetchState] = useState<ArticleFetchState>({
+    loading: true,
+    notFound: false,
+    article: null,
+  });
+
+  const { loading, notFound, article } = fetchState;
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setNotFound(false);
-    setArticle(null);
+    // Reset all fetch state atomically before re-fetching. The single setState call avoids
+    // multiple cascade renders; the synchronous call is intentional (slug-change reset).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFetchState({ loading: true, notFound: false, article: null });
 
     fetchArticle(slug).then((result) => {
       if (cancelled) return;
       if (!result || result.summary === null) {
-        setNotFound(true);
+        setFetchState({ loading: false, notFound: true, article: null });
       } else {
-        setArticle(result);
+        setFetchState({ loading: false, notFound: false, article: result });
       }
-      setLoading(false);
     });
 
     return () => {
