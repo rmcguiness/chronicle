@@ -517,6 +517,25 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 /**
+ * Fetch all causality links from the backend (or mock fallback).
+ * Used by the Network view to render all edges in the force-directed graph.
+ */
+export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get('/api/causality');
+      return (data.links ?? data) as CausalityLink[];
+    } catch {
+      // fall through to mock
+    }
+  }
+
+  return MOCK_LINKS;
+}
+
+/**
  * Fetch Wikipedia data for an event, returning a WikiData | WikiDataNotFound
  * discriminated union compatible with EventDetailPage.
  */
