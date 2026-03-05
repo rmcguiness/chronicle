@@ -144,7 +144,7 @@ export function yToLat(y: number): number {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A pending ReactFlow viewport to be applied by CanvasInner.
+ * A pending ReactFlow viewport to be applied by NetworkView.
  * Set by the permalink system when restoring a shared URL.
  */
 export interface PendingRfViewport {
@@ -207,12 +207,12 @@ interface AppState {
   activeCategories: Set<EventCategory>;
   toggleCategory: (cat: EventCategory) => void;
 
-  // Region swim-lane collapsed state (source of truth; replaces useCollapsedBands local state)
+  // Region swim-lane collapsed state (source of truth)
   collapsedRegions: Set<Region>;
   setCollapsedRegions: (regions: Set<Region>) => void;
   toggleCollapsedRegion: (region: Region) => void;
 
-  // Pending ReactFlow viewport — set by permalink restore; consumed by CanvasInner
+  // Pending ReactFlow viewport — set by permalink restore; consumed by NetworkView
   pendingRfViewport: PendingRfViewport | null;
   setPendingRfViewport: (vp: PendingRfViewport | null) => void;
 
@@ -316,8 +316,8 @@ export const useAppStore = create<AppState>((set) => ({
   pendingRfViewport: null,
   setPendingRfViewport: (pendingRfViewport) => set({ pendingRfViewport }),
 
-  // View mode
-  viewMode: 'timeline' as ViewMode,
+  // View mode (network is the only active view; timeline is archived)
+  viewMode: 'network' as ViewMode,
   setViewMode: (viewMode) => set({ viewMode }),
 
   // On This Day panel

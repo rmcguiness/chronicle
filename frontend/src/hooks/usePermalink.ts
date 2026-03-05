@@ -12,7 +12,7 @@
  * Does NOT:
  *   - Parse or serialize hash strings (see utils/permalink.ts)
  *   - Directly control the ReactFlow viewport — it sets `pendingRfViewport`
- *     in the store; Canvas.tsx (CanvasInner) consumes and applies it
+ *     in the store; NetworkView consumes and applies it
  */
 
 import { useEffect, useRef } from 'react';
@@ -43,9 +43,9 @@ const HASH_UPDATE_DEBOUNCE_MS = 500;
  * 3. On `hashchange` → restores state from the new hash (handles back/forward).
  *
  * @example
- * function TimelineView() {
+ * function MainView() {
  *   usePermalink();
- *   return <Canvas />;
+ *   return <NetworkView />;
  * }
  */
 export function usePermalink(): void {
@@ -82,7 +82,7 @@ export function usePermalink(): void {
         zoom: state.zoom,
       });
       setRfZoom(state.zoom);
-      // Signal CanvasInner to apply the viewport once ReactFlow is ready
+      // Signal NetworkView to apply the viewport once ReactFlow is ready
       setPendingRfViewport(yearRangeToRfViewport(state.startYear, state.zoom));
     }
 
