@@ -1,19 +1,58 @@
+/**
+ * TimelineScrubber.tsx
+ *
+ * Bottom-of-screen scrubber that shows the full timeline (-5000 to 2100) and
+ * highlights the year range currently visible on screen. The visible window is
+ * derived from the ReactFlow camera position + timeViewport + canvas width.
+ *
+ * Drag behavior:
+ *   - Body drag → pans the ReactFlow camera (shifts rfViewport.x) without
+ *     changing timeViewport.
+ *   - Edge handles → changes timeViewport (zoom in/out), same as before.
+ *
+ * Owns: scrubber UI, drag interaction.
+ * Does NOT own: data fetching, layout computation, node rendering.
+ */
+
 import { useRef, useCallback } from 'react';
 import { useAppStore } from '../store';
 import { CANVAS_CONSTANTS } from '../types';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
 const { BASE_YEAR_MIN, BASE_YEAR_MAX } = CANVAS_CONSTANTS;
-const OVERALL_MIN = BASE_YEAR_MIN; // -5000
-const OVERALL_MAX = BASE_YEAR_MAX; // 2100
 
+/** Full historical range shown in the scrubber track. */
+const FULL_MIN = BASE_YEAR_MIN; // -5000
+const FULL_MAX = BASE_YEAR_MAX; // 2100
+const FULL_SPAN = FULL_MAX - FULL_MIN; // 7100
+
+/** Canvas width used by NetworkView (must stay in sync). */
+const CANVAS_WIDTH = 15_000;
+
+/** Minimum time span allowed (prevents collapsing the window to nothing). */
+const MIN_TIME_SPAN = 50;
+
+/** Default screen width fallback for SSR/tests. */
+const DEFAULT_SCREEN_WIDTH = 1920;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Convert a year to a percentage position on the scrubber track. */
 function yearToPercent(year: number): number {
-  return ((year - OVERALL_MIN) / (OVERALL_MAX - OVERALL_MIN)) * 100;
+  return ((year - FULL_MIN) / FULL_SPAN) * 100;
 }
 
+/** Convert a percentage position on the track back to a year. */
 function percentToYear(pct: number): number {
-  return Math.round(OVERALL_MIN + (pct / 100) * (OVERALL_MAX - OVERALL_MIN));
+  return Math.round(FULL_MIN + (pct / 100) * FULL_SPAN);
 }
 
+/** Format a year for display (e.g. "3000 BCE", "1500", "CE"). */
 function yearLabel(year: number): string {
   if (year < 0) return `${Math.abs(year)} BCE`;
   if (year === 0) return '1 BCE/CE';
@@ -22,63 +61,96 @@ function yearLabel(year: number): string {
 
 // Tick every 500 years
 const TICK_MARKERS: number[] = [];
-for (let y = OVERALL_MIN; y <= OVERALL_MAX; y += 500) TICK_MARKERS.push(y);
+for (let y = FULL_MIN; y <= FULL_MAX; y += 500) TICK_MARKERS.push(y);
 
 // Labels at every 1000 years
 const LABEL_MARKERS: number[] = [];
-for (let y = OVERALL_MIN; y <= OVERALL_MAX; y += 1000) LABEL_MARKERS.push(y);
+for (let y = FULL_MIN; y <= FULL_MAX; y += 1000) LABEL_MARKERS.push(y);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fixed-position timeline scrubber at the bottom of the screen.
+ * Shows the full historical range with tick marks, and highlights the year
+ * range currently visible on the ReactFlow canvas.
+ */
 export default function TimelineScrubber() {
   const timeViewport = useAppStore((s) => s.timeViewport);
   const setTimeViewport = useAppStore((s) => s.setTimeViewport);
+  const rfViewport = useAppStore((s) => s.rfViewport);
+  const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
 
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const yearMin = Math.max(OVERALL_MIN, timeViewport.yearMin);
-  const yearMax = Math.min(OVERALL_MAX, timeViewport.yearMax);
+  // ── Compute the year range currently visible on screen ──────────────────
 
-  const minPct = yearToPercent(yearMin);
-  const maxPct = yearToPercent(yearMax);
+  const tvSpan = timeViewport.yearMax - timeViewport.yearMin;
+  const screenWidth = typeof window !== 'undefined' ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
 
-  // Drag logic
+  /**
+   * Visible year range on screen, derived from ReactFlow camera position.
+   * rfViewport.x is the screen-space offset of canvas origin; dividing by zoom
+   * converts to canvas-space. That canvas-space offset as a fraction of
+   * CANVAS_WIDTH tells us how far into timeViewport we are.
+   */
+  const visibleYearMin = timeViewport.yearMin + (-rfViewport.x / rfViewport.zoom / CANVAS_WIDTH) * tvSpan;
+  const visibleYearMax = visibleYearMin + (screenWidth / rfViewport.zoom / CANVAS_WIDTH) * tvSpan;
+
+  // Clamp to full range for display
+  const windowMin = Math.max(FULL_MIN, visibleYearMin);
+  const windowMax = Math.min(FULL_MAX, visibleYearMax);
+
+  const minPct = yearToPercent(windowMin);
+  const maxPct = yearToPercent(windowMax);
+
+  // ── Drag state ──────────────────────────────────────────────────────────
+
   const dragging = useRef<null | 'min' | 'max' | 'range'>(null);
-  const dragStart = useRef({ x: 0, yearMin: 0, yearMax: 0 });
+  const dragStart = useRef({
+    x: 0,
+    windowMin: 0,
+    windowMax: 0,
+    rfX: 0,
+    tvYearMin: 0,
+    tvYearMax: 0,
+  });
 
-  const getYearFromClientX = useCallback((clientX: number): number => {
-    if (!trackRef.current) return 0;
-    const rect = trackRef.current.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-    return percentToYear(pct);
-  }, []);
+  // ── Mouse handlers ──────────────────────────────────────────────────────
 
-  // Declare onMouseMove + onMouseUp BEFORE the mousedown handlers so the
-  // react-hooks/immutability rule sees them as initialized at point of use.
   const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragging.current || !trackRef.current) return;
     const rect = trackRef.current.getBoundingClientRect();
     const dx = e.clientX - dragStart.current.x;
-    const dYears = Math.round((dx / rect.width) * (OVERALL_MAX - OVERALL_MIN));
+    const dYears = Math.round((dx / rect.width) * FULL_SPAN);
 
     if (dragging.current === 'min') {
-      const newMin = Math.max(OVERALL_MIN, Math.min(dragStart.current.yearMax - 50, dragStart.current.yearMin + dYears));
-      setTimeViewport({ yearMin: newMin, yearMax: dragStart.current.yearMax });
+      // Left handle: change timeViewport.yearMin (zoom in/out from the left)
+      const newMin = Math.max(FULL_MIN, Math.min(
+        dragStart.current.tvYearMax - MIN_TIME_SPAN,
+        dragStart.current.tvYearMin + dYears,
+      ));
+      setTimeViewport({ yearMin: newMin, yearMax: dragStart.current.tvYearMax });
     } else if (dragging.current === 'max') {
-      const newMax = Math.min(OVERALL_MAX, Math.max(dragStart.current.yearMin + 50, dragStart.current.yearMax + dYears));
-      setTimeViewport({ yearMin: dragStart.current.yearMin, yearMax: newMax });
+      // Right handle: change timeViewport.yearMax (zoom in/out from the right)
+      const newMax = Math.min(FULL_MAX, Math.max(
+        dragStart.current.tvYearMin + MIN_TIME_SPAN,
+        dragStart.current.tvYearMax + dYears,
+      ));
+      setTimeViewport({ yearMin: dragStart.current.tvYearMin, yearMax: newMax });
     } else if (dragging.current === 'range') {
-      const span = dragStart.current.yearMax - dragStart.current.yearMin;
-      let newMin = Math.round(dragStart.current.yearMin + dYears);
-      let newMax = newMin + span;
-      if (newMin < OVERALL_MIN) { newMin = OVERALL_MIN; newMax = OVERALL_MIN + span; }
-      if (newMax > OVERALL_MAX) { newMax = OVERALL_MAX; newMin = OVERALL_MAX - span; }
-      setTimeViewport({ yearMin: newMin, yearMax: newMax });
+      // Body drag: pan the ReactFlow camera (shift rfViewport.x)
+      const currentTvSpan = dragStart.current.tvYearMax - dragStart.current.tvYearMin;
+      const dCanvasX = (dYears / currentTvSpan) * CANVAS_WIDTH;
+      const newRfX = dragStart.current.rfX - dCanvasX * rfViewport.zoom;
+      setPendingRfViewport({ x: newRfX, y: rfViewport.y, zoom: rfViewport.zoom });
     }
-  }, [setTimeViewport]);
+  }, [setTimeViewport, setPendingRfViewport, rfViewport.y, rfViewport.zoom]);
 
   const onMouseUp = useCallback(() => {
     dragging.current = null;
     window.removeEventListener('mousemove', onMouseMove);
-    // Self-reference is intentional: removes this exact listener instance.
     // eslint-disable-next-line react-hooks/immutability
     window.removeEventListener('mouseup', onMouseUp);
   }, [onMouseMove]);
@@ -86,7 +158,14 @@ export default function TimelineScrubber() {
   const onMinMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     dragging.current = 'min';
-    dragStart.current = { x: e.clientX, yearMin, yearMax };
+    dragStart.current = {
+      x: e.clientX,
+      windowMin,
+      windowMax,
+      rfX: rfViewport.x,
+      tvYearMin: timeViewport.yearMin,
+      tvYearMax: timeViewport.yearMax,
+    };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   };
@@ -94,7 +173,14 @@ export default function TimelineScrubber() {
   const onMaxMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     dragging.current = 'max';
-    dragStart.current = { x: e.clientX, yearMin, yearMax };
+    dragStart.current = {
+      x: e.clientX,
+      windowMin,
+      windowMax,
+      rfX: rfViewport.x,
+      tvYearMin: timeViewport.yearMin,
+      tvYearMax: timeViewport.yearMax,
+    };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   };
@@ -103,25 +189,34 @@ export default function TimelineScrubber() {
     if ((e.target as HTMLElement).dataset.handle) return;
     e.preventDefault();
     dragging.current = 'range';
-    dragStart.current = { x: e.clientX, yearMin, yearMax };
+    dragStart.current = {
+      x: e.clientX,
+      windowMin,
+      windowMax,
+      rfX: rfViewport.x,
+      tvYearMin: timeViewport.yearMin,
+      tvYearMax: timeViewport.yearMax,
+    };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   };
 
-  // Click on track to jump
+  // Click on track to jump (center the visible window on the clicked year)
   const onTrackClick = (e: React.MouseEvent) => {
     if (dragging.current) return;
-    const year = getYearFromClientX(e.clientX);
-    const span = yearMax - yearMin;
-    const halfSpan = span / 2;
-    let newMin = Math.round(year - halfSpan);
-    let newMax = Math.round(year + halfSpan);
-    if (newMin < OVERALL_MIN) { newMin = OVERALL_MIN; newMax = OVERALL_MIN + span; }
-    if (newMax > OVERALL_MAX) { newMax = OVERALL_MAX; newMin = OVERALL_MAX - span; }
-    setTimeViewport({ yearMin: newMin, yearMax: newMax });
+    if (!trackRef.current) return;
+    const rect = trackRef.current.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const clickedYear = percentToYear(pct);
+
+    // Pan the camera so the clicked year is centered on screen
+    const visibleSpanYears = (screenWidth / rfViewport.zoom / CANVAS_WIDTH) * tvSpan;
+    const targetVisibleMin = clickedYear - visibleSpanYears / 2;
+    const newRfX = -(((targetVisibleMin - timeViewport.yearMin) / tvSpan) * CANVAS_WIDTH) * rfViewport.zoom;
+    setPendingRfViewport({ x: newRfX, y: rfViewport.y, zoom: rfViewport.zoom });
   };
 
-  const span = yearMax - yearMin;
+  const windowSpan = windowMax - windowMin;
 
   return (
     <div
@@ -141,13 +236,13 @@ export default function TimelineScrubber() {
       {/* Year range indicator */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace' }}>
-          {yearLabel(yearMin)}
+          {yearLabel(Math.round(windowMin))}
         </span>
         <span style={{ fontSize: 11, color: '#475569', letterSpacing: '0.05em' }}>
-          TIMELINE — {span.toLocaleString()} year span
+          TIMELINE — {windowSpan.toLocaleString(undefined, { maximumFractionDigits: 0 })} year span
         </span>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace' }}>
-          {yearLabel(yearMax)}
+          {yearLabel(Math.round(windowMax))}
         </span>
       </div>
 
@@ -232,7 +327,7 @@ export default function TimelineScrubber() {
           </div>
         ))}
 
-        {/* Active range highlight */}
+        {/* Active range highlight (visible window on screen) */}
         <div
           data-handle="range"
           onMouseDown={onRangeMouseDown}
@@ -250,7 +345,7 @@ export default function TimelineScrubber() {
           }}
         />
 
-        {/* Min handle */}
+        {/* Min handle (left edge — changes timeViewport) */}
         <div
           data-handle="min"
           onMouseDown={onMinMouseDown}
@@ -270,7 +365,7 @@ export default function TimelineScrubber() {
           }}
         />
 
-        {/* Max handle */}
+        {/* Max handle (right edge — changes timeViewport) */}
         <div
           data-handle="max"
           onMouseDown={onMaxMouseDown}

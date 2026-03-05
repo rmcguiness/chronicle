@@ -228,6 +228,10 @@ interface AppState {
   /** The currently visible year range on the network canvas. Single source of truth for X mapping, node sizing, and the minimap. */
   timeViewport: { yearMin: number; yearMax: number };
   setTimeViewport: (v: { yearMin: number; yearMax: number }) => void;
+
+  /** Current ReactFlow camera — updated on every move/zoom so other components can read it. */
+  rfViewport: { x: number; y: number; zoom: number };
+  setRfViewport: (vp: { x: number; y: number; zoom: number }) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -331,4 +335,8 @@ export const useAppStore = create<AppState>((set) => ({
   // Time viewport — visible year range on the network canvas
   timeViewport: { yearMin: -800, yearMax: 1500 },
   setTimeViewport: (timeViewport) => set({ timeViewport }),
+
+  // ReactFlow camera — synced on every move/zoom for scrubber + other readers
+  rfViewport: { x: 0, y: 0, zoom: 0.08 },
+  setRfViewport: (rfViewport) => set({ rfViewport }),
 }));

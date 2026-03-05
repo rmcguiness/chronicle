@@ -84,35 +84,6 @@ const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Node size formula — grows from 16px (full history) to 50px (~50yr span)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** Span (years) at which nodes begin growing. Wider than this = minimum size. */
-const GROWTH_START_SPAN = 500;
-/** Span (years) at which nodes reach their maximum 50px size. */
-const GROWTH_END_SPAN = 50;
-/** Node diameter (px) when zoomed all the way out. */
-const NODE_SIZE_MIN = 16;
-/** Node diameter (px) when zoomed in (capped here, never exceeds this). */
-const NODE_SIZE_MAX = 50;
-
-/**
- * Compute the rendered node diameter (in canvas px) for a given time zoom level.
- * At full history view: ~16px. At narrow zoom (~50yr): 50px. Held at 50px beyond that.
- *
- * @param importanceScore - Event importance [0, 1], adds up to 8px base variation.
- * @param timeSpan - Current year span of the timeViewport (yearMax - yearMin).
- * @returns Node diameter in pixels.
- */
-function computeNodeSize(importanceScore: number, timeSpan: number): number {
-  const importanceBase = NODE_SIZE_MIN + importanceScore * 8; // 16–24px importance range
-  const t = Math.min(1, Math.max(0,
-    (GROWTH_START_SPAN - timeSpan) / (GROWTH_START_SPAN - GROWTH_END_SPAN)
-  ));
-  return Math.round(importanceBase + t * (NODE_SIZE_MAX - importanceBase));
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Layout helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -304,7 +275,6 @@ function buildFromPrecomputed(
   }
 
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
-  const timeSpan = yearMax - yearMin;
 
   // Filter links to visible nodes
   const validLinks = links.filter((l) => {
@@ -314,9 +284,9 @@ function buildFromPrecomputed(
   });
 
   // Build ReactFlow nodes from DB positions
+  // (nodeSize is computed inside EventNode.tsx via timeViewport subscription)
   const rfNodes: Node[] = events.map((event) => {
     const id = String(event.id);
-    const nodeSize = computeNodeSize(event.importance_score ?? 0.5, timeSpan);
     return {
       id,
       type: 'event',
@@ -324,7 +294,7 @@ function buildFromPrecomputed(
         x: eventToX(event, yearMin, yearMax),
         y: event.network_y ?? computeFallbackY(event),
       },
-      data: { ...event, showLabel: true, nodeSize },
+      data: { ...event, showLabel: true },
       selectable: true,
       draggable: true,
     };
@@ -519,17 +489,16 @@ function computeTreeLayout(
   }
 
   // ── 6. Convert to ReactFlow nodes ───────────────────────────────────────
+  // (nodeSize is computed inside EventNode.tsx via timeViewport subscription)
 
-  const timeSpan = yearMax - yearMin;
   const rfNodes: Node[] = events.map((event) => {
     const id = String(event.id);
     const pos = positions.get(id)!;
-    const nodeSize = computeNodeSize(event.importance_score ?? 0.5, timeSpan);
     return {
       id,
       type: 'event',
       position: { x: pos.x, y: pos.y },
-      data: { ...event, showLabel: true, nodeSize },
+      data: { ...event, showLabel: true },
       selectable: true,
       draggable: true,
     };
@@ -608,6 +577,13 @@ function NetworkViewInner() {
   // Subscribe to timeViewport — single source of truth for the visible year range
   const timeViewport = useAppStore((s) => s.timeViewport);
   const setTimeViewport = useAppStore((s) => s.setTimeViewport);
+
+  // Keep store's rfViewport in sync with the ReactFlow camera
+  const setRfViewportStore = useAppStore((s) => s.setRfViewport);
+
+  // Consume pendingRfViewport from the store (set by scrubber body drag / permalink)
+  const pendingRfViewport = useAppStore((s) => s.pendingRfViewport);
+  const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
   const viewportYearMin = timeViewport.yearMin;
   const viewportYearMax = timeViewport.yearMax;
 
@@ -728,6 +704,13 @@ function NetworkViewInner() {
   // ── Scroll-based time zoom + Ctrl+scroll visual zoom ──────────────────
   const { setViewport: setRfViewport, getViewport } = useReactFlow();
 
+  // Apply pending ReactFlow viewport from scrubber body drag or permalink restore
+  useEffect(() => {
+    if (!pendingRfViewport) return;
+    setRfViewport(pendingRfViewport, { duration: 0 });
+    setPendingRfViewport(null);
+  }, [pendingRfViewport, setRfViewport, setPendingRfViewport]);
+
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -804,6 +787,7 @@ function NetworkViewInner() {
         panOnScroll={false}
         zoomOnScroll={false}
         panOnDrag
+        onMove={(_event, vp) => setRfViewportStore(vp)}
       >
         <Background
           color="rgba(255,255,255,0.02)"
