@@ -11,14 +11,19 @@
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Canvas from './components/Canvas';
+import NetworkView from './components/NetworkView';
+import ViewToggle from './components/ViewToggle';
 import SearchBar from './components/SearchBar';
 import EventDetailPanel from './components/EventDetailPanel';
 import TimelineScrubber from './components/TimelineScrubber';
 import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
+import OnThisDayPanel from './components/OnThisDayPanel';
+import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
+import { useAppStore } from './store';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -31,20 +36,23 @@ const queryClient = new QueryClient({
 });
 
 /**
- * Full-screen canvas timeline view (the original Chronicle experience).
- * Extracted as a named component so React Router can swap it cleanly.
- *
- * Mounts `usePermalink` to enable shareable URL hash links that encode
- * the current viewport state, selected event, and region visibility.
+ * Full-screen main view — switches between Timeline (canvas) and Network
+ * (force-directed graph) based on the Zustand viewMode state.
+ * Mounts `usePermalink` to enable shareable URL hash links.
  */
-function TimelineView() {
+function MainView() {
+  const viewMode = useAppStore((s) => s.viewMode);
+
   // Activates hash ↔ store sync: read on mount, write on change, listen for hashchange
   usePermalink();
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
-      {/* Background canvas (map + events) — also renders the Share + Bookmarks toolbar */}
-      <Canvas />
+      {/* Background canvas or network graph */}
+      {viewMode === 'timeline' ? <Canvas /> : <NetworkView />}
+
+      {/* View mode toggle (top-right) */}
+      <ViewToggle />
 
       {/* Top search bar */}
       <SearchBar />
@@ -52,11 +60,17 @@ function TimelineView() {
       {/* Category legend (top-left) */}
       <CategoryLegend />
 
+      {/* On This Day button (toolbar) */}
+      <OnThisDayButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
-      {/* Bottom timeline scrubber */}
-      <TimelineScrubber />
+      {/* On This Day slide-in panel */}
+      <OnThisDayPanel />
+
+      {/* Bottom timeline scrubber — only shown in timeline mode */}
+      {viewMode === 'timeline' && <TimelineScrubber />}
 
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
@@ -68,7 +82,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
-        <Route path="/" element={<TimelineView />} />
+        <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>

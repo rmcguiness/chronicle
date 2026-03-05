@@ -80,6 +80,9 @@ function saveCollapsedRegions(regions: Set<Region>): void {
 /** All event categories for default active set */
 const ALL_CATEGORIES: EventCategory[] = ['war', 'discovery', 'political', 'cultural', 'natural', 'person'];
 
+/** Supported view modes for the main canvas area. */
+export type ViewMode = 'timeline' | 'network';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Canvas coordinate math
 // ─────────────────────────────────────────────────────────────────────────────
@@ -212,6 +215,10 @@ interface AppState {
   // Pending ReactFlow viewport — set by permalink restore; consumed by CanvasInner
   pendingRfViewport: PendingRfViewport | null;
   setPendingRfViewport: (vp: PendingRfViewport | null) => void;
+
+  // View mode (timeline vs network)
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -303,4 +310,8 @@ export const useAppStore = create<AppState>((set) => ({
   // Pending ReactFlow viewport from permalink restore
   pendingRfViewport: null,
   setPendingRfViewport: (pendingRfViewport) => set({ pendingRfViewport }),
+
+  // View mode
+  viewMode: 'timeline' as ViewMode,
+  setViewMode: (viewMode) => set({ viewMode }),
 }));
