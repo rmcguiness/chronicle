@@ -9,7 +9,7 @@
  * Does NOT own: event detail panel, data fetching strategy, view mode toggling.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -34,9 +34,8 @@ import {
 
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
-import { useAppStore } from '../store';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
-import { CATEGORY_COLORS, CONNECTION_COLORS } from '../utils/categories';
+import { CONNECTION_COLORS } from '../utils/categories';
 import type { HistoricalEvent, CausalityLink } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,8 +89,6 @@ function computeForceLayout(
   events: HistoricalEvent[],
   links: CausalityLink[],
 ): { nodes: Node[]; edges: Edge[] } {
-  const eventMap = new Map(events.map((e) => [String(e.id), e]));
-
   // Build force nodes
   const forceNodes: ForceNode[] = events.map((e) => ({
     id: String(e.id),

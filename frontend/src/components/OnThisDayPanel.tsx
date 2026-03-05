@@ -146,8 +146,6 @@ export default function OnThisDayPanel() {
   const open = useAppStore((s) => s.onThisDayOpen);
   const setOpen = useAppStore((s) => s.setOnThisDayOpen);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
-  const setFlyToEvent = useAppStore((s) => s.setFlyToEvent);
-
   const now = new Date();
   const month = now.getMonth() + 1;
   const day = now.getDate();
