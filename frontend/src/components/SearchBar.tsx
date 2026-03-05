@@ -1,6 +1,12 @@
+/**
+ * SearchBar — global event search with keyword and semantic modes.
+ *
+ * Owns: search input, mode toggle (Keyword/Semantic), result dropdown.
+ * Does NOT own: event detail display, map navigation logic.
+ */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { searchEvents } from '../api/client';
+import { searchEvents, searchEventsSemantic } from '../api/client';
 import { useAppStore } from '../store';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import { MOCK_EVENTS } from '../api/client';
@@ -9,6 +15,25 @@ import type { SearchResult } from '../types';
 /** Max height (px) for the search results dropdown before it scrolls. */
 const SEARCH_RESULTS_MAX_HEIGHT_PX = 360;
 
+/** Debounce delay in ms for search input. */
+const DEBOUNCE_DELAY_MS = 300;
+
+/** Minimum query length to trigger search. */
+const MIN_QUERY_LENGTH = 2;
+
+/** localStorage key for search mode preference. */
+const SEARCH_MODE_KEY = 'chronicle-search-mode';
+
+/** Search mode type. */
+type SearchMode = 'keyword' | 'semantic';
+
+/**
+ * Custom hook to debounce a value by a given delay.
+ *
+ * @param value - The value to debounce
+ * @param delay - Debounce delay in milliseconds
+ * @returns The debounced value
+ */
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState<T>(value);
   useEffect(() => {
@@ -19,26 +44,40 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 /**
- * Global search bar with typeahead dropdown. Searches events by title,
- * place, or year and flies the canvas to the selected result.
+ * SearchBar component with keyword/semantic mode toggle.
+ * Displays a fixed search input at the top of the viewport with a dropdown
+ * of results. Supports toggling between keyword (fast, Meilisearch/PG FTS)
+ * and semantic (meaning-based, pgvector) search modes.
  */
 export default function SearchBar() {
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
+  const [searchMode, setSearchMode] = useState<SearchMode>(() => {
+    const saved = localStorage.getItem(SEARCH_MODE_KEY);
+    return saved === 'semantic' ? 'semantic' : 'keyword';
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const setFlyToEvent = useAppStore((s) => s.setFlyToEvent);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
-  const debouncedQuery = useDebounce(inputValue, 300);
+  const debouncedQuery = useDebounce(inputValue, DEBOUNCE_DELAY_MS);
+
+  const searchFn = searchMode === 'semantic' ? searchEventsSemantic : searchEvents;
 
   const { data: results = [], isFetching } = useQuery({
-    queryKey: ['search', debouncedQuery],
-    queryFn: () => searchEvents(debouncedQuery, 10),
-    enabled: debouncedQuery.length >= 2,
+    queryKey: ['search', debouncedQuery, searchMode],
+    queryFn: () => searchFn(debouncedQuery, searchMode === 'semantic' ? 20 : 10),
+    enabled: debouncedQuery.length >= MIN_QUERY_LENGTH,
     staleTime: 2 * 60 * 1000,
   });
+
+  // Persist mode preference
+  const handleModeChange = useCallback((mode: SearchMode) => {
+    setSearchMode(mode);
+    localStorage.setItem(SEARCH_MODE_KEY, mode);
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -52,9 +91,8 @@ export default function SearchBar() {
   }, []);
 
   const handleSelect = useCallback((result: SearchResult) => {
-    // Find full event in mock data for flyover
     const event = MOCK_EVENTS.find((e) => e.id === result.id) ?? result;
-    setFlyToEvent(event as any);
+    setFlyToEvent(event as Parameters<typeof setFlyToEvent>[0]);
     setSelectedEvent(result.slug);
     setInputValue('');
     setOpen(false);
@@ -69,7 +107,7 @@ export default function SearchBar() {
     }
   };
 
-  const showDropdown = open && debouncedQuery.length >= 2;
+  const showDropdown = open && debouncedQuery.length >= MIN_QUERY_LENGTH;
 
   return (
     <div
@@ -84,7 +122,7 @@ export default function SearchBar() {
         maxWidth: 'calc(100vw - 40px)',
       }}
     >
-      {/* Input */}
+      {/* Input + Mode Toggle */}
       <div
         style={{
           position: 'relative',
@@ -118,10 +156,12 @@ export default function SearchBar() {
           onChange={(e) => { setInputValue(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search events, places, years…"
+          placeholder={searchMode === 'semantic'
+            ? 'Search by meaning… e.g. "conflicts in ancient Greece"'
+            : 'Search events, places, years…'}
           style={{
             width: '100%',
-            padding: '13px 40px 13px 42px',
+            padding: '13px 140px 13px 42px',
             backgroundColor: 'transparent',
             border: 'none',
             outline: 'none',
@@ -131,6 +171,33 @@ export default function SearchBar() {
             boxSizing: 'border-box',
           }}
         />
+
+        {/* Mode Toggle Pill */}
+        <div
+          style={{
+            position: 'absolute',
+            right: 40,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            borderRadius: 8,
+            overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <ModeButton
+            label="Keyword"
+            active={searchMode === 'keyword'}
+            onClick={() => handleModeChange('keyword')}
+          />
+          <ModeButton
+            label="Semantic"
+            active={searchMode === 'semantic'}
+            onClick={() => handleModeChange('semantic')}
+          />
+        </div>
+
+        {/* Loading spinner / clear button */}
         {isFetching && (
           <span
             style={{
@@ -138,8 +205,9 @@ export default function SearchBar() {
               right: 14,
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#475569',
-              fontSize: 12,
+              color: '#60a5fa',
+              fontSize: 14,
+              animation: 'spin 1s linear infinite',
             }}
           >
             ⟳
@@ -182,6 +250,21 @@ export default function SearchBar() {
             overflowY: 'auto',
           }}
         >
+          {/* Semantic mode indicator */}
+          {searchMode === 'semantic' && (
+            <div style={{
+              padding: '6px 16px',
+              fontSize: 11,
+              color: '#818cf8',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}>
+              <span>🧠</span>
+              <span>Semantic search — results ranked by meaning</span>
+            </div>
+          )}
           {results.length === 0 ? (
             <div style={{ padding: '14px 16px', color: '#475569', fontSize: 13, textAlign: 'center' }}>
               {isFetching ? 'Searching…' : 'No events found'}
@@ -255,6 +338,42 @@ export default function SearchBar() {
           )}
         </div>
       )}
+
+      {/* Spin animation for loading indicator */}
+      <style>{`
+        @keyframes spin {
+          from { transform: translateY(-50%) rotate(0deg); }
+          to { transform: translateY(-50%) rotate(360deg); }
+        }
+      `}</style>
     </div>
+  );
+}
+
+/**
+ * Pill toggle button for switching between search modes.
+ *
+ * @param props.label - Button label text
+ * @param props.active - Whether this mode is currently active
+ * @param props.onClick - Click handler
+ */
+function ModeButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '3px 8px',
+        fontSize: 10,
+        fontWeight: active ? 600 : 400,
+        color: active ? '#e0e7ff' : '#64748b',
+        backgroundColor: active ? 'rgba(99,102,241,0.3)' : 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {label}
+    </button>
   );
 }
