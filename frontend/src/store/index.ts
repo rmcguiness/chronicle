@@ -1,5 +1,14 @@
+/**
+ * store/index.ts — Central Zustand store for Chronicle.
+ *
+ * Owns: all global client-side state including viewport, selected event,
+ *   search, bookmarks, category filters, collapsed region bands, and
+ *   pending viewport requests from the permalink system.
+ *
+ * Does NOT: fetch data (see api/client.ts), compute layout (see utils/).
+ */
 import { create } from 'zustand';
-import type { HistoricalEvent, CanvasTransform, CanvasViewport, EventCategory } from '../types';
+import type { HistoricalEvent, CanvasTransform, CanvasViewport, EventCategory, Region } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -7,6 +16,9 @@ import { CANVAS_CONSTANTS } from '../types';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BOOKMARKS_STORAGE_KEY = 'chronicle_bookmarks';
+
+/** localStorage key for persisting collapsed region bands. */
+const COLLAPSED_REGIONS_STORAGE_KEY = 'chronicle:collapsedBands';
 
 /** A saved viewport bookmark */
 export interface Bookmark {
@@ -43,6 +55,28 @@ function saveBookmarks(bookmarks: Bookmark[]): void {
   localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks));
 }
 
+/** Load persisted collapsed regions from localStorage. */
+function loadCollapsedRegions(): Set<Region> {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_REGIONS_STORAGE_KEY);
+    if (!raw) return new Set<Region>();
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set<Region>();
+    return new Set(parsed as Region[]);
+  } catch {
+    return new Set<Region>();
+  }
+}
+
+/** Persist collapsed regions to localStorage. */
+function saveCollapsedRegions(regions: Set<Region>): void {
+  try {
+    localStorage.setItem(COLLAPSED_REGIONS_STORAGE_KEY, JSON.stringify([...regions]));
+  } catch {
+    // Silently ignore quota errors or private-browsing restrictions
+  }
+}
+
 /** All event categories for default active set */
 const ALL_CATEGORIES: EventCategory[] = ['war', 'discovery', 'political', 'cultural', 'natural', 'person'];
 
@@ -56,6 +90,10 @@ const { PIXELS_PER_YEAR, BASE_YEAR_MIN, LAT_MIN, LAT_MAX, CANVAS_HEIGHT } =
 /**
  * Convert a historical year to an X pixel coordinate on the canvas.
  * At zoom=1, BASE_YEAR_MIN is at x=0.
+ *
+ * @param year - The historical year (negative = BCE).
+ * @param transform - Optional canvas transform (zoom + offset).
+ * @returns The screen X coordinate in pixels.
  */
 export function yearToX(year: number, transform?: CanvasTransform): number {
   const zoom = transform?.zoom ?? 1;
@@ -63,6 +101,13 @@ export function yearToX(year: number, transform?: CanvasTransform): number {
   return (year - BASE_YEAR_MIN) * PIXELS_PER_YEAR * zoom + offsetX;
 }
 
+/**
+ * Convert a screen X coordinate back to a historical year.
+ *
+ * @param x - Screen X coordinate in pixels.
+ * @param transform - Current canvas transform.
+ * @returns The corresponding historical year.
+ */
 export function xToYear(x: number, transform: CanvasTransform): number {
   const { zoom, x: offsetX } = transform;
   return (x - offsetX) / (PIXELS_PER_YEAR * zoom) + BASE_YEAR_MIN;
@@ -71,15 +116,38 @@ export function xToYear(x: number, transform: CanvasTransform): number {
 /**
  * Convert geographic latitude to a Y pixel coordinate.
  * Simple linear mapping: LAT_MAX → top (y=0), LAT_MIN → bottom.
+ *
+ * @param lat - Geographic latitude in degrees.
+ * @returns The screen Y coordinate in pixels.
  */
-export function latToY(lat: number, _transform?: CanvasTransform): number {
+export function latToY(lat: number): number {
   const fraction = (LAT_MAX - lat) / (LAT_MAX - LAT_MIN);
   return fraction * CANVAS_HEIGHT;
 }
 
+/**
+ * Convert a screen Y coordinate back to geographic latitude.
+ *
+ * @param y - Screen Y coordinate in pixels.
+ * @returns The corresponding latitude in degrees.
+ */
 export function yToLat(y: number): number {
   const fraction = y / CANVAS_HEIGHT;
   return LAT_MAX - fraction * (LAT_MAX - LAT_MIN);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ReactFlow viewport type
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A pending ReactFlow viewport to be applied by CanvasInner.
+ * Set by the permalink system when restoring a shared URL.
+ */
+export interface PendingRfViewport {
+  x: number;
+  y: number;
+  zoom: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -135,6 +203,15 @@ interface AppState {
   // Category filter
   activeCategories: Set<EventCategory>;
   toggleCategory: (cat: EventCategory) => void;
+
+  // Region swim-lane collapsed state (source of truth; replaces useCollapsedBands local state)
+  collapsedRegions: Set<Region>;
+  setCollapsedRegions: (regions: Set<Region>) => void;
+  toggleCollapsedRegion: (region: Region) => void;
+
+  // Pending ReactFlow viewport — set by permalink restore; consumed by CanvasInner
+  pendingRfViewport: PendingRfViewport | null;
+  setPendingRfViewport: (vp: PendingRfViewport | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -144,7 +221,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   detailPanelOpen: false,
   setDetailPanelOpen: (detailPanelOpen) =>
-    set((_s) => ({
+    set(() => ({
       detailPanelOpen,
       ...(!detailPanelOpen ? { selectedEventSlug: null } : {}),
     })),
@@ -207,4 +284,23 @@ export const useAppStore = create<AppState>((set) => ({
       else next.add(cat);
       return { activeCategories: next };
     }),
+
+  // Collapsed region bands — initialised from localStorage, kept in sync
+  collapsedRegions: loadCollapsedRegions(),
+  setCollapsedRegions: (regions) => {
+    saveCollapsedRegions(regions);
+    set({ collapsedRegions: regions });
+  },
+  toggleCollapsedRegion: (region) =>
+    set((s) => {
+      const next = new Set(s.collapsedRegions);
+      if (next.has(region)) next.delete(region);
+      else next.add(region);
+      saveCollapsedRegions(next);
+      return { collapsedRegions: next };
+    }),
+
+  // Pending ReactFlow viewport from permalink restore
+  pendingRfViewport: null,
+  setPendingRfViewport: (pendingRfViewport) => set({ pendingRfViewport }),
 }));

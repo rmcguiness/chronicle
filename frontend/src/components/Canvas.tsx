@@ -39,6 +39,8 @@ import EventNode from './EventNode';
 import SubmitEventModal from './SubmitEventModal';
 import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
+import BookmarksMenu from './BookmarksMenu';
+import ShareButton from './ShareButton';
 import { useAppStore } from '../store';
 import { fetchTiles } from '../api/client';
 import {
@@ -444,6 +446,9 @@ function CanvasInner() {
   const usingMockData = useAppStore((s) => s.usingMockData);
   const setUsingMockData = useAppStore((s) => s.setUsingMockData);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+  // Permalink restore: a pending viewport queued by usePermalink on initial load
+  const pendingRfViewport = useAppStore((s) => s.pendingRfViewport);
+  const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
 
   const { collapsedBands, toggleBand } = useCollapsedBands();
 
@@ -581,6 +586,21 @@ function CanvasInner() {
 
     setFlyToEvent(null);
   }, [flyToEvent, reactFlow, setFlyToEvent]);
+
+  /**
+   * Apply a pending ReactFlow viewport queued by the permalink restore system
+   * (usePermalink hook → store.pendingRfViewport → here).
+   * A small delay ensures ReactFlow has fully mounted before we override the
+   * defaultViewport, avoiding a race with the initial render.
+   */
+  useEffect(() => {
+    if (!pendingRfViewport) return;
+    const timer = setTimeout(() => {
+      reactFlow.setViewport(pendingRfViewport, { duration: 0 });
+      setPendingRfViewport(null);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [pendingRfViewport, reactFlow, setPendingRfViewport]);
 
   const onMoveHandler: OnMove = useCallback(
     (_event, rfVp) => {
@@ -721,6 +741,22 @@ function CanvasInner() {
         </ReactFlow>
 
         <SubmitEventModal open={submitModalOpen} onClose={() => setSubmitModalOpen(false)} />
+      </div>
+
+      {/* Top-right toolbar: Share + Bookmarks */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 12,
+          right: 12,
+          zIndex: 20,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        <ShareButton />
+        <BookmarksMenu />
       </div>
 
       {useWebGL && (
