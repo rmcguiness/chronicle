@@ -94,6 +94,7 @@ class CanvasEventItem(BaseModel):
     perspective_count: Optional[int] = None
     zoom_min: int = 1
     network_y: Optional[float] = None       # precomputed Y for network view
+    date_earliest: Optional[str] = None     # ISO date string for precise positioning
 
 
 class CanvasTileResponse(BaseModel):

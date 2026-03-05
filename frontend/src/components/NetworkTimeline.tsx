@@ -5,33 +5,23 @@
  * Tick marks and year labels update dynamically based on the ReactFlow viewport
  * (pan + zoom), so the visible year range always matches the underlying canvas.
  *
+ * Zoom-aware label levels:
+ *   zoom < 0.15  → century labels
+ *   0.15 – 0.4   → decade labels
+ *   0.4 – 1.5    → year labels (adaptive density)
+ *   1.5 – 5      → fine year labels with single-year ticks
+ *   > 5          → month labels
+ *
  * Owned by NetworkView. Does NOT own layout, node data, or pan/zoom state.
  * Purely decorative — no pointer events, no interaction.
  */
 
-import { CANVAS_CONSTANTS } from '../types';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants (must stay in sync with NetworkView layout)
-// ─────────────────────────────────────────────────────────────────────────────
-
-const BASE_YEAR_MIN = CANVAS_CONSTANTS.BASE_YEAR_MIN; // -5000
-const BASE_YEAR_MAX = CANVAS_CONSTANTS.BASE_YEAR_MAX; // 2100
-const CANVAS_WIDTH = 15_000;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Convert a historical year to a canvas-space X coordinate.
- *
- * @param year - Year (negative = BCE).
- * @returns X pixel on the 15 000 px canvas.
- */
-function yearToCanvasX(year: number): number {
-  return ((year - BASE_YEAR_MIN) / (BASE_YEAR_MAX - BASE_YEAR_MIN)) * CANVAS_WIDTH;
-}
+import {
+  screenToYear,
+  yearToScreenX,
+  getTickLevel,
+  generateTicks,
+} from '../utils/timeScale';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
@@ -57,43 +47,28 @@ export default function NetworkTimeline({ viewport }: NetworkTimelineProps) {
   const { x: vpX, zoom } = viewport;
   const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
 
-  // ── coordinate conversions ──────────────────────────────────────────────
-
-  /** Convert a screen-space X pixel to a historical year. */
-  const screenToYear = (screenX: number): number =>
-    ((screenX - vpX) / zoom / CANVAS_WIDTH) * (BASE_YEAR_MAX - BASE_YEAR_MIN) +
-    BASE_YEAR_MIN;
-
-  /** Convert a historical year to a screen-space X pixel. */
-  const yearToScreenX = (year: number): number =>
-    yearToCanvasX(year) * zoom + vpX;
-
   // ── visible range ───────────────────────────────────────────────────────
 
-  const visibleYearMin = screenToYear(0);
-  const visibleYearMax = screenToYear(screenWidth);
+  const visibleYearMin = screenToYear(0, vpX, zoom);
+  const visibleYearMax = screenToYear(screenWidth, vpX, zoom);
 
-  // ── adaptive tick spacing ───────────────────────────────────────────────
+  // ── zoom-aware tick level ──────────────────────────────────────────────
 
-  const yearSpan = visibleYearMax - visibleYearMin;
-  const tickInterval =
-    yearSpan > 3000
-      ? 500
-      : yearSpan > 1000
-        ? 200
-        : yearSpan > 400
-          ? 100
-          : 50;
-  /** Major ticks (with label) are every 4th tick interval. */
-  const labelInterval = tickInterval * 4;
+  const tickLevel = getTickLevel(zoom);
 
-  // ── generate ticks for visible range ────────────────────────────────────
+  // Generate major ticks (labelled)
+  const majorTicks = generateTicks(
+    visibleYearMin,
+    visibleYearMax,
+    tickLevel.majorInterval,
+  );
 
-  const firstTick = Math.ceil(visibleYearMin / tickInterval) * tickInterval;
-  const ticks: number[] = [];
-  for (let y = firstTick; y <= visibleYearMax; y += tickInterval) {
-    ticks.push(y);
-  }
+  // Generate minor ticks
+  const minorTicks = generateTicks(
+    visibleYearMin,
+    visibleYearMax,
+    tickLevel.minorInterval,
+  );
 
   // ── render ──────────────────────────────────────────────────────────────
 
@@ -134,48 +109,66 @@ export default function NetworkTimeline({ viewport }: NetworkTimelineProps) {
           pointerEvents: 'none',
         }}
       >
-        {ticks.map((year) => {
-          const sx = yearToScreenX(year);
-          // Skip ticks that fall outside the visible screen (plus small bleed)
+        {/* Minor ticks (no labels) */}
+        {minorTicks.map((year) => {
+          const sx = yearToScreenX(year, vpX, zoom);
           if (sx < -10 || sx > screenWidth + 10) return null;
 
-          const isMajor = year % labelInterval === 0 || year === 0;
-          const isZero = year === 0;
+          // Skip if this tick falls on a major tick position
+          const onMajor =
+            tickLevel.majorInterval >= 1
+              ? Math.abs(year % tickLevel.majorInterval) < 0.001
+              : Math.abs((year - Math.round(year)) * 12 % (tickLevel.majorInterval * 12)) < 0.01;
+          if (onMajor) return null;
 
           return (
-            <g key={year}>
+            <line
+              key={`m-${year}`}
+              x1={sx}
+              y1={-4}
+              x2={sx}
+              y2={4}
+              stroke="rgba(96,165,250,0.25)"
+              strokeWidth={0.5}
+            />
+          );
+        })}
+
+        {/* Major ticks (with labels) */}
+        {majorTicks.map((year) => {
+          const sx = yearToScreenX(year, vpX, zoom);
+          if (sx < -10 || sx > screenWidth + 10) return null;
+
+          const isZero = Math.abs(year) < 0.001;
+
+          return (
+            <g key={`M-${year}`}>
               <line
                 x1={sx}
-                y1={isMajor ? -8 : -4}
+                y1={-8}
                 x2={sx}
-                y2={isMajor ? 8 : 4}
+                y2={8}
                 stroke={
                   isZero
                     ? 'rgba(251,191,36,0.6)'
                     : 'rgba(96,165,250,0.4)'
                 }
-                strokeWidth={isMajor ? 1.5 : 1}
+                strokeWidth={1.5}
               />
-              {isMajor && (
-                <text
-                  x={sx}
-                  y={18}
-                  textAnchor="middle"
-                  fill={
-                    isZero
-                      ? 'rgba(251,191,36,0.7)'
-                      : 'rgba(148,163,184,0.6)'
-                  }
-                  fontSize={10}
-                  fontFamily="monospace"
-                >
-                  {year < 0
-                    ? `${Math.abs(year)} BCE`
-                    : year === 0
-                      ? 'CE'
-                      : String(year)}
-                </text>
-              )}
+              <text
+                x={sx}
+                y={18}
+                textAnchor="middle"
+                fill={
+                  isZero
+                    ? 'rgba(251,191,36,0.7)'
+                    : 'rgba(148,163,184,0.6)'
+                }
+                fontSize={10}
+                fontFamily="monospace"
+              >
+                {tickLevel.formatLabel(year)}
+              </text>
             </g>
           );
         })}

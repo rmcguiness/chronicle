@@ -39,13 +39,11 @@ import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
+import { yearToX, dateToFractionalYear } from '../utils/timeScale';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
-
-/** Total canvas width in pixels — kept wide for smooth pan / zoom. */
-const CANVAS_WIDTH = 15_000;
 
 /** Viewport to request all events from the tile endpoint. */
 const FULL_VIEWPORT = {
@@ -88,17 +86,20 @@ const EDGE_TYPES = { causality: CausalityEdge };
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Map a historical year to a canvas X coordinate.
+ * Compute the canvas X coordinate for a historical event.
  *
- * @param year - Year (negative = BCE).
- * @returns X pixel on the 15 000 px canvas.
+ * Uses date_earliest (ISO date string) for sub-year precision when available,
+ * falling back to year_approx (integer).
+ *
+ * @param event - The historical event.
+ * @returns X pixel on the canvas.
  */
-function yearToX(year: number): number {
-  return (
-    ((year - CANVAS_CONSTANTS.BASE_YEAR_MIN) /
-      (CANVAS_CONSTANTS.BASE_YEAR_MAX - CANVAS_CONSTANTS.BASE_YEAR_MIN)) *
-    CANVAS_WIDTH
-  );
+function eventToX(event: HistoricalEvent): number {
+  if (event.date_earliest) {
+    const fractionalYear = dateToFractionalYear(event.date_earliest, event.year_approx);
+    return yearToX(fractionalYear);
+  }
+  return yearToX(event.year_approx);
 }
 
 /**
@@ -207,7 +208,7 @@ function buildFromPrecomputed(
       id,
       type: 'event',
       position: {
-        x: yearToX(event.year_approx),
+        x: eventToX(event),
         y: event.network_y ?? computeFallbackY(event),
       },
       data: { ...event, showLabel: true },
@@ -355,7 +356,7 @@ function computeTreeLayout(
 
   for (const id of nodeIdSet) {
     const event = eventById.get(id)!;
-    const x = yearToX(event.year_approx);
+    const x = eventToX(event);
     const depth = depthMap.get(id)!;
     const sign = signMap.get(id)!;
     const radius = nodeRadius(event.importance_score);

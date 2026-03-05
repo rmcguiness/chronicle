@@ -50,6 +50,8 @@ export interface HistoricalEvent {
   perspective_count?: number;
   /** Precomputed Y position for network view (from DB). Null if not yet computed. */
   network_y?: number | null;
+  /** ISO date string (e.g. "1939-09-01") for precise X positioning. */
+  date_earliest?: string;
 }
 
 export interface Source {
