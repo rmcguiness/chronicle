@@ -516,6 +516,42 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 
 export type { Perspective, ConnectedEvent };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// On This Day
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event returned by the On This Day endpoint. */
+export interface OnThisDayEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  date_display: string | null;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+  short_description: string | null;
+}
+
+/** Response shape from GET /api/events/on-this-day. */
+export interface OnThisDayResponse {
+  month: number;
+  day: number;
+  events: OnThisDayEvent[];
+}
+
+/**
+ * Fetch events that happened on a given month/day across all years.
+ * Defaults to today's date when no params are provided.
+ */
+export async function fetchOnThisDay(month?: number, day?: number): Promise<OnThisDayResponse> {
+  const params = new URLSearchParams();
+  if (month !== undefined) params.set('month', String(month));
+  if (day !== undefined) params.set('day', String(day));
+  const { data } = await api.get<OnThisDayResponse>('/api/events/on-this-day', { params });
+  return data;
+}
+
 /**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.

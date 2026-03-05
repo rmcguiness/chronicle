@@ -11,10 +11,10 @@ from urllib.parse import quote as url_quote
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from geoalchemy2.functions import ST_X, ST_Y
 from pydantic import BaseModel
-from sqlalchemy import or_, select
+from sqlalchemy import extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -36,6 +36,91 @@ from app.services.wiki_service import fetch_wikipedia_summary
 _WIKI_CACHE_TTL = timedelta(days=7)
 
 router = APIRouter(prefix="/api/events", tags=["events"])
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# On This Day — events matching a given month/day across all years
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class OnThisDayEventItem(BaseModel):
+    """A single event item returned by the On This Day endpoint."""
+
+    id: UUID
+    slug: str
+    title: str
+    year_approx: int | None
+    date_display: str | None
+    category: str | None
+    importance_score: float
+    region: str | None
+    short_description: str | None
+
+
+class OnThisDayResponse(BaseModel):
+    """Response wrapper for the On This Day endpoint."""
+
+    month: int
+    day: int
+    events: list[OnThisDayEventItem]
+
+
+@router.get("/on-this-day", response_model=OnThisDayResponse)
+async def on_this_day(
+    month: int | None = Query(default=None, ge=1, le=12, description="Month (1-12), defaults to today"),
+    day: int | None = Query(default=None, ge=1, le=31, description="Day (1-31), defaults to today"),
+    db: AsyncSession = Depends(get_db),
+) -> OnThisDayResponse:
+    """Return up to 20 events that occurred on this month/day across all years.
+
+    Matches events whose ``date_exact`` column has the same month and day,
+    sorted by ``importance_score`` descending.
+    """
+    now = datetime.now(tz=timezone.utc)
+    m = month or now.month
+    d = day or now.day
+
+    date_col = func.cast(Event._date_exact, func.DATE)
+
+    stmt = (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.date_exact,
+            Event.event_category,
+            Event.importance_score,
+            Event.geo_modern,
+        )
+        .where(
+            Event._date_exact.isnot(None),
+            extract("month", date_col) == m,
+            extract("day", date_col) == d,
+        )
+        .order_by(Event.importance_score.desc())
+        .limit(20)
+    )
+
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    events_out = [
+        OnThisDayEventItem(
+            id=row.id,
+            slug=row.slug,
+            title=row.title,
+            year_approx=row.year_approx,
+            date_display=row.date_exact,
+            category=row.event_category,
+            importance_score=row.importance_score,
+            region=row.geo_modern,
+            short_description=None,
+        )
+        for row in rows
+    ]
+
+    return OnThisDayResponse(month=m, day=d, events=events_out)
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:
