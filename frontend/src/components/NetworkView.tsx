@@ -80,8 +80,40 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
 
+/** Buffer in screen px to keep edges visible slightly before nodes enter the viewport. */
+const EDGE_VISIBILITY_BUFFER_PX = 50;
+
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Edge visibility helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Check if a canvas-space position is currently visible on screen.
+ *
+ * @param canvasX - X position in canvas (ReactFlow) coordinates.
+ * @param canvasY - Y position in canvas (ReactFlow) coordinates.
+ * @param rfVp    - Current ReactFlow viewport { x, y, zoom }.
+ * @returns True if the position falls within (or near) the visible screen area.
+ */
+function isPositionVisible(
+  canvasX: number,
+  canvasY: number,
+  rfVp: { x: number; y: number; zoom: number },
+): boolean {
+  const screenX = canvasX * rfVp.zoom + rfVp.x;
+  const screenY = canvasY * rfVp.zoom + rfVp.y;
+  const sw = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const sh = typeof window !== 'undefined' ? window.innerHeight : 1080;
+  return (
+    screenX > -EDGE_VISIBILITY_BUFFER_PX &&
+    screenX < sw + EDGE_VISIBILITY_BUFFER_PX &&
+    screenY > -EDGE_VISIBILITY_BUFFER_PX &&
+    screenY < sh + EDGE_VISIBILITY_BUFFER_PX
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Layout helpers
@@ -267,6 +299,7 @@ function buildFromPrecomputed(
   links: CausalityLink[],
   yearMin: number,
   yearMax: number,
+  rfViewport: { x: number; y: number; zoom: number },
 ): { nodes: Node[]; edges: Edge[] } | null {
   // Check how many events have precomputed positions
   const precomputed = events.filter((e) => e.network_y != null);
@@ -299,36 +332,52 @@ function buildFromPrecomputed(
     };
   });
 
-  // Build ReactFlow edges (same logic as computeTreeLayout)
+  // Build a position map for edge visibility checks
+  const nodePositions = new Map<string, { x: number; y: number }>();
+  for (const n of rfNodes) {
+    nodePositions.set(n.id, n.position);
+  }
+
+  // Build ReactFlow edges — only render if both endpoints are currently on screen
   const ARROWHEAD_SIZE = 8;
-  const rfEdges: Edge[] = validLinks.map((l) => {
-    const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
-    const strength = l.strength ?? 0.5;
-    const baseStrokeWidth = Math.max(0.8, strength * 2.5);
-    return {
-      id: String(l.id),
-      source: String(l.cause_event_id),
-      target: String(l.effect_event_id),
-      type: 'causality',
-      data: {
-        connection_type: l.connection_type,
-        strength: l.strength,
-        description: l.description,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: ARROWHEAD_SIZE,
-        height: ARROWHEAD_SIZE,
-        color,
-      },
-      animated: l.connection_type === 'causes',
-      style: { stroke: color, strokeWidth: baseStrokeWidth },
-      label: l.connection_type,
-      labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
-      labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
-      labelBgPadding: [6, 3] as [number, number],
-    };
-  });
+  const rfEdges: Edge[] = validLinks
+    .filter((l) => {
+      const srcPos = nodePositions.get(String(l.cause_event_id));
+      const tgtPos = nodePositions.get(String(l.effect_event_id));
+      if (!srcPos || !tgtPos) return false;
+      return (
+        isPositionVisible(srcPos.x, srcPos.y, rfViewport) &&
+        isPositionVisible(tgtPos.x, tgtPos.y, rfViewport)
+      );
+    })
+    .map((l) => {
+      const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
+      const strength = l.strength ?? 0.5;
+      const baseStrokeWidth = Math.max(0.8, strength * 2.5);
+      return {
+        id: String(l.id),
+        source: String(l.cause_event_id),
+        target: String(l.effect_event_id),
+        type: 'causality',
+        data: {
+          connection_type: l.connection_type,
+          strength: l.strength,
+          description: l.description,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: ARROWHEAD_SIZE,
+          height: ARROWHEAD_SIZE,
+          color,
+        },
+        animated: l.connection_type === 'causes',
+        style: { stroke: color, strokeWidth: baseStrokeWidth },
+        label: l.connection_type,
+        labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
+        labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
+        labelBgPadding: [6, 3] as [number, number],
+      };
+    });
 
   return { nodes: rfNodes, edges: rfEdges };
 }
@@ -359,6 +408,7 @@ function computeTreeLayout(
   links: CausalityLink[],
   yearMin: number,
   yearMax: number,
+  rfViewport: { x: number; y: number; zoom: number },
 ): { nodes: Node[]; edges: Edge[] } {
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
@@ -502,39 +552,55 @@ function computeTreeLayout(
     };
   });
 
-  // ── 7. Convert to ReactFlow edges ───────────────────────────────────────
+  // ── 7. Convert to ReactFlow edges (filtered to visible nodes) ────────────
+
+  // Build a position map for edge visibility checks
+  const nodePositions = new Map<string, { x: number; y: number }>();
+  for (const n of rfNodes) {
+    nodePositions.set(n.id, n.position);
+  }
 
   /** Smaller arrowhead size for cleaner visuals. */
   const ARROWHEAD_SIZE = 8;
 
-  const rfEdges: Edge[] = validLinks.map((l) => {
-    const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
-    const strength = l.strength ?? 0.5;
-    const baseStrokeWidth = Math.max(0.8, strength * 2.5);
-    return {
-      id: String(l.id),
-      source: String(l.cause_event_id),
-      target: String(l.effect_event_id),
-      type: 'causality',
-      data: {
-        connection_type: l.connection_type,
-        strength: l.strength,
-        description: l.description,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: ARROWHEAD_SIZE,
-        height: ARROWHEAD_SIZE,
-        color,
-      },
-      animated: l.connection_type === 'causes',
-      style: { stroke: color, strokeWidth: baseStrokeWidth },
-      label: l.connection_type,
-      labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
-      labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
-      labelBgPadding: [6, 3] as [number, number],
-    };
-  });
+  const rfEdges: Edge[] = validLinks
+    .filter((l) => {
+      const srcPos = nodePositions.get(String(l.cause_event_id));
+      const tgtPos = nodePositions.get(String(l.effect_event_id));
+      if (!srcPos || !tgtPos) return false;
+      return (
+        isPositionVisible(srcPos.x, srcPos.y, rfViewport) &&
+        isPositionVisible(tgtPos.x, tgtPos.y, rfViewport)
+      );
+    })
+    .map((l) => {
+      const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
+      const strength = l.strength ?? 0.5;
+      const baseStrokeWidth = Math.max(0.8, strength * 2.5);
+      return {
+        id: String(l.id),
+        source: String(l.cause_event_id),
+        target: String(l.effect_event_id),
+        type: 'causality',
+        data: {
+          connection_type: l.connection_type,
+          strength: l.strength,
+          description: l.description,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: ARROWHEAD_SIZE,
+          height: ARROWHEAD_SIZE,
+          color,
+        },
+        animated: l.connection_type === 'causes',
+        style: { stroke: color, strokeWidth: baseStrokeWidth },
+        label: l.connection_type,
+        labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
+        labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
+        labelBgPadding: [6, 3] as [number, number],
+      };
+    });
 
   return { nodes: rfNodes, edges: rfEdges };
 }
@@ -578,6 +644,9 @@ function NetworkViewInner() {
 
   // Keep store's rfViewport in sync with the ReactFlow camera
   const setRfViewportStore = useAppStore((s) => s.setRfViewport);
+
+  // Read current rfViewport from the store for edge visibility culling
+  const rfViewport = useAppStore((s) => s.rfViewport);
 
   /** Throttle onMove store updates to max ~10/sec to avoid 60fps re-renders. */
   const RF_VIEWPORT_THROTTLE_MS = 100;
@@ -645,6 +714,7 @@ function NetworkViewInner() {
       allCausalityLinks,
       viewportYearMin,
       viewportYearMax,
+      rfViewport,
     );
     if (precomputed) {
       setNodes(precomputed.nodes);
@@ -658,10 +728,11 @@ function NetworkViewInner() {
       allCausalityLinks,
       viewportYearMin,
       viewportYearMax,
+      rfViewport,
     );
     setNodes(rfNodes);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, rfViewport, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {
@@ -747,10 +818,11 @@ function NetworkViewInner() {
       const newYearMin = cursorYear - ratio * newSpan;
       const newYearMax = newYearMin + newSpan;
 
-      setTimeViewport({
-        yearMin: Math.max(-5000, newYearMin),
-        yearMax: Math.min(2100, newYearMax),
-      });
+      const clampedMin = Math.max(-5000, newYearMin);
+      const clampedMax = Math.min(2100, newYearMax);
+      // Guard: ensure a minimum span (~1 month) and valid range
+      if (clampedMax - clampedMin < MIN_SPAN) return;
+      setTimeViewport({ yearMin: clampedMin, yearMax: clampedMax });
     };
 
     el.addEventListener('wheel', onWheel, { passive: false });

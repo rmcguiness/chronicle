@@ -134,6 +134,9 @@ export default function NetworkTimeline({ viewport }: NetworkTimelineProps) {
   const { yearMin, yearMax } = useAppStore((s) => s.timeViewport);
   const span = yearMax - yearMin;
 
+  // Guard: nothing to render if the time range is degenerate
+  if (span <= 0) return null;
+
   // ── coordinate conversions (dynamic mapping) ────────────────────────────
 
   /**
