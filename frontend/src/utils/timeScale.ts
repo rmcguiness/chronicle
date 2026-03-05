@@ -87,7 +87,15 @@ export function yearToScreenX(year: number, vpX: number, zoom: number): number {
  * @returns Fractional year.
  */
 export function dateToFractionalYear(dateStr: string, fallback: number): number {
-  const parts = dateStr.split('-');
+  // Handle PostgreSQL BCE format: "3200-01-01 BC"
+  let normalised = dateStr;
+  let bcSuffix = false;
+  if (normalised.endsWith(' BC')) {
+    normalised = normalised.slice(0, -3);
+    bcSuffix = true;
+  }
+
+  const parts = normalised.split('-');
   if (parts.length < 2) return fallback;
 
   // Handle negative years (BCE): "-0500-03-15" splits as ["", "0500", "03", "15"]
@@ -97,7 +105,7 @@ export function dateToFractionalYear(dateStr: string, fallback: number): number 
   let negative = false;
 
   if (parts[0] === '' && parts.length >= 3) {
-    // Negative year
+    // Negative year (ISO format fallback)
     negative = true;
     yearStr = parts[1];
     monthStr = parts[2];
@@ -114,7 +122,7 @@ export function dateToFractionalYear(dateStr: string, fallback: number): number 
 
   if (isNaN(year) || isNaN(month)) return fallback;
 
-  const signedYear = negative ? -year : year;
+  const signedYear = (negative || bcSuffix) ? -year : year;
   return signedYear + (month - 1) / 12 + (day - 1) / 365;
 }
 
@@ -196,16 +204,56 @@ export function getTickLevel(zoom: number): TickLevel {
       formatLabel: formatYear,
     };
   }
-  // Month labels
+  if (zoom < 50) {
+    // Year labels with month minor ticks
+    return {
+      majorInterval: 1,
+      minorInterval: 1 / 12,
+      formatLabel: (year: number) => {
+        const wholeYear = Math.floor(year);
+        const monthFrac = year - wholeYear;
+        const monthIdx = Math.round(monthFrac * 12);
+        if (monthIdx === 0 || monthIdx === 12) return formatYear(wholeYear);
+        return `${MONTH_ABBR[monthIdx % 12]} ${wholeYear}`;
+      },
+    };
+  }
+  if (zoom < 500) {
+    // Month major labels with week minor ticks
+    return {
+      majorInterval: 1 / 12,
+      minorInterval: 1 / 52,
+      formatLabel: (year: number) => {
+        const wholeYear = Math.floor(year);
+        const monthFrac = year - wholeYear;
+        const monthIdx = Math.round(monthFrac * 12);
+        if (monthIdx === 0 || monthIdx === 12) return `Jan ${wholeYear}`;
+        return `${MONTH_ABBR[monthIdx % 12]} ${wholeYear}`;
+      },
+    };
+  }
+  // Day major labels with week minor ticks
   return {
-    majorInterval: 1,
-    minorInterval: 1 / 12,
+    majorInterval: 1 / 365,
+    minorInterval: 1 / 52,
     formatLabel: (year: number) => {
       const wholeYear = Math.floor(year);
-      const monthFrac = year - wholeYear;
-      const monthIdx = Math.round(monthFrac * 12);
-      if (monthIdx === 0 || monthIdx === 12) return formatYear(wholeYear);
-      return `${MONTH_ABBR[monthIdx % 12]} ${wholeYear}`;
+      const dayOfYear = Math.round((year - wholeYear) * 365);
+      // Approximate month/day from day-of-year
+      const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      let remaining = dayOfYear;
+      let monthIdx = 0;
+      for (let i = 0; i < 12; i++) {
+        if (remaining < DAYS_IN_MONTH[i]) {
+          monthIdx = i;
+          break;
+        }
+        remaining -= DAYS_IN_MONTH[i];
+        monthIdx = i + 1;
+      }
+      if (monthIdx >= 12) monthIdx = 11;
+      const dayNum = remaining + 1;
+      return `${MONTH_ABBR[monthIdx]} ${dayNum}`;
     },
   };
 }
@@ -225,10 +273,21 @@ export function generateTicks(
 ): number[] {
   const ticks: number[] = [];
   // Snap to interval grid
-  const first = Math.ceil(visibleMin / interval) * interval;
-  for (let y = first; y <= visibleMax; y += interval) {
-    // Round to avoid floating point drift
-    ticks.push(Math.round(y * 1000) / 1000);
+  const firstIndex = Math.ceil(visibleMin / interval);
+  const lastIndex = Math.floor(visibleMax / interval);
+  // Cap tick count to avoid performance issues at extreme zoom
+  const maxTicks = 2000;
+  const count = lastIndex - firstIndex + 1;
+  if (count > maxTicks) {
+    // Skip ticks to stay within budget
+    const step = Math.ceil(count / maxTicks);
+    for (let i = firstIndex; i <= lastIndex; i += step) {
+      ticks.push(Math.round(i * interval * 100000) / 100000);
+    }
+  } else {
+    for (let i = firstIndex; i <= lastIndex; i++) {
+      ticks.push(Math.round(i * interval * 100000) / 100000);
+    }
   }
   return ticks;
 }

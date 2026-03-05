@@ -599,7 +599,7 @@ function NetworkViewInner() {
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         minZoom={0.02}
-        maxZoom={4}
+        maxZoom={5000}
         defaultViewport={{
           x: 0,
           y: typeof window !== 'undefined' ? window.innerHeight / 2 : 400,
