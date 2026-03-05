@@ -1,8 +1,12 @@
 /**
  * App — root application component.
  *
- * Owns: React Query client, top-level routing.
+ * Owns: React Query client, top-level routing, TimelineScrubber placement.
  * Does NOT own: canvas state, event selection, individual page layout.
+ *
+ * The TimelineScrubber is rendered in both timeline and network modes:
+ * in timeline mode it controls the canvas viewport, and in network mode
+ * it acts as a time-range filter for visible event nodes.
  *
  * Routes:
  *  /              → Canvas timeline view (existing map + panels)
@@ -69,8 +73,9 @@ function MainView() {
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
 
-      {/* Bottom timeline scrubber — only shown in timeline mode */}
-      {viewMode === 'timeline' && <TimelineScrubber />}
+      {/* Bottom timeline scrubber — shown in both timeline and network modes.
+          In network mode it acts as a time-range filter for visible events. */}
+      <TimelineScrubber />
 
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
