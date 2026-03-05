@@ -2,9 +2,9 @@
  * CausalityEdge.tsx
  *
  * Custom ReactFlow edge for causality links between historical events.
- * Renders a bezier curve with connection-type colour coding, directional
- * animation (left-to-right for "causes" type), and a persistent label
- * showing the relationship type. Hover reveals the full description.
+ * Renders a bezier curve with connection-type colour coding and directional
+ * animation (left-to-right for "causes" type). Hover reveals connection
+ * type, description, and strength — no persistent label on the edge itself.
  *
  * Owns: edge rendering, label display, hover tooltip, animation.
  * Does NOT own: edge data structure, connection colours, layout positioning.
@@ -129,35 +129,8 @@ function CausalityEdge({
         }}
       />
 
-      {/* Persistent connection-type label — always visible */}
-      <EdgeLabelRenderer>
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            background: 'rgba(15, 17, 23, 0.92)',
-            border: `1px solid ${color}44`,
-            borderRadius: 4,
-            padding: '2px 6px',
-            fontSize: Math.max(9, 10 / Math.max(zoom, 0.3)),
-            fontWeight: 700,
-            color: hovered ? '#ffffff' : color,
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            pointerEvents: 'none',
-            whiteSpace: 'nowrap',
-            transition: 'color 0.15s',
-            boxShadow: hovered
-              ? `0 0 8px ${color}66`
-              : '0 1px 4px rgba(0,0,0,0.4)',
-          }}
-        >
-          {label}
-        </div>
-      </EdgeLabelRenderer>
-
-      {/* Hover tooltip — shows full description */}
-      {hovered && data?.description && (
+      {/* Hover tooltip — shows connection type + optional description */}
+      {hovered && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -177,16 +150,12 @@ function CausalityEdge({
               lineHeight: 1.4,
             }}
           >
-            {data.description}
-            {data.strength != null && (
-              <div
-                style={{
-                  marginTop: 4,
-                  fontSize: 10,
-                  color: '#64748b',
-                  fontWeight: 600,
-                }}
-              >
+            <div style={{ fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: data?.description ? 4 : 0 }}>
+              {label}
+            </div>
+            {data?.description && <div>{data.description}</div>}
+            {data?.strength != null && (
+              <div style={{ marginTop: 4, fontSize: 10, color: '#64748b', fontWeight: 600 }}>
                 Strength: {Math.round(data.strength * 100)}%
               </div>
             )}
