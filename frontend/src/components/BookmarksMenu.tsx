@@ -17,11 +17,14 @@ import type { Bookmark } from '../store';
 // Styles
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Root container style — intentionally no `position: absolute` here.
+ * The parent (Canvas top-right toolbar) owns the placement.
+ * The dropdown inside uses `position: absolute, top: '100%', right: 0`
+ * which is relative to this container, so it still anchors correctly.
+ */
 const MENU_STYLE: React.CSSProperties = {
-  position: 'absolute',
-  top: 12,
-  right: 12,
-  zIndex: 20,
+  position: 'relative',
   fontFamily: '"Inter", "Segoe UI", sans-serif',
 };
 

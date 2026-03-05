@@ -5,60 +5,23 @@
  * swim-lane bands on the timeline canvas.
  *
  * Responsibilities:
- *   - Maintain a Set of currently-collapsed region IDs in component state
- *   - Persist and restore that set to/from localStorage so it survives
- *     page refreshes
- *   - Expose a stable toggle callback
+ *   - Expose a stable read + toggle interface for region band collapse state
+ *   - Delegate all state and localStorage persistence to the Zustand store
+ *     (see store/index.ts), so the permalink system can also read/write it
  *
  * Does NOT:
+ *   - Hold its own local React state (state lives in the store)
  *   - Compute visual layout (see utils/bandDensity.ts)
  *   - Render anything
- */
-
-import { useState, useCallback } from 'react';
-import type { Region } from '../types';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** localStorage key used to persist collapsed band IDs. */
-const STORAGE_KEY = 'chronicle:collapsedBands';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Read the persisted collapsed band IDs from localStorage.
- * Returns an empty Set if the key is absent or the value is malformed.
- */
-function readPersistedBands(): Set<Region> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set<Region>();
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return new Set<Region>();
-    return new Set(parsed as Region[]);
-  } catch {
-    // Silently ignore parse errors (corrupted storage)
-    return new Set<Region>();
-  }
-}
-
-/**
- * Write the current collapsed band IDs to localStorage.
- * Silently ignores write errors (e.g. storage quota exceeded).
  *
- * @param bands - The set to persist.
+ * @deprecated Direct store usage (`useAppStore(s => s.collapsedRegions)`) is
+ *   preferred for new code. This hook remains for backward compatibility with
+ *   Canvas.tsx.
  */
-function persistBands(bands: Set<Region>): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...bands]));
-  } catch {
-    // Silently ignore (private browsing mode / quota exceeded)
-  }
-}
+
+import { useCallback } from 'react';
+import { useAppStore } from '../store';
+import type { Region } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Hook return type
@@ -72,7 +35,7 @@ export interface UseCollapsedBandsResult {
   collapsedBands: Set<Region>;
   /**
    * Toggle the collapsed state of a single region band.
-   * Also persists the new state to localStorage.
+   * Persists the new state to localStorage via the store.
    *
    * @param region - The region whose band should be toggled.
    */
@@ -92,35 +55,26 @@ export interface UseCollapsedBandsResult {
 /**
  * Manages which region swim-lane bands are currently collapsed.
  *
- * State is initialised from localStorage on first render and written back
- * whenever the user toggles a band.
+ * State is stored in (and persisted by) the Zustand store so that the
+ * permalink system can restore collapsed bands from a shared URL without
+ * needing to reach into component-local state.
  *
  * @returns {@link UseCollapsedBandsResult}
  *
  * @example
  * const { collapsedBands, toggleBand, isCollapsed } = useCollapsedBands();
- * // In JSX:
  * <button onClick={() => toggleBand('americas')}>
  *   {isCollapsed('americas') ? 'Expand' : 'Collapse'}
  * </button>
  */
 export function useCollapsedBands(): UseCollapsedBandsResult {
-  const [collapsedBands, setCollapsedBands] = useState<Set<Region>>(
-    readPersistedBands,
-  );
+  const collapsedBands = useAppStore((s) => s.collapsedRegions);
+  const toggleCollapsedRegion = useAppStore((s) => s.toggleCollapsedRegion);
 
-  const toggleBand = useCallback((region: Region) => {
-    setCollapsedBands((prev) => {
-      const next = new Set(prev);
-      if (next.has(region)) {
-        next.delete(region);
-      } else {
-        next.add(region);
-      }
-      persistBands(next);
-      return next;
-    });
-  }, []);
+  const toggleBand = useCallback(
+    (region: Region) => toggleCollapsedRegion(region),
+    [toggleCollapsedRegion],
+  );
 
   const isCollapsed = useCallback(
     (region: Region) => collapsedBands.has(region),
