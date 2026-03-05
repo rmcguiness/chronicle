@@ -284,7 +284,6 @@ function buildFromPrecomputed(
   });
 
   // Build ReactFlow nodes from DB positions
-  // (nodeSize is computed inside EventNode.tsx via timeViewport subscription)
   const rfNodes: Node[] = events.map((event) => {
     const id = String(event.id);
     return {
@@ -489,7 +488,6 @@ function computeTreeLayout(
   }
 
   // ── 6. Convert to ReactFlow nodes ───────────────────────────────────────
-  // (nodeSize is computed inside EventNode.tsx via timeViewport subscription)
 
   const rfNodes: Node[] = events.map((event) => {
     const id = String(event.id);
@@ -581,6 +579,10 @@ function NetworkViewInner() {
   // Keep store's rfViewport in sync with the ReactFlow camera
   const setRfViewportStore = useAppStore((s) => s.setRfViewport);
 
+  /** Throttle onMove store updates to max ~10/sec to avoid 60fps re-renders. */
+  const RF_VIEWPORT_THROTTLE_MS = 100;
+  const lastRfViewportUpdateRef = useRef(0);
+
   // Consume pendingRfViewport from the store (set by scrubber body drag / permalink)
   const pendingRfViewport = useAppStore((s) => s.pendingRfViewport);
   const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
@@ -624,16 +626,9 @@ function NetworkViewInner() {
     [allLinks, tileData],
   );
 
-  // Filter events by the current scrubber viewport
-  const filteredEvents = useMemo(
-    () =>
-      allEvents.filter(
-        (e) =>
-          e.year_approx >= viewportYearMin &&
-          e.year_approx <= viewportYearMax,
-      ),
-    [allEvents, viewportYearMin, viewportYearMax],
-  );
+  // All events are always rendered; the ReactFlow camera determines what's
+  // visible. Filtering by timeViewport caused nodes to disappear when panning.
+  const filteredEvents = useMemo(() => allEvents, [allEvents]);
 
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
   // Re-runs when the scrubber range changes so nodes reposition dynamically.
@@ -787,7 +782,13 @@ function NetworkViewInner() {
         panOnScroll={false}
         zoomOnScroll={false}
         panOnDrag
-        onMove={(_event, vp) => setRfViewportStore(vp)}
+        onMove={(_event, vp) => {
+          const now = Date.now();
+          if (now - lastRfViewportUpdateRef.current > RF_VIEWPORT_THROTTLE_MS) {
+            lastRfViewportUpdateRef.current = now;
+            setRfViewportStore(vp);
+          }
+        }}
       >
         <Background
           color="rgba(255,255,255,0.02)"

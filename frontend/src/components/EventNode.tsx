@@ -42,9 +42,6 @@ function EventNode({ data: rawData, selected }: NodeProps) {
     setTooltipPos(null);
   }, []);
 
-  // Subscribe to timeViewport directly for instant size updates on scroll
-  const timeViewport = useAppStore((s) => s.timeViewport);
-
   const color = CATEGORY_COLORS[data.category] ?? '#6b7280';
   const icon = CATEGORY_ICONS[data.category] ?? '●';
   // showLabel is set by clusterEvents() based on the active zoom tier:
@@ -52,16 +49,10 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   //   Detail tier   (≥ 1.2)   → true   (event name shown below node)
   const showLabel = data.showLabel ?? false;
 
-  // Constants (must match NetworkView.tsx)
-  const GROWTH_START_SPAN = 500;
-  const GROWTH_END_SPAN = 50;
-  const NODE_SIZE_MIN = 16;
-  const NODE_SIZE_MAX = 50;
-
-  const timeSpan = timeViewport.yearMax - timeViewport.yearMin;
-  const importanceBase = NODE_SIZE_MIN + (data.importance_score ?? 0.5) * 8; // 16–24px
-  const t = Math.min(1, Math.max(0, (GROWTH_START_SPAN - timeSpan) / (GROWTH_START_SPAN - GROWTH_END_SPAN)));
-  const size = Math.round(importanceBase + t * (NODE_SIZE_MAX - importanceBase));
+  /** Fixed readable size — importance adds slight variation (28–40 px). */
+  const NODE_SIZE_BASE = 28;
+  const NODE_SIZE_IMPORTANCE_RANGE = 12;
+  const size = Math.round(NODE_SIZE_BASE + (data.importance_score ?? 0.5) * NODE_SIZE_IMPORTANCE_RANGE);
 
   return (
     <div
