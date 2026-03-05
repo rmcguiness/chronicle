@@ -2,14 +2,18 @@
  * NetworkView.tsx
  *
  * Chronological graph view of historical events and their causality links.
- * Events are laid out left-to-right by year_approx (like a horizontal timeline),
- * with vertical staggering to avoid overlap. Causality edges draw as bezier
- * curves from cause → effect (earlier → later in time).
+ * Events are positioned left-to-right by year_approx using a d3-force
+ * simulation (X pinned to year, Y organic via repulsion + link forces).
+ * Connected event chains cluster near Y = 0, while isolated nodes drift
+ * gently above / below for visual separation.
  *
- * Owns: chronological layout computation, react-flow rendering, year-axis ruler,
- *   viewport filtering (events outside the scrubber range are hidden).
- * Does NOT own: event detail panel, data fetching strategy, view mode toggling,
- *   timeline scrubber (rendered by App.tsx).
+ * A fixed timeline spine (NetworkTimeline) overlays the viewport at 50 %
+ * screen height, providing persistent year-reference tick marks.
+ *
+ * Owns: force-directed layout computation, ReactFlow rendering, viewport
+ *   filtering (events outside the scrubber range are hidden).
+ * Does NOT own: event detail panel, data fetching strategy, view mode
+ *   toggling, timeline scrubber (rendered by App.tsx).
  */
 
 import { useEffect, useMemo, useCallback, useRef } from 'react';
@@ -20,15 +24,27 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  useViewport,
   type Node,
   type Edge,
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
+import {
+  forceSimulation,
+  forceX,
+  forceY,
+  forceLink,
+  forceManyBody,
+  forceCollide,
+  type SimulationNodeDatum,
+  type SimulationLinkDatum,
+} from 'd3-force';
 
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
+import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
@@ -39,23 +55,8 @@ import { CANVAS_CONSTANTS } from '../types';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Total canvas width in pixels (wide enough to be scrollable). */
-const CANVAS_WIDTH = 15000;
-
-/** Number of vertical swim-lane rows for staggering. */
-const ROW_COUNT = 7;
-
-/** Vertical spacing in pixels between each row. */
-const ROW_SPACING = 120;
-
-/** Top padding before the first row of nodes. */
-const TOP_PADDING = 60;
-
-/** Year bucket size — events within this many years share a bucket for row assignment. */
-const BUCKET_SIZE_YEARS = 50;
-
-/** Height reserved for the year-axis info bar (px). */
-const AXIS_HEIGHT = 40;
+/** Total canvas width in pixels — kept wide for smooth pan / zoom. */
+const CANVAS_WIDTH = 15_000;
 
 /** Viewport to request all events from the tile endpoint. */
 const FULL_VIEWPORT = {
@@ -66,6 +67,24 @@ const FULL_VIEWPORT = {
   zoom: 10,
 };
 
+/** Number of ticks to run the force simulation to completion. */
+const SIMULATION_TICKS = 300;
+
+/** Force-link resting distance (px). */
+const LINK_DISTANCE = 120;
+
+/** Force-link strength (mainly affects Y since X is pinned). */
+const LINK_STRENGTH = 0.2;
+
+/** Charge repulsion strength (negative = repel). */
+const CHARGE_STRENGTH = -200;
+
+/** Extra collision padding beyond node radius (px). */
+const COLLISION_PADDING = 10;
+
+/** Y-offset for isolated (unlinked) nodes. */
+const ISOLATED_Y_OFFSET = 120;
+
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
@@ -74,120 +93,162 @@ const EDGE_TYPES = { causality: CausalityEdge };
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Linearly map a value from one range to another.
+ * Map a historical year to a canvas X coordinate.
  *
- * @param value - The input value to map.
- * @param inMin - Input range minimum.
- * @param inMax - Input range maximum.
- * @param outMin - Output range minimum.
- * @param outMax - Output range maximum.
- * @returns The mapped value in the output range.
- */
-function linearMap(
-  value: number,
-  inMin: number,
-  inMax: number,
-  outMin: number,
-  outMax: number,
-): number {
-  const t = (value - inMin) / (inMax - inMin);
-  return outMin + t * (outMax - outMin);
-}
-
-/**
- * Convert a year to an X pixel coordinate on the chronological canvas.
- *
- * @param year - Historical year (negative = BCE).
- * @returns X coordinate in pixels.
+ * @param year - Year (negative = BCE).
+ * @returns X pixel on the 15 000 px canvas.
  */
 function yearToX(year: number): number {
-  return linearMap(
-    year,
-    CANVAS_CONSTANTS.BASE_YEAR_MIN,
-    CANVAS_CONSTANTS.BASE_YEAR_MAX,
-    0,
-    CANVAS_WIDTH,
+  return (
+    ((year - CANVAS_CONSTANTS.BASE_YEAR_MIN) /
+      (CANVAS_CONSTANTS.BASE_YEAR_MAX - CANVAS_CONSTANTS.BASE_YEAR_MIN)) *
+    CANVAS_WIDTH
   );
 }
 
 /**
- * Assign each event a vertical row index to minimize overlap.
- * Events are bucketed by time period (BUCKET_SIZE_YEARS), and within each
- * bucket, events are distributed across ROW_COUNT rows round-robin style.
+ * Compute visual node radius from importance_score (mirrors EventNode sizing).
  *
- * @param events - Array of historical events to assign rows.
- * @returns Map from event ID to row index (0-based).
+ * @param importance - importance_score in [0, 1].
+ * @returns Radius in pixels.
  */
-function assignRows(events: HistoricalEvent[]): Map<string, number> {
-  const rowMap = new Map<string, number>();
-
-  // Sort events by year for consistent bucketing
-  const sorted = [...events].sort((a, b) => a.year_approx - b.year_approx);
-
-  // Track how many events have been placed in each bucket so far
-  const bucketCounters = new Map<number, number>();
-
-  for (const event of sorted) {
-    const bucketKey = Math.floor(event.year_approx / BUCKET_SIZE_YEARS);
-    const countInBucket = bucketCounters.get(bucketKey) ?? 0;
-    const row = countInBucket % ROW_COUNT;
-
-    rowMap.set(String(event.id), row);
-    bucketCounters.set(bucketKey, countInBucket + 1);
-  }
-
-  return rowMap;
+function nodeRadius(importance: number): number {
+  const baseSize = 20 + importance * 20;
+  return Math.max(16, Math.min(48, baseSize)) / 2;
 }
 
-/**
- * Compute the Y coordinate for a given row index.
- *
- * @param row - Row index (0 to ROW_COUNT-1).
- * @returns Y pixel coordinate.
- */
-function rowToY(row: number): number {
-  return TOP_PADDING + row * ROW_SPACING;
+// ─────────────────────────────────────────────────────────────────────────────
+// d3-force simulation types
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ForceNode extends SimulationNodeDatum {
+  id: string;
+  targetX: number;
+  targetY: number;
+  radius: number;
+  isConnected: boolean;
+  event: HistoricalEvent;
 }
 
+interface ForceLink extends SimulationLinkDatum<ForceNode> {
+  causalityLink: CausalityLink;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout engine
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * Compute chronological layout — positions nodes left-to-right by year
- * with vertical staggering, and builds edge data for causality links.
+ * Run a d3-force simulation to compute organic Y positions while pinning X
+ * to the chronological year.  Connected events cluster near Y = 0; isolated
+ * nodes float gently above / below.
  *
- * @param events - All historical events to display.
- * @param links - All causality links between events.
- * @returns ReactFlow nodes and edges arrays.
+ * @param events - Filtered historical events.
+ * @param links  - All causality links (will be filtered to visible set).
+ * @returns ReactFlow-compatible nodes and edges.
  */
-function computeChronologicalLayout(
+function computeForceLayout(
   events: HistoricalEvent[],
   links: CausalityLink[],
 ): { nodes: Node[]; edges: Edge[] } {
-  const rowMap = assignRows(events);
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
-  // Build ReactFlow nodes with chronological positions
-  const rfNodes: Node[] = events.map((event) => {
-    const row = rowMap.get(String(event.id)) ?? 0;
+  // Determine which nodes participate in at least one link
+  const connectedIds = new Set<string>();
+  const validLinks = links.filter((l) => {
+    const causeId = String(l.cause_event_id);
+    const effectId = String(l.effect_event_id);
+    const valid = nodeIdSet.has(causeId) && nodeIdSet.has(effectId);
+    if (valid) {
+      connectedIds.add(causeId);
+      connectedIds.add(effectId);
+    }
+    return valid;
+  });
+
+  // Build force-simulation nodes
+  const forceNodes: ForceNode[] = events.map((event) => {
+    const id = String(event.id);
+    const isConnected = connectedIds.has(id);
+    const targetX = yearToX(event.year_approx);
+
+    // Deterministic sign for isolated nodes based on last hex char of id
+    const lastChar = id.slice(-1);
+    const sign = parseInt(lastChar, 16) % 2 === 0 ? 1 : -1;
+    const targetY = isConnected ? 0 : sign * ISOLATED_Y_OFFSET;
+
     return {
-      id: String(event.id),
-      type: 'event',
-      position: {
-        x: yearToX(event.year_approx),
-        y: rowToY(row),
-      },
-      data: { ...event, showLabel: true },
-      selectable: true,
-      draggable: true,
+      id,
+      x: targetX,
+      y: targetY,
+      targetX,
+      targetY,
+      radius: nodeRadius(event.importance_score),
+      isConnected,
+      event,
     };
   });
 
-  // Filter links to only those connecting visible events
-  const validLinks = links.filter(
-    (l) =>
-      nodeIdSet.has(String(l.cause_event_id)) &&
-      nodeIdSet.has(String(l.effect_event_id)),
-  );
+  // Build a lookup for force-link source/target resolution
+  const nodeById = new Map(forceNodes.map((n) => [n.id, n]));
 
-  // Build ReactFlow edges
+  // Build force-simulation links
+  const forceLinks: ForceLink[] = validLinks
+    .map((l) => ({
+      source: nodeById.get(String(l.cause_event_id))!,
+      target: nodeById.get(String(l.effect_event_id))!,
+      causalityLink: l,
+    }))
+    .filter((fl) => fl.source && fl.target);
+
+  // ── Run simulation ──────────────────────────────────────────────────────
+
+  const simulation = forceSimulation<ForceNode>(forceNodes)
+    .force(
+      'x',
+      forceX<ForceNode>((d) => d.targetX).strength(1.0),
+    )
+    .force(
+      'y',
+      forceY<ForceNode>((d) => d.targetY).strength((d) =>
+        d.isConnected ? 0.04 : 0.1,
+      ),
+    )
+    .force(
+      'link',
+      forceLink<ForceNode, ForceLink>(forceLinks)
+        .id((d) => d.id)
+        .distance(LINK_DISTANCE)
+        .strength(LINK_STRENGTH),
+    )
+    .force('charge', forceManyBody<ForceNode>().strength(CHARGE_STRENGTH))
+    .force(
+      'collide',
+      forceCollide<ForceNode>((d) => d.radius + COLLISION_PADDING),
+    )
+    .stop();
+
+  // Run synchronously to completion
+  for (let i = 0; i < SIMULATION_TICKS; i++) {
+    simulation.tick();
+  }
+
+  // ── Convert to ReactFlow nodes ──────────────────────────────────────────
+
+  const rfNodes: Node[] = forceNodes.map((n) => ({
+    id: n.id,
+    type: 'event',
+    position: {
+      x: n.x!,
+      y: n.y!,
+    },
+    data: { ...n.event, showLabel: true },
+    selectable: true,
+    draggable: true,
+  }));
+
+  // ── Convert to ReactFlow edges ──────────────────────────────────────────
+
   const rfEdges: Edge[] = validLinks.map((l) => {
     const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
     return {
@@ -219,7 +280,7 @@ function computeChronologicalLayout(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Year-axis ruler
+// Year-axis label formatter
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -234,16 +295,14 @@ function formatYearLabel(year: number): string {
   return `${year}`;
 }
 
-/* Year-axis ruler is rendered as an info bar overlay rather than
-   a full SVG ruler — avoids z-index issues with ReactFlow's pan layer. */
-
 // ─────────────────────────────────────────────────────────────────────────────
 // NetworkViewInner — main component (inside ReactFlowProvider)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Inner network view component that uses ReactFlow hooks.
- * Handles data fetching, layout computation, and viewport filtering.
+ * Handles data fetching, force-directed layout, viewport filtering, and the
+ * fixed timeline spine overlay.
  */
 function NetworkViewInner() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow generic requires any[] for initial empty state
@@ -251,6 +310,7 @@ function NetworkViewInner() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow generic requires any[] for initial empty state
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
   const { fitView } = useReactFlow();
+  const viewport = useViewport();
 
   // Subscribe to store viewport for time filtering via the scrubber
   const viewportYearMin = useAppStore((s) => s.viewport.year_min);
@@ -298,7 +358,7 @@ function NetworkViewInner() {
     [allEvents, viewportYearMin, viewportYearMax],
   );
 
-  // Compute layout whenever filtered events or links change
+  // Compute force-directed layout whenever filtered events or links change
   useEffect(() => {
     if (filteredEvents.length === 0) {
       setNodes([]);
@@ -306,7 +366,7 @@ function NetworkViewInner() {
       return;
     }
 
-    const { nodes: rfNodes, edges: rfEdges } = computeChronologicalLayout(
+    const { nodes: rfNodes, edges: rfEdges } = computeForceLayout(
       filteredEvents,
       allCausalityLinks,
     );
@@ -358,7 +418,11 @@ function NetworkViewInner() {
         edgeTypes={EDGE_TYPES}
         minZoom={0.02}
         maxZoom={4}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.4 }}
+        defaultViewport={{
+          x: 0,
+          y: typeof window !== 'undefined' ? window.innerHeight / 2 : 400,
+          zoom: 0.08,
+        }}
         fitView
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}
@@ -377,23 +441,23 @@ function NetworkViewInner() {
         />
       </ReactFlow>
 
-      {/* Year-axis ruler — positioned at the bottom of the node area, rendered
-          inside the same coordinate space as a fixed overlay that scrolls with
-          the flow. We use a portal-like approach via absolute positioning. */}
+      {/* Fixed timeline spine overlay — always at 50 % viewport height */}
+      <NetworkTimeline viewport={viewport} />
+
+      {/* Year-axis info label */}
       <div
         style={{
           position: 'absolute',
           bottom: 70,
           left: 0,
           right: 0,
-          height: AXIS_HEIGHT,
+          height: 40,
           pointerEvents: 'none',
           zIndex: 5,
           display: 'flex',
           justifyContent: 'center',
         }}
       >
-        {/* Axis info label */}
         <div
           style={{
             position: 'absolute',
@@ -407,7 +471,8 @@ function NetworkViewInner() {
             whiteSpace: 'nowrap',
           }}
         >
-          {filteredEvents.length} events · {formatYearLabel(viewportYearMin)} — {formatYearLabel(viewportYearMax)}
+          {filteredEvents.length} events · {formatYearLabel(viewportYearMin)} —{' '}
+          {formatYearLabel(viewportYearMax)}
         </div>
       </div>
 
@@ -477,8 +542,9 @@ function NetworkViewInner() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * NetworkView — chronological graph of events and causality links.
- * Arranges events left-to-right by year with vertical staggering.
+ * NetworkView — force-directed chronological graph of events and causality
+ * links.  X is pinned to year; Y is organic via d3-force simulation.
+ * A fixed timeline spine overlays the viewport for persistent year reference.
  * Drop-in replacement for the Canvas component when viewMode === 'network'.
  */
 export default function NetworkView() {
