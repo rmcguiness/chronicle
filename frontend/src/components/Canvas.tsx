@@ -36,6 +36,7 @@ import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 
 import EventNode from './EventNode';
+import SubmitEventModal from './SubmitEventModal';
 import CausalityEdge from './CausalityEdge';
 import WebGLEventLayer, { GL_THRESHOLD } from './WebGLEventLayer';
 import { useAppStore } from '../store';
@@ -424,6 +425,8 @@ function CanvasInner() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
 
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
+
   const viewport = useAppStore((s) => s.viewport);
   const setViewport = useAppStore((s) => s.setViewport);
   const rfZoom = useAppStore((s) => s.rfZoom);
@@ -685,7 +688,31 @@ function CanvasInner() {
               )}
             </div>
           </Panel>
+
+          <Panel position="top-right">
+            <div style={{ marginTop: 16, marginRight: 8 }}>
+              <button
+                onClick={() => setSubmitModalOpen(true)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  backgroundColor: 'rgba(59,130,246,0.15)',
+                  border: '1px solid rgba(59,130,246,0.4)',
+                  color: '#60a5fa',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                ＋ Submit Event
+              </button>
+            </div>
+          </Panel>
         </ReactFlow>
+
+        <SubmitEventModal open={submitModalOpen} onClose={() => setSubmitModalOpen(false)} />
       </div>
 
       {useWebGL && (

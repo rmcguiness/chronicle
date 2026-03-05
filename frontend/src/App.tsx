@@ -17,6 +17,7 @@ import TimelineScrubber from './components/TimelineScrubber';
 import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import EventDetailPage from './pages/EventDetailPage';
+import AdminPage from './pages/AdminPage';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -62,6 +63,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<TimelineView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
   );
