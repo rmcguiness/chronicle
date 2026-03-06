@@ -45,9 +45,6 @@ const SLIDE_TRANSITION = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
 /** Maximum importance dots to display. */
 const MAX_IMPORTANCE_DOTS = 5;
 
-/** Panel background color (dark theme). */
-const BG_COLOR = 'rgba(7, 14, 34, 0.97)';
-
 /** Panel border color. */
 const BORDER_COLOR = 'rgba(255, 255, 255, 0.1)';
 
@@ -530,19 +527,20 @@ export default function EventDetailPanel() {
 
   return (
     <div
+      className="bg-white border-gray-200 dark:bg-[rgba(7,14,34,0.97)] dark:border-white/10"
       style={{
         position: 'fixed',
         top: 0,
         right: 0,
         bottom: SCRUBBER_HEIGHT,
         width: PANEL_WIDTH,
-        backgroundColor: BG_COLOR,
         backdropFilter: 'blur(16px)',
-        borderLeft: `1px solid ${BORDER_COLOR}`,
+        borderLeft: '1px solid',
+        borderColor: 'inherit',
         zIndex: PANEL_Z_INDEX,
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
+        boxShadow: '-8px 0 40px rgba(0,0,0,0.3)',
         transform: isOpen ? 'translateX(0)' : `translateX(${PANEL_WIDTH}px)`,
         transition: SLIDE_TRANSITION,
         pointerEvents: isOpen ? 'auto' : 'none',

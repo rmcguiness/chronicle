@@ -10,18 +10,19 @@ export default function CategoryLegend() {
 
   return (
     <div
+      className="bg-white/90 border-gray-300 dark:bg-[rgba(7,14,34,0.90)] dark:border-white/[0.08]"
       style={{
         position: 'fixed',
         top: 80,
         left: 16,
         zIndex: 150,
-        backgroundColor: 'rgba(7, 14, 34, 0.90)',
         backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid',
+        borderColor: 'inherit',
         borderRadius: 12,
         padding: collapsed ? '10px 14px' : '14px 16px',
         minWidth: collapsed ? 'auto' : 180,
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
         transition: 'all 0.2s',
       }}
     >

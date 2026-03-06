@@ -217,15 +217,14 @@ export default function TimelineScrubber() {
 
   return (
     <div
+      className="bg-white/95 border-t border-gray-200 dark:bg-[rgba(7,14,34,0.95)] dark:border-white/[0.08]"
       style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 100,
-        backgroundColor: 'rgba(7, 14, 34, 0.95)',
         backdropFilter: 'blur(12px)',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
         padding: '12px 24px 16px',
         userSelect: 'none',
       }}

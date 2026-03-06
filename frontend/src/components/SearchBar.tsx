@@ -124,15 +124,16 @@ export default function SearchBar() {
     >
       {/* Input + Mode Toggle */}
       <div
+        className="bg-white/95 border-gray-300 dark:bg-[rgba(7,14,34,0.95)] dark:border-white/[0.12]"
         style={{
           position: 'relative',
-          backgroundColor: 'rgba(7, 14, 34, 0.95)',
           backdropFilter: 'blur(20px)',
           border: open
             ? '1px solid rgba(96,165,250,0.5)'
-            : '1px solid rgba(255,255,255,0.12)',
+            : '1px solid',
+          borderColor: open ? undefined : 'inherit',
           borderRadius: showDropdown ? '12px 12px 0 0' : 12,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
           transition: 'border 0.15s, border-radius 0.1s',
         }}
       >
@@ -238,14 +239,13 @@ export default function SearchBar() {
       {/* Dropdown */}
       {showDropdown && (
         <div
+          className="bg-white/95 dark:bg-[rgba(7,14,34,0.97)]"
           style={{
-            backgroundColor: 'rgba(7, 14, 34, 0.97)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(96,165,250,0.3)',
             borderTop: 'none',
             borderRadius: '0 0 12px 12px',
-            boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
-            /* Cap height and enable scrolling when many search results are returned */
+            boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
             maxHeight: SEARCH_RESULTS_MAX_HEIGHT_PX,
             overflowY: 'auto',
           }}
