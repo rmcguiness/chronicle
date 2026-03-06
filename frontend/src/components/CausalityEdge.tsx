@@ -6,7 +6,13 @@
  * animation (left-to-right for "causes" type). Hover reveals connection
  * type, description, and strength — no persistent label on the edge itself.
  *
- * Owns: edge rendering, label display, hover tooltip, animation.
+ * Uses floating edge logic: EventNode handles are centred on each node, so
+ * sourceX/sourceY and targetX/targetY arrive as node-centre canvas coords.
+ * This component offsets those coords to the circle border before drawing,
+ * producing clean lines that exit/enter nodes from the nearest border point.
+ *
+ * Owns: edge rendering, label display, hover tooltip, animation,
+ *       floating border-exit/entry point computation.
  * Does NOT own: edge data structure, connection colours, layout positioning.
  */
 
@@ -14,7 +20,9 @@ import { memo, useState } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
+  Position,
   getBezierPath,
+  useInternalNode,
   useStore,
   type EdgeProps,
 } from '@xyflow/react';
@@ -30,6 +38,12 @@ const CAUSES_DASH_LENGTH = 10;
 /** Animation speed for the "causes" edge pulse (seconds per cycle). */
 const CAUSES_ANIMATION_SPEED = 0.8;
 
+/**
+ * Fallback radius when a node's measured dimensions are not yet available.
+ * Matches the mid-range of EventNode's NODE_SIZE_BASE + importance range.
+ */
+const DEFAULT_NODE_RADIUS = 30;
+
 interface CausalityEdgeData {
   connection_type: ConnectionType;
   strength: number;
@@ -37,23 +51,51 @@ interface CausalityEdgeData {
 }
 
 /**
+ * Maps an angle (degrees, standard math convention) to the ReactFlow Position
+ * that best represents that exit direction for bezier control point generation.
+ *
+ * @param angleDeg - Angle in degrees: 0 = right, 90 = down, 180/-180 = left, -90 = up.
+ * @returns The closest cardinal Position for bezier curve shaping.
+ */
+function angleToPosition(angleDeg: number): Position {
+  // Normalise to [-180, 180]
+  const a = ((angleDeg % 360) + 360) % 360;
+  const norm = a > 180 ? a - 360 : a;
+
+  if (norm >= -45 && norm < 45) return Position.Right;
+  if (norm >= 45 && norm < 135) return Position.Bottom;
+  if (norm >= -135 && norm < -45) return Position.Top;
+  return Position.Left;
+}
+
+/**
  * CausalityEdge — custom edge component for causality links.
- * Renders a colour-coded bezier curve with directional animation
- * and a persistent connection-type label.
+ *
+ * Floating edge logic: since EventNode places handles at the node centre,
+ * sourceX/sourceY and targetX/targetY are the centre canvas coords. This
+ * component offsets each endpoint outward by the node's circle radius so
+ * edges appear to originate from and terminate at the node border.
  */
 function CausalityEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
   targetY,
-  sourcePosition,
-  targetPosition,
   data: rawData,
   markerEnd,
 }: EdgeProps) {
   const data = rawData as CausalityEdgeData | undefined;
   const [hovered, setHovered] = useState(false);
+
+  // Retrieve measured node sizes for accurate radius computation.
+  // useInternalNode re-renders this edge only when the specific node changes.
+  const sourceNode = useInternalNode(source);
+  const targetNode = useInternalNode(target);
+  const sourceRadius = (sourceNode?.measured?.width ?? DEFAULT_NODE_RADIUS * 2) / 2;
+  const targetRadius = (targetNode?.measured?.width ?? DEFAULT_NODE_RADIUS * 2) / 2;
 
   const connectionType: ConnectionType = data?.connection_type ?? 'leads_to';
   const color = CONNECTION_COLORS[connectionType] ?? '#6b7280';
@@ -61,21 +103,39 @@ function CausalityEdge({
   const strength = data?.strength ?? 0.5;
   const zoom = useStore((s) => s.transform[2]);
 
+  // Direction vector from source centre to target centre.
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1; // guard against zero-length
+  const nx = dx / dist; // normalised x component
+  const ny = dy / dist; // normalised y component
+
+  // Offset endpoints to the circle borders so the line exits/enters the node edge.
+  const floatSourceX = sourceX + nx * sourceRadius;
+  const floatSourceY = sourceY + ny * sourceRadius;
+  const floatTargetX = targetX - nx * targetRadius;
+  const floatTargetY = targetY - ny * targetRadius;
+
+  // Derive bezier handle directions from the exit angle so the curve never
+  // folds back on itself regardless of relative node positions.
+  const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+  const srcPosition = angleToPosition(angleDeg);
+  const tgtPosition = angleToPosition(angleDeg + 180);
+
   const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
+    sourceX: floatSourceX,
+    sourceY: floatSourceY,
+    sourcePosition: srcPosition,
+    targetX: floatTargetX,
+    targetY: floatTargetY,
+    targetPosition: tgtPosition,
   });
 
   // Compensate stroke width so it never falls below MIN_STROKE_WIDTH_PX on screen.
-  // React Flow applies the zoom transform to the SVG, so we divide by zoom.
+  // ReactFlow applies the zoom transform to the SVG, so we divide by zoom.
   const baseStrokeWidth = Math.max(1.5, strength * 4);
   const strokeWidth = Math.max(baseStrokeWidth, MIN_STROKE_WIDTH_PX / zoom);
 
-  // For "causes" type: animate dash to pulse left-to-right (in direction of time)
   const isCauses = connectionType === 'causes';
   const isContext = connectionType === 'context';
 
@@ -101,7 +161,7 @@ function CausalityEdge({
         strokeOpacity={hovered ? 0.25 : 0.1}
         style={{
           pointerEvents: 'none',
-          filter: `blur(3px)`,
+          filter: 'blur(3px)',
           transition: 'stroke-opacity 0.15s',
         }}
       />
@@ -118,7 +178,7 @@ function CausalityEdge({
             : isContext
               ? '6 3'
               : undefined,
-          // Animate dash offset for "causes" type — moves left to right
+          // Animate dash offset for "causes" type — pulses in the direction of causation
           animation: isCauses
             ? `causality-flow ${CAUSES_ANIMATION_SPEED}s linear infinite`
             : undefined,
@@ -150,7 +210,15 @@ function CausalityEdge({
               lineHeight: 1.4,
             }}
           >
-            <div style={{ fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: data?.description ? 4 : 0 }}>
+            <div
+              style={{
+                fontWeight: 700,
+                color,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: data?.description ? 4 : 0,
+              }}
+            >
               {label}
             </div>
             {data?.description && <div>{data.description}</div>}

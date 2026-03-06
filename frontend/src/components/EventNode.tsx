@@ -50,9 +50,8 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   const showLabel = data.showLabel ?? false;
   const timeViewport = useAppStore((s) => s.timeViewport);
   const timeSpan = timeViewport.yearMax - timeViewport.yearMin;
-  const textRatio = Math.round(100 / timeSpan);
   /** Fixed node size in canvas px — 20–40px based on importance. No zoom math needed. */
-  const NODE_SIZE_BASE = 50;
+  const NODE_SIZE_BASE = timeSpan * 0.01 > 10 ? 500 / (timeSpan * 0.01) : 50;
   const NODE_SIZE_IMPORTANCE_RANGE = 20;
   const size = Math.round(
     NODE_SIZE_BASE +
@@ -73,16 +72,39 @@ function EventNode({ data: rawData, selected }: NodeProps) {
       onMouseLeave={handleMouseLeave}
       onClick={() => setSelectedEvent(data.slug)}
     >
-      {/* Invisible handles for edges */}
+      {/*
+       * Floating edge handles — both centred on the node so that CausalityEdge
+       * can compute the actual circle-border intersection dynamically per edge.
+       * Keeping Position.Left / Position.Right as the anchor enum to satisfy
+       * ReactFlow's required prop, but style overrides move them to centre.
+       */}
       <Handle
         type="target"
         position={Position.Left}
-        style={{ opacity: 0, width: 1, height: 1, minWidth: 1 }}
+        style={{
+          opacity: 0,
+          pointerEvents: "none",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 1,
+          height: 1,
+          minWidth: 1,
+        }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        style={{ opacity: 0, width: 1, height: 1, minWidth: 1 }}
+        style={{
+          opacity: 0,
+          pointerEvents: "none",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 1,
+          height: 1,
+          minWidth: 1,
+        }}
       />
 
       {/* Main circle */}
@@ -119,12 +141,12 @@ function EventNode({ data: rawData, selected }: NodeProps) {
         <div
           style={{
             marginTop: 4,
-            fontSize: textRatio < 1 ? 20 * textRatio : 20,
+            fontSize: timeSpan > 10 ? 30 / timeSpan : 30,
             fontWeight: 600,
             color: "#e2e8f0",
             textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7)",
             whiteSpace: "nowrap",
-            maxWidth: textRatio < 3 ? 200 * textRatio : 250,
+            maxWidth: timeSpan > 10 ? 350 / timeSpan : 350,
             overflow: "hidden",
             textOverflow: "ellipsis",
             textAlign: "center",
