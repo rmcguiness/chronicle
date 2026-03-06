@@ -192,6 +192,38 @@ export const REGIONS: { id: Region; label: string }[] = [
   { id: 'global', label: 'Global / Multi-region' },
 ];
 
+// ─── Timeline statistics ─────────────────────────────────────────────────────
+
+export interface EraCount {
+  era: string;
+  count: number;
+}
+
+export interface CategoryCount {
+  category: string;
+  count: number;
+}
+
+export interface MostConnectedEvent {
+  title: string;
+  slug: string;
+  connectionCount: number;
+}
+
+export interface TimelineStats {
+  totalEvents: number;
+  timeSpan: {
+    earliest: number | null;
+    latest: number | null;
+    label: string;
+  };
+  byEra: EraCount[];
+  byCategory: CategoryCount[];
+  mostConnected: MostConnectedEvent | null;
+  totalLinks: number;
+  coveragePct: number;
+}
+
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {
   // Time axis: pixels per year at zoom 1

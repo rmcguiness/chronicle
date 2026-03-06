@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  TimelineStats,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -508,6 +509,22 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 
   try {
     const { data } = await api.get<ArticleResponse>(`/api/events/${slug}/article`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch aggregate timeline statistics from the backend.
+ * Returns null if the backend is unavailable.
+ */
+export async function fetchStats(): Promise<TimelineStats | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<TimelineStats>('/api/stats');
     return data;
   } catch {
     return null;
