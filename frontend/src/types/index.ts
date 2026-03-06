@@ -54,6 +54,10 @@ export interface HistoricalEvent {
   perspective_count?: number;
   /** Precomputed Y position for network view (from DB). Null if not yet computed. */
   network_y?: number | null;
+  /** True if this event is a group container for child events. */
+  is_group?: boolean;
+  /** Parent group event ID — set when this event is a child of a group. */
+  parent_event_id?: string | null;
 }
 
 export interface Source {
@@ -191,6 +195,25 @@ export const REGIONS: { id: Region; label: string }[] = [
   { id: 'middle_east_africa', label: 'Middle East & Africa' },
   { id: 'global', label: 'Global / Multi-region' },
 ];
+
+/** A group event returned by GET /api/groups, including child count. */
+export interface GroupEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number;
+  date_earliest?: string | null;
+  date_latest?: string | null;
+  event_category?: string | null;
+  importance_score: number;
+  child_count: number;
+}
+
+/**
+ * ReactFlow zoom threshold below which group events collapse into a single pill.
+ * Above this threshold, the group becomes an expanded bounding box showing children.
+ */
+export const GROUP_COLLAPSE_ZOOM = 0.3;
 
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {

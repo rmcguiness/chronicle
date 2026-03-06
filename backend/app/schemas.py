@@ -4,7 +4,7 @@ Pydantic v2 response schemas — aligned exactly with the frontend API contract.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -96,6 +96,8 @@ class CanvasEventItem(BaseModel):
     perspective_count: Optional[int] = None
     zoom_min: int = 1
     network_y: Optional[float] = None       # precomputed Y for network view
+    is_group: bool = False
+    parent_event_id: Optional[UUID] = None
 
 
 class CanvasTileResponse(BaseModel):
@@ -103,6 +105,22 @@ class CanvasTileResponse(BaseModel):
     events: List[CanvasEventItem]
     links: List[CausalityLinkItem] = []
     computed_at: str                        # ISO datetime string
+
+
+# ────────────────────────────────────────────
+# Group event — GET /api/groups
+# ────────────────────────────────────────────
+class GroupEventItem(BaseModel):
+    """Group event with child count — for the groups listing endpoint."""
+    id: UUID
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    date_earliest: Optional[str] = None
+    date_latest: Optional[str] = None
+    event_category: Optional[str] = None
+    importance_score: float = 0.5
+    child_count: int = 0
 
 
 # ────────────────────────────────────────────

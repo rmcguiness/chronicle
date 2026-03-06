@@ -96,6 +96,8 @@ async def get_tiles(
             Event.tags,
             Event.zoom_min,
             Event.network_y,
+            Event.is_group,
+            Event.parent_event_id,
             persp_count_sq.c.cnt.label("perspective_count"),
         )
         .outerjoin(persp_count_sq, Event.id == persp_count_sq.c.event_id)
@@ -128,6 +130,8 @@ async def get_tiles(
             perspective_count=row.perspective_count,
             zoom_min=row.zoom_min or 1,
             network_y=row.network_y,
+            is_group=row.is_group or False,
+            parent_event_id=row.parent_event_id,
         )
         for row in rows
     ]

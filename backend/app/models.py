@@ -88,6 +88,12 @@ class Event(Base):
     # Canvas rendering — precomputed network layout
     network_y: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
 
+    # Group support — is_group marks a container event; parent_event_id links children
+    is_group: Mapped[bool] = mapped_column(Boolean, default=False)
+    parent_event_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("events.id", ondelete="SET NULL"), nullable=True
+    )
+
     importance_score: Mapped[float] = mapped_column(Float, default=0.5)
     zoom_min: Mapped[int] = mapped_column(Integer, default=1)
     zoom_max: Mapped[int] = mapped_column(Integer, default=10)
