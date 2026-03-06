@@ -42,6 +42,8 @@ export interface HistoricalEvent {
   date_display?: string;
   /** Earliest bound for the event date — ISO "YYYY-MM-DD" or "YYYY-MM-DD BC" for BCE. */
   date_earliest?: string;
+  /** Latest bound for the event date — ISO "YYYY-MM-DD" or "YYYY-MM-DD BC" for BCE. */
+  date_latest?: string;
   lat: number;
   lng: number;
   geo_modern?: string;

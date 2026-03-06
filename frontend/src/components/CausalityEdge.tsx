@@ -90,12 +90,17 @@ function CausalityEdge({
   const data = rawData as CausalityEdgeData | undefined;
   const [hovered, setHovered] = useState(false);
 
-  // Retrieve measured node sizes for accurate radius computation.
+  // Retrieve measured node sizes for accurate border-intersection computation.
   // useInternalNode re-renders this edge only when the specific node changes.
+  // Both width and height are needed: circle nodes have width === height, but
+  // pill (stretched) nodes have width > height, requiring ellipse math.
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
-  const sourceRadius = (sourceNode?.measured?.width ?? DEFAULT_NODE_RADIUS * 2) / 2;
-  const targetRadius = (targetNode?.measured?.width ?? DEFAULT_NODE_RADIUS * 2) / 2;
+  const DEFAULT_DIAMETER = DEFAULT_NODE_RADIUS * 2;
+  const srcA = (sourceNode?.measured?.width  ?? DEFAULT_DIAMETER) / 2; // semi-major axis
+  const srcB = (sourceNode?.measured?.height ?? DEFAULT_DIAMETER) / 2; // semi-minor axis
+  const tgtA = (targetNode?.measured?.width  ?? DEFAULT_DIAMETER) / 2;
+  const tgtB = (targetNode?.measured?.height ?? DEFAULT_DIAMETER) / 2;
 
   const connectionType: ConnectionType = data?.connection_type ?? 'leads_to';
   const color = CONNECTION_COLORS[connectionType] ?? '#6b7280';
@@ -110,11 +115,22 @@ function CausalityEdge({
   const nx = dx / dist; // normalised x component
   const ny = dy / dist; // normalised y component
 
-  // Offset endpoints to the circle borders so the line exits/enters the node edge.
-  const floatSourceX = sourceX + nx * sourceRadius;
-  const floatSourceY = sourceY + ny * sourceRadius;
-  const floatTargetX = targetX - nx * targetRadius;
-  const floatTargetY = targetY - ny * targetRadius;
+  /**
+   * Ellipse border intersection: for a unit direction vector (nx, ny) from the
+   * centre of an ellipse with semi-axes (a, b), the border point is at distance
+   *   t = 1 / sqrt((nx/a)² + (ny/b)²)
+   * For circles (a === b === r) this reduces to t = r, matching the old formula.
+   * A small guard prevents division by zero on zero-length edges.
+   */
+  const DIVISION_GUARD = 1e-9;
+  const sourceOffset = 1 / Math.sqrt((nx / srcA) ** 2 + (ny / srcB) ** 2 + DIVISION_GUARD);
+  const targetOffset = 1 / Math.sqrt((nx / tgtA) ** 2 + (ny / tgtB) ** 2 + DIVISION_GUARD);
+
+  // Offset endpoints to the actual node borders.
+  const floatSourceX = sourceX + nx * sourceOffset;
+  const floatSourceY = sourceY + ny * sourceOffset;
+  const floatTargetX = targetX - nx * targetOffset;
+  const floatTargetY = targetY - ny * targetOffset;
 
   // Derive bezier handle directions from the exit angle so the curve never
   // folds back on itself regardless of relative node positions.
