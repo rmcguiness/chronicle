@@ -73,16 +73,39 @@ function EventNode({ data: rawData, selected }: NodeProps) {
       onMouseLeave={handleMouseLeave}
       onClick={() => setSelectedEvent(data.slug)}
     >
-      {/* Invisible handles for edges */}
+      {/*
+       * Floating edge handles — both centred on the node so that CausalityEdge
+       * can compute the actual circle-border intersection dynamically per edge.
+       * Keeping Position.Left / Position.Right as the anchor enum to satisfy
+       * ReactFlow's required prop, but style overrides move them to centre.
+       */}
       <Handle
         type="target"
         position={Position.Left}
-        style={{ opacity: 0, width: 1, height: 1, minWidth: 1 }}
+        style={{
+          opacity: 0,
+          pointerEvents: "none",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 1,
+          height: 1,
+          minWidth: 1,
+        }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        style={{ opacity: 0, width: 1, height: 1, minWidth: 1 }}
+        style={{
+          opacity: 0,
+          pointerEvents: "none",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 1,
+          height: 1,
+          minWidth: 1,
+        }}
       />
 
       {/* Main circle */}
