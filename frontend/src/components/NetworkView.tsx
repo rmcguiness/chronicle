@@ -16,7 +16,7 @@
  *   toggling, timeline scrubber (rendered by App.tsx).
  */
 
-import { useEffect, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -678,26 +678,9 @@ function NetworkViewInner() {
     }
   }, [filteredEvents.length, fitView]);
 
-  // Re-fit when viewport scrubber changes significantly
-  const handleFitView = useCallback(() => {
-    setTimeout(() => {
-      fitView({ padding: 0.15, duration: 400 });
-    }, 50);
-  }, [fitView]);
-
-  // Track previous viewport to detect scrubber changes
-  const prevViewportRef = useRef({ min: viewportYearMin, max: viewportYearMax });
-  useEffect(() => {
-    const prev = prevViewportRef.current;
-    const changed =
-      Math.abs(prev.min - viewportYearMin) > 100 ||
-      Math.abs(prev.max - viewportYearMax) > 100;
-
-    if (changed && filteredEvents.length > 0) {
-      handleFitView();
-    }
-    prevViewportRef.current = { min: viewportYearMin, max: viewportYearMax };
-  }, [viewportYearMin, viewportYearMax, filteredEvents.length, handleFitView]);
+  // NOTE: handleFitView on timeViewport change was removed — the scrubber now controls the
+  // ReactFlow camera directly via setPendingRfViewport. Auto-fitView on every scroll-zoom
+  // tick caused the camera to snap back to fit-all, making the view drift left.
 
   // ── Scroll-based time zoom + Ctrl+scroll visual zoom ──────────────────
   const { setViewport: setRfViewport, getViewport } = useReactFlow();
@@ -743,9 +726,9 @@ function NetworkViewInner() {
       const canvasX = (e.clientX - rfVp.x) / rfVp.zoom;
       const cursorYear = tv.yearMin + (canvasX / CANVAS_WIDTH) * span;
 
-      // Scroll forward (deltaY < 0) = zoom out (widen year range)
-      // Scroll backward (deltaY > 0) = zoom in (narrow year range)
-      const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+      // Scroll up (deltaY < 0) = zoom in (narrow year range)
+      // Scroll down (deltaY > 0) = zoom out (widen year range)
+      const factor = e.deltaY < 0 ? 1 / ZOOM_FACTOR : ZOOM_FACTOR;
       const newSpan = Math.min(MAX_SPAN, Math.max(MIN_SPAN, span * factor));
 
       const ratio = span > 0 ? (cursorYear - tv.yearMin) / span : 0.5;
