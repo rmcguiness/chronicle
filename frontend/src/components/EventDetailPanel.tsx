@@ -8,7 +8,7 @@
  * Does NOT own: event data fetching for the detail (uses react-query),
  * store state shape, or canvas rendering.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
 import type { ArticleResponse } from '../api/client';
@@ -22,6 +22,7 @@ import {
   evidenceColor,
   evidenceLabel,
 } from '../utils/categories';
+import EmbedPopover from './EmbedPopover';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Named constants
@@ -523,6 +524,9 @@ export default function EventDetailPanel() {
   const color = event ? CATEGORY_COLORS[event.category] : '#6b7280';
   const icon = event ? CATEGORY_ICONS[event.category] : '';
 
+  const [embedOpen, setEmbedOpen] = useState(false);
+  const handleCloseEmbed = useCallback(() => setEmbedOpen(false), []);
+
   /** Close the panel and clear selection. */
   const handleClose = () => {
     setDetailPanelOpen(false);
@@ -616,25 +620,55 @@ export default function EventDetailPanel() {
             )}
           </div>
 
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            aria-label="Close detail panel"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: `1px solid ${BORDER_COLOR}`,
-              borderRadius: 8,
-              color: '#94a3b8',
-              cursor: 'pointer',
-              padding: '6px 10px',
-              fontSize: 18,
-              lineHeight: 1,
-              flexShrink: 0,
-              transition: 'all 0.15s',
-            }}
-          >
-            ×
-          </button>
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, position: 'relative' }}>
+            {/* Embed button */}
+            {event && (
+              <>
+                <button
+                  onClick={() => setEmbedOpen(!embedOpen)}
+                  aria-label="Embed event"
+                  title="Embed"
+                  style={{
+                    background: embedOpen ? 'rgba(96,165,250,0.15)' : 'rgba(255,255,255,0.06)',
+                    border: `1px solid ${embedOpen ? 'rgba(96,165,250,0.3)' : BORDER_COLOR}`,
+                    borderRadius: 8,
+                    color: embedOpen ? '#60a5fa' : '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '6px 10px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    lineHeight: 1,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  &lt;/&gt;
+                </button>
+                {embedOpen && (
+                  <EmbedPopover slug={event.slug} onClose={handleCloseEmbed} />
+                )}
+              </>
+            )}
+
+            {/* Close button */}
+            <button
+              onClick={handleClose}
+              aria-label="Close detail panel"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid ${BORDER_COLOR}`,
+                borderRadius: 8,
+                color: '#94a3b8',
+                cursor: 'pointer',
+                padding: '6px 10px',
+                fontSize: 18,
+                lineHeight: 1,
+                transition: 'all 0.15s',
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
       </div>
 
