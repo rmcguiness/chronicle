@@ -57,13 +57,12 @@ MAX_NODE_HEIGHT = NODE_SIZE_BASE + NODE_SIZE_IMPORTANCE_RANGE
 # Y spacing constants (pixels in canvas space)
 # ─────────────────────────────────────────────────────────────────────────────
 
-DEPTH_SPACING = 180              # px between depth levels
-MAX_DEPTH_LEVELS = [0, 180, 324, 432, 504, 540]  # depth 0–5+
-ISOLATED_NUDGE = 90              # px for nodes with no connections
-# Minimum vertical centre-to-centre distance: MAX_NODE_HEIGHT + 15px visual gap
-COLLISION_RADIUS = MAX_NODE_HEIGHT + 15  # ≈ 57 px — circles just clear each other
-COLLISION_PASSES = 200           # many passes for full convergence in dense regions
-HORIZONTAL_BUFFER = 15           # px — extra padding for horizontal overlap detection
+DEPTH_SPACING = 80               # px between depth levels (spine → branch 1 → branch 2 …)
+# Cumulative Y magnitude at each depth (depth 0 = spine = 0, depth 1 = ±80, etc.)
+MAX_DEPTH_LEVELS = [0, 80, 150, 210, 260, 300]
+ISOLATED_NUDGE = 40              # px nudge for nodes with no causality connections
+LANE_SPACING = 60                # px between lanes within the same (depth, sign) group
+HORIZONTAL_GAP = 10              # px — minimum X clearance between nodes in the same lane
 
 
 def parse_year_from_date(date_str: Optional[str], is_bce: bool = False) -> Optional[int]:
@@ -218,15 +217,6 @@ def compute_depths_and_signs(events, outgoing, incoming):
     return assignment
 
 
-def depth_to_y(depth: int, sign: int) -> float:
-    """Map causal depth + sign to a canvas Y coordinate (pixels)."""
-    if depth >= len(MAX_DEPTH_LEVELS):
-        magnitude = MAX_DEPTH_LEVELS[-1]
-    else:
-        magnitude = MAX_DEPTH_LEVELS[depth]
-    return sign * magnitude
-
-
 def compute_event_x_ranges(events) -> dict:
     """
     Compute X position and width for each event.
@@ -259,113 +249,79 @@ def compute_event_x_ranges(events) -> dict:
     return x_ranges
 
 
-def ranges_overlap(range_a: Tuple[float, float], range_b: Tuple[float, float]) -> bool:
-    """Check if two X ranges overlap (with buffer)."""
-    a_start, a_end = range_a
-    b_start, b_end = range_b
-    # Add buffer to each end
-    return (a_start - HORIZONTAL_BUFFER) < (b_end + HORIZONTAL_BUFFER) and \
-           (b_start - HORIZONTAL_BUFFER) < (a_end + HORIZONTAL_BUFFER)
-
-
-def centers_close(range_a: Tuple[float, float], range_b: Tuple[float, float], threshold: float) -> bool:
-    """Check if node centers are within threshold distance."""
-    center_a = (range_a[0] + range_a[1]) / 2
-    center_b = (range_b[0] + range_b[1]) / 2
-    return abs(center_a - center_b) < threshold
-
-
-def resolve_collisions(positions: dict, events, passes: int = COLLISION_PASSES) -> dict:
+def assign_y_positions(events, assignment: dict, x_ranges: dict) -> dict:
     """
-    Push nodes apart vertically when their X ranges overlap, then do a final
-    sort-and-space sweep to eliminate any remaining oscillation artifacts.
+    Assign Y positions using BFS depth groups + greedy interval-scheduling lanes.
 
-    Phase 1 — iterative pairwise push (converges most pairs quickly).
-    Phase 2 — connected-component sweep: find every cluster of nodes that
-               overlap with each other in X, sort by current Y, and space them
-               exactly COLLISION_RADIUS apart. Eliminates the ping-pong problem
-               where a middle node B is pushed by both A above and C below.
+    Algorithm (replaces the old iterative-push approach):
+    1. Group nodes by (depth, sign) — the BFS result.
+    2. Within each group, sort nodes by X-start and greedily pack them into
+       horizontal lanes (standard 1D interval scheduling / earliest-deadline-
+       first). Each lane k within a group gets Y = base_y + k * LANE_SPACING,
+       spreading away from the spine.
+    3. Isolated nodes (not reachable by BFS) get a small fixed nudge.
 
-    Returns updated positions dict.
+    Properties:
+    - Zero overlap within each depth group by construction.
+    - No cascading or oscillation (single-pass).
+    - Compact: uses the minimum number of lanes actually needed.
+    - Preserves causal chain structure (BFS depth drives Y, not arbitrary push).
     """
-    pos = dict(positions)
-    x_ranges = compute_event_x_ranges(events)
-    node_ids = [nid for nid in pos.keys() if nid in x_ranges]
+    positions: dict[str, float] = {}
 
-    # Pre-compute which pairs overlap in X — only these can ever collide.
-    overlap_set: set[Tuple[str, str]] = set()
-    overlapping_x_pairs: List[Tuple[str, str]] = []
-    neighbors: dict[str, set[str]] = {nid: set() for nid in node_ids}
+    # Group nodes by (depth, sign), collapse depth-0 sign into one group
+    groups: dict[tuple, List[str]] = defaultdict(list)
+    isolated: List[str] = []
 
-    for i, nid_a in enumerate(node_ids):
-        for nid_b in node_ids[i + 1:]:
-            if ranges_overlap(x_ranges[nid_a], x_ranges[nid_b]):
-                overlapping_x_pairs.append((nid_a, nid_b))
-                overlap_set.add((nid_a, nid_b))
-                neighbors[nid_a].add(nid_b)
-                neighbors[nid_b].add(nid_a)
+    for e in events:
+        eid = str(e['id'])
+        if eid in assignment:
+            depth, sign = assignment[eid]
+            key = (depth, sign) if depth > 0 else (0, 1)  # depth-0 all share spine
+            groups[key].append(eid)
+        else:
+            isolated.append(eid)
 
-    # ── Phase 1: iterative pairwise push ─────────────────────────────────────
-    for _pass in range(passes):
-        moved = False
-        for nid_a, nid_b in overlapping_x_pairs:
-            y_a, y_b = pos[nid_a], pos[nid_b]
-            gap = abs(y_b - y_a)
-            if gap < COLLISION_RADIUS:
-                push = (COLLISION_RADIUS - gap) / 2 + 0.5
-                if y_a <= y_b:
-                    pos[nid_a] -= push
-                    pos[nid_b] += push
-                else:
-                    pos[nid_a] += push
-                    pos[nid_b] -= push
-                moved = True
-        if not moved:
-            break
+    for (depth, sign), node_ids in groups.items():
+        base_magnitude = MAX_DEPTH_LEVELS[min(depth, len(MAX_DEPTH_LEVELS) - 1)]
+        base_y = sign * base_magnitude
 
-    # ── Phase 2: local conflict resolution ───────────────────────────────────
-    # For each node that still has direct Y-conflicts with its X-overlapping
-    # neighbours, sort that node + its conflicting neighbours by Y and space
-    # them exactly COLLISION_RADIUS apart.
-    #
-    # "Local" is the key word: we only touch the direct conflict group, NOT
-    # the full connected component. This avoids over-spacing chain-like
-    # structures (A→B→C where A and C don't actually overlap in X).
-    LOCAL_PASSES = 30
-    for _local_pass in range(LOCAL_PASSES):
-        local_moved = False
-        for nid in node_ids:
-            # Find neighbours that directly overlap nid in X AND still in Y
-            conflicting = [
-                nb for nb in neighbors[nid]
-                if abs(pos[nb] - pos[nid]) < COLLISION_RADIUS
-            ]
-            if not conflicting:
-                continue
-            # Sort nid + its direct conflicts by current Y
-            group = sorted([nid] + conflicting, key=lambda n: pos[n])
-            mean_y = sum(pos[n] for n in group) / len(group)
-            total_h = (len(group) - 1) * COLLISION_RADIUS
-            start_y = mean_y - total_h / 2
-            for i, n in enumerate(group):
-                new_y = start_y + i * COLLISION_RADIUS
-                if abs(new_y - pos[n]) > 0.01:
-                    pos[n] = new_y
-                    local_moved = True
-        if not local_moved:
-            break
+        # Sort by X start for greedy lane assignment
+        ordered = sorted(
+            node_ids,
+            key=lambda nid: x_ranges.get(nid, (0, 0))[0]
+        )
 
-    # Diagnostics
-    remaining = sum(
-        1 for nid_a, nid_b in overlapping_x_pairs
-        if abs(pos[nid_b] - pos[nid_a]) < COLLISION_RADIUS
-    )
-    if remaining:
-        print(f"  Note: {remaining} overlapping pairs remain "
-              f"(nodes spanning very wide date ranges — unavoidable without "
-              f"infinite canvas height)")
+        # lane_ends[k] = rightmost X end currently in lane k
+        lane_ends: List[float] = []
+        lane_of: dict[str, int] = {}
 
-    return pos
+        for nid in ordered:
+            x_start, x_end = x_ranges.get(nid, (0.0, 0.0))
+            assigned_lane = None
+            for k, lane_end in enumerate(lane_ends):
+                if x_start >= lane_end + HORIZONTAL_GAP:
+                    assigned_lane = k
+                    lane_ends[k] = x_end
+                    break
+            if assigned_lane is None:
+                assigned_lane = len(lane_ends)
+                lane_ends.append(x_end)
+            lane_of[nid] = assigned_lane
+
+        for nid, lane in lane_of.items():
+            # Lane 0 sits at base_y; subsequent lanes spread away from the spine
+            positions[nid] = base_y + lane * LANE_SPACING * sign
+
+    # Isolated nodes: deterministic nudge from ID hash
+    for eid in isolated:
+        hex_tail = eid[-4:].replace('-', '')
+        hval = int(hex_tail, 16) % 2 if hex_tail else 0
+        positions[eid] = ISOLATED_NUDGE * (1 if hval == 0 else -1)
+
+    return positions
+
+
 
 
 async def compute_and_persist():
@@ -386,32 +342,16 @@ async def compute_and_persist():
     print("Computing depths and signs via BFS...")
     assignment = compute_depths_and_signs(events, outgoing, incoming)
 
-    # Build initial Y positions
-    positions = {}
-    for event in events:
-        eid = str(event['id'])
-        if eid in assignment:
-            depth, sign = assignment[eid]
-            positions[eid] = depth_to_y(depth, sign)
-        else:
-            # Isolated node: deterministic nudge based on ID hash
-            hex_tail = eid[-4:].replace('-', '')
-            hval = int(hex_tail, 16) % 2 if hex_tail else 0
-            positions[eid] = ISOLATED_NUDGE * (1 if hval == 0 else -1)
-
-    print(f"Resolving collisions ({COLLISION_PASSES} passes)...")
-    positions = resolve_collisions(positions, events)
-    
-    # Collision diagnostics are reported inside resolve_collisions().
+    print("Assigning Y positions via interval scheduling...")
+    x_ranges = compute_event_x_ranges(events)
+    positions = assign_y_positions(events, assignment, x_ranges)
 
     print("Persisting to DB...")
     updates = [(positions[str(e['id'])], e['id']) for e in events]
     await conn.executemany("UPDATE events SET network_y = $1 WHERE id = $2", updates)
 
-    print(f"Done. Updated {len(updates)} events.")
-
-    # Stats
     ys = list(positions.values())
+    print(f"Done. Updated {len(updates)} events.")
     if ys:
         print(f"  Y range: {min(ys):.0f} to {max(ys):.0f}")
     print(f"  Connected nodes: {len(assignment)}")
