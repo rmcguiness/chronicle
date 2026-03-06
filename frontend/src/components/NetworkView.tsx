@@ -755,9 +755,8 @@ function NetworkViewInner() {
         onEdgesChange={onEdgesChange}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
-        minZoom={0.3}
+        minZoom={0.02}
         maxZoom={4}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}

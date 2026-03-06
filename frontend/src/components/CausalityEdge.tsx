@@ -32,6 +32,12 @@ import type { ConnectionType } from '../types';
 /** Minimum stroke width in screen pixels, prevents edges from vanishing at low zoom. */
 const MIN_STROKE_WIDTH_PX = 2;
 
+/** Base arrowhead size in canvas pixels. */
+const ARROW_BASE_SIZE = 8;
+
+/** Minimum arrowhead size in screen pixels — ensures visibility at low zoom. */
+const MIN_ARROW_SCREEN_PX = 6;
+
 /** Dash array length for the animated "causes" edges. */
 const CAUSES_DASH_LENGTH = 10;
 
@@ -85,7 +91,6 @@ function CausalityEdge({
   targetX,
   targetY,
   data: rawData,
-  markerEnd,
 }: EdgeProps) {
   const data = rawData as CausalityEdgeData | undefined;
   const [hovered, setHovered] = useState(false);
@@ -152,11 +157,35 @@ function CausalityEdge({
   const baseStrokeWidth = Math.max(1.5, strength * 4);
   const strokeWidth = Math.max(baseStrokeWidth, MIN_STROKE_WIDTH_PX / zoom);
 
+  // Compensate arrowhead size so it never falls below MIN_ARROW_SCREEN_PX on screen.
+  // Same inverse-zoom logic as strokeWidth — at zoom 0.3 the arrow is ~3x larger in
+  // canvas units to remain the same screen size.
+  const arrowSize = Math.max(ARROW_BASE_SIZE, MIN_ARROW_SCREEN_PX / zoom);
+  const markerId = `causality-arrow-${id}`;
+
   const isCauses = connectionType === 'causes';
   const isContext = connectionType === 'context';
 
   return (
     <>
+      {/* Zoom-compensated arrowhead marker — stays visible at low zoom */}
+      <defs>
+        <marker
+          id={markerId}
+          markerWidth={arrowSize}
+          markerHeight={arrowSize}
+          refX={arrowSize - 1}
+          refY={arrowSize / 2}
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
+          <path
+            d={`M 0 0 L ${arrowSize} ${arrowSize / 2} L 0 ${arrowSize} z`}
+            fill={hovered ? '#ffffff' : color}
+          />
+        </marker>
+      </defs>
+
       {/* Invisible wider hit area for hover */}
       <path
         d={edgePath}
@@ -185,7 +214,7 @@ function CausalityEdge({
       <BaseEdge
         id={id}
         path={edgePath}
-        markerEnd={markerEnd as string}
+        markerEnd={`url(#${markerId})`}
         style={{
           stroke: hovered ? '#ffffff' : color,
           strokeWidth: hovered ? strokeWidth + 1 : strokeWidth,
