@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  GroupEvent,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -515,6 +516,42 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 }
 
 export type { Perspective, ConnectedEvent };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Groups
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch all group events with child counts from GET /api/groups.
+ * Returns an empty array if the backend is unavailable.
+ */
+export async function fetchGroups(): Promise<GroupEvent[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+  try {
+    const { data } = await api.get<GroupEvent[]>('/api/groups');
+    return data;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Patch group-related fields on an event (admin-only).
+ *
+ * @param eventId - UUID of the event to update.
+ * @param patch   - Fields to update (is_group, parent_event_id).
+ * @param adminKey - Admin authentication key.
+ */
+export async function patchEvent(
+  eventId: string,
+  patch: { is_group?: boolean; parent_event_id?: string | null },
+  adminKey: string,
+): Promise<void> {
+  await api.patch(`/api/events/${eventId}`, patch, {
+    headers: { 'X-Admin-Key': adminKey },
+  });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // On This Day
