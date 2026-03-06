@@ -19,26 +19,148 @@ Algorithm:
 
 import asyncio
 import asyncpg
+import re
 from collections import defaultdict, deque
-from typing import Optional
+from typing import List, Optional, Tuple
 
 DB_URL = "postgresql://chronicle:chronicle@localhost:5433/chronicle"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reference viewport constants (from frontend/src/types/index.ts)
+# ─────────────────────────────────────────────────────────────────────────────
+
+REFERENCE_YEAR_MIN = -800        # Default timeViewport yearMin
+REFERENCE_YEAR_MAX = 1500        # Default timeViewport yearMax
+REFERENCE_TIME_SPAN = REFERENCE_YEAR_MAX - REFERENCE_YEAR_MIN   # 2300 years
+CANVAS_WIDTH = 2000              # px — reference canvas width
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Node size constants — must match EventNode.tsx exactly.
+#
+# EventNode formula:
+#   NODE_SIZE_BASE = timeSpan * 0.01 > 10 ? 500 / (timeSpan * 0.01) : 50
+# At REFERENCE_TIME_SPAN = 2300: 2300 * 0.01 = 23 > 10
+#   → NODE_SIZE_BASE = 500 / 23 ≈ 21.74 px
+# ─────────────────────────────────────────────────────────────────────────────
+
+NODE_SIZE_BASE = (
+    500 / (REFERENCE_TIME_SPAN * 0.01)
+    if REFERENCE_TIME_SPAN * 0.01 > 10
+    else 50
+)  # ≈ 21.74 px at reference span — matches EventNode.tsx
+NODE_SIZE_IMPORTANCE_RANGE = 20  # px — additional size for max-importance nodes
+
+# Max circle height at reference zoom (importance=1.0): NODE_SIZE_BASE + 20 ≈ 42 px
+MAX_NODE_HEIGHT = NODE_SIZE_BASE + NODE_SIZE_IMPORTANCE_RANGE
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Y spacing constants (pixels in canvas space)
 # ─────────────────────────────────────────────────────────────────────────────
 
-DEPTH_SPACING = 180              # px between depth levels
-MAX_DEPTH_LEVELS = [0, 180, 324, 432, 504, 540]  # depth 0–5+
-ISOLATED_NUDGE = 90              # px for nodes with no connections
-COLLISION_RADIUS = 55            # min distance between node centers at same X-bucket
-COLLISION_PASSES = 20            # more passes than client-side 3 for better resolution
-YEAR_BUCKET_SIZE = 60            # years — nodes within this range compete for Y space
+DEPTH_SPACING = 80               # px between depth levels (spine → branch 1 → branch 2 …)
+# Cumulative Y magnitude at each depth (depth 0 = spine = 0, depth 1 = ±80, etc.)
+MAX_DEPTH_LEVELS = [0, 80, 150, 210, 260, 300]
+ISOLATED_NUDGE = 40              # px nudge for nodes with no causality connections
+LANE_SPACING = 60                # px between lanes within the same (depth, sign) group
+HORIZONTAL_GAP = 10              # px — minimum X clearance between nodes in the same lane
+
+
+def parse_year_from_date(date_str: Optional[str], is_bce: bool = False) -> Optional[int]:
+    """
+    Parse year from date string like "1939-09-01".
+    Uses is_bce flag to determine if date is BC/BCE.
+    Returns negative year for BC dates, None if unparseable.
+    """
+    if not date_str:
+        return None
+    date_str = date_str.strip()
+    
+    # Check for BC suffix in string (backup check)
+    bc_match = re.match(r'^(\d{1,4})-\d{2}-\d{2}\s*BC$', date_str, re.IGNORECASE)
+    if bc_match:
+        return -int(bc_match.group(1))
+    
+    # Standard date format (CE or BCE based on flag)
+    ce_match = re.match(r'^(-?\d{1,4})-\d{2}-\d{2}', date_str)
+    if ce_match:
+        year = int(ce_match.group(1))
+        if is_bce:
+            return -abs(year)  # Negate year for BCE
+        return year
+    
+    return None
+
+
+def compute_event_width(
+    date_earliest: Optional[str],
+    date_latest: Optional[str],
+    year_approx: int,
+    importance_score: float,
+    is_bce: bool = False
+) -> float:
+    """
+    Compute the width of an event node in canvas pixels.
+    
+    Pills (events with duration) are sized by their time span.
+    Circles (point-in-time) use the importance-based node size.
+    Returns the larger of the two.
+    """
+    # Node size based on importance (circle size)
+    node_size = NODE_SIZE_BASE + importance_score * NODE_SIZE_IMPORTANCE_RANGE
+    
+    # Parse years from dates
+    start_year = parse_year_from_date(date_earliest, is_bce)
+    end_year = parse_year_from_date(date_latest, is_bce)
+    
+    # Fall back to year_approx if dates are missing
+    if start_year is None:
+        start_year = year_approx
+    if end_year is None:
+        end_year = year_approx
+    
+    # Check for placeholder dates (Jan 1 / Dec 31 same year = no real duration)
+    if date_earliest and date_latest:
+        # If both are just the year boundaries, treat as point-in-time
+        is_placeholder = (
+            date_earliest.endswith("-01-01") and 
+            date_latest.endswith("-12-31") and
+            start_year == end_year
+        )
+        if is_placeholder:
+            return node_size
+    
+    # Compute pill width based on duration
+    duration_years = end_year - start_year
+    if duration_years <= 0:
+        return node_size
+    
+    time_span = REFERENCE_YEAR_MAX - REFERENCE_YEAR_MIN
+    pill_width = (duration_years / time_span) * CANVAS_WIDTH
+    
+    return max(node_size, pill_width)
+
+
+def event_to_x(year: int) -> float:
+    """Convert year to X position in canvas pixels."""
+    time_span = REFERENCE_YEAR_MAX - REFERENCE_YEAR_MIN
+    return ((year - REFERENCE_YEAR_MIN) / time_span) * CANVAS_WIDTH
 
 
 async def load_data(conn):
     """Load all events and causality links from the database."""
-    events = await conn.fetch("SELECT id, year_approx FROM events ORDER BY year_approx")
+    # Cast dates to text to avoid asyncpg date parsing issues with unusual dates
+    # Use is_bce flag to determine BC/BCE dates
+    events = await conn.fetch("""
+        SELECT 
+            id, 
+            year_approx, 
+            date_earliest::text as date_earliest, 
+            date_latest::text as date_latest, 
+            is_bce,
+            importance_score 
+        FROM events 
+        ORDER BY year_approx
+    """)
     links = await conn.fetch("SELECT cause_event_id, effect_event_id FROM causality_links")
     return events, links
 
@@ -95,50 +217,111 @@ def compute_depths_and_signs(events, outgoing, incoming):
     return assignment
 
 
-def depth_to_y(depth: int, sign: int) -> float:
-    """Map causal depth + sign to a canvas Y coordinate (pixels)."""
-    if depth >= len(MAX_DEPTH_LEVELS):
-        magnitude = MAX_DEPTH_LEVELS[-1]
-    else:
-        magnitude = MAX_DEPTH_LEVELS[depth]
-    return sign * magnitude
-
-
-def resolve_collisions(positions: dict, events, passes: int = COLLISION_PASSES) -> dict:
+def compute_event_x_ranges(events) -> dict:
     """
-    Push nodes apart if they're too close vertically within the same time bucket.
-
-    Groups nodes by year_approx // YEAR_BUCKET_SIZE, then sorts by Y and
-    pushes any pair closer than COLLISION_RADIUS apart.
-
-    Returns updated positions dict.
+    Compute X position and width for each event.
+    
+    Returns dict: id → (x_start, x_end)
     """
-    event_years = {str(e['id']): e['year_approx'] for e in events}
-    pos = dict(positions)
+    x_ranges = {}
+    for e in events:
+        eid = str(e['id'])
+        is_bce = e['is_bce'] if e['is_bce'] is not None else False
+        
+        # Get start year for X position
+        start_year = parse_year_from_date(e['date_earliest'], is_bce)
+        if start_year is None:
+            start_year = e['year_approx']
+        
+        # Compute node width
+        width = compute_event_width(
+            e['date_earliest'],
+            e['date_latest'],
+            e['year_approx'],
+            e['importance_score'] if e['importance_score'] is not None else 0.5,
+            is_bce
+        )
+        
+        x_start = event_to_x(start_year)
+        x_end = x_start + width
+        x_ranges[eid] = (x_start, x_end)
+    
+    return x_ranges
 
-    for _ in range(passes):
-        # Group by year bucket
-        buckets = defaultdict(list)
-        for node_id, y in pos.items():
-            year = event_years.get(node_id)
-            if year is None:
-                continue
-            bucket = year // YEAR_BUCKET_SIZE
-            buckets[bucket].append(node_id)
 
-        for bucket_nodes in buckets.values():
-            # Sort by current Y position
-            bucket_nodes.sort(key=lambda nid: pos[nid])
-            # Push apart any nodes within COLLISION_RADIUS
-            for i in range(len(bucket_nodes) - 1):
-                a, b = bucket_nodes[i], bucket_nodes[i + 1]
-                gap = pos[b] - pos[a]
-                if gap < COLLISION_RADIUS:
-                    push = (COLLISION_RADIUS - gap) / 2
-                    pos[a] -= push
-                    pos[b] += push
+def assign_y_positions(events, assignment: dict, x_ranges: dict) -> dict:
+    """
+    Assign Y positions using BFS depth groups + greedy interval-scheduling lanes.
 
-    return pos
+    Algorithm (replaces the old iterative-push approach):
+    1. Group nodes by (depth, sign) — the BFS result.
+    2. Within each group, sort nodes by X-start and greedily pack them into
+       horizontal lanes (standard 1D interval scheduling / earliest-deadline-
+       first). Each lane k within a group gets Y = base_y + k * LANE_SPACING,
+       spreading away from the spine.
+    3. Isolated nodes (not reachable by BFS) get a small fixed nudge.
+
+    Properties:
+    - Zero overlap within each depth group by construction.
+    - No cascading or oscillation (single-pass).
+    - Compact: uses the minimum number of lanes actually needed.
+    - Preserves causal chain structure (BFS depth drives Y, not arbitrary push).
+    """
+    positions: dict[str, float] = {}
+
+    # Group nodes by (depth, sign), collapse depth-0 sign into one group
+    groups: dict[tuple, List[str]] = defaultdict(list)
+    isolated: List[str] = []
+
+    for e in events:
+        eid = str(e['id'])
+        if eid in assignment:
+            depth, sign = assignment[eid]
+            key = (depth, sign) if depth > 0 else (0, 1)  # depth-0 all share spine
+            groups[key].append(eid)
+        else:
+            isolated.append(eid)
+
+    for (depth, sign), node_ids in groups.items():
+        base_magnitude = MAX_DEPTH_LEVELS[min(depth, len(MAX_DEPTH_LEVELS) - 1)]
+        base_y = sign * base_magnitude
+
+        # Sort by X start for greedy lane assignment
+        ordered = sorted(
+            node_ids,
+            key=lambda nid: x_ranges.get(nid, (0, 0))[0]
+        )
+
+        # lane_ends[k] = rightmost X end currently in lane k
+        lane_ends: List[float] = []
+        lane_of: dict[str, int] = {}
+
+        for nid in ordered:
+            x_start, x_end = x_ranges.get(nid, (0.0, 0.0))
+            assigned_lane = None
+            for k, lane_end in enumerate(lane_ends):
+                if x_start >= lane_end + HORIZONTAL_GAP:
+                    assigned_lane = k
+                    lane_ends[k] = x_end
+                    break
+            if assigned_lane is None:
+                assigned_lane = len(lane_ends)
+                lane_ends.append(x_end)
+            lane_of[nid] = assigned_lane
+
+        for nid, lane in lane_of.items():
+            # Lane 0 sits at base_y; subsequent lanes spread away from the spine
+            positions[nid] = base_y + lane * LANE_SPACING * sign
+
+    # Isolated nodes: deterministic nudge from ID hash
+    for eid in isolated:
+        hex_tail = eid[-4:].replace('-', '')
+        hval = int(hex_tail, 16) % 2 if hex_tail else 0
+        positions[eid] = ISOLATED_NUDGE * (1 if hval == 0 else -1)
+
+    return positions
+
+
 
 
 async def compute_and_persist():
@@ -159,30 +342,16 @@ async def compute_and_persist():
     print("Computing depths and signs via BFS...")
     assignment = compute_depths_and_signs(events, outgoing, incoming)
 
-    # Build initial Y positions
-    positions = {}
-    for event in events:
-        eid = str(event['id'])
-        if eid in assignment:
-            depth, sign = assignment[eid]
-            positions[eid] = depth_to_y(depth, sign)
-        else:
-            # Isolated node: deterministic nudge based on ID hash
-            hex_tail = eid[-4:].replace('-', '')
-            hval = int(hex_tail, 16) % 2 if hex_tail else 0
-            positions[eid] = ISOLATED_NUDGE * (1 if hval == 0 else -1)
-
-    print(f"Resolving collisions ({COLLISION_PASSES} passes)...")
-    positions = resolve_collisions(positions, events)
+    print("Assigning Y positions via interval scheduling...")
+    x_ranges = compute_event_x_ranges(events)
+    positions = assign_y_positions(events, assignment, x_ranges)
 
     print("Persisting to DB...")
     updates = [(positions[str(e['id'])], e['id']) for e in events]
     await conn.executemany("UPDATE events SET network_y = $1 WHERE id = $2", updates)
 
-    print(f"Done. Updated {len(updates)} events.")
-
-    # Stats
     ys = list(positions.values())
+    print(f"Done. Updated {len(updates)} events.")
     if ys:
         print(f"  Y range: {min(ys):.0f} to {max(ys):.0f}")
     print(f"  Connected nodes: {len(assignment)}")
