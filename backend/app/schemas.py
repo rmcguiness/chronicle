@@ -84,6 +84,7 @@ class CanvasEventItem(BaseModel):
     slug: str
     title: str
     year_approx: Optional[int] = None
+    date_earliest: Optional[str] = None     # ISO date or "YYYY-MM-DD BC" for BCE
     lat: Optional[float] = None
     lng: Optional[float] = None
     geo_modern: Optional[str] = None

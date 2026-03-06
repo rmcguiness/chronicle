@@ -16,7 +16,7 @@
  *   toggling, timeline scrubber (rendered by App.tsx).
  */
 
-import { useEffect, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -44,8 +44,8 @@ import { CANVAS_CONSTANTS } from '../types';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Total canvas width in pixels — kept wide for smooth pan / zoom. */
-const CANVAS_WIDTH = 15_000;
+/** Total canvas width in pixels — from shared constants. */
+const { CANVAS_WIDTH } = CANVAS_CONSTANTS;
 
 /** Viewport to request all events from the tile endpoint. */
 const FULL_VIEWPORT = {
@@ -88,17 +88,96 @@ const EDGE_TYPES = { causality: CausalityEdge };
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Map a historical year to a canvas X coordinate.
+ * Map a historical year to a canvas X coordinate using the current viewport
+ * year range. When the scrubber is narrowed (e.g. 1939–1945), the full
+ * CANVAS_WIDTH represents only those years — nodes spread out automatically.
  *
- * @param year - Year (negative = BCE).
- * @returns X pixel on the 15 000 px canvas.
+ * @param year    - Year (negative = BCE).
+ * @param yearMin - Left edge of the viewport year range (from scrubber).
+ * @param yearMax - Right edge of the viewport year range (from scrubber).
+ * @returns X pixel on the canvas.
  */
-function yearToX(year: number): number {
-  return (
-    ((year - CANVAS_CONSTANTS.BASE_YEAR_MIN) /
-      (CANVAS_CONSTANTS.BASE_YEAR_MAX - CANVAS_CONSTANTS.BASE_YEAR_MIN)) *
-    CANVAS_WIDTH
-  );
+function yearToX(year: number, yearMin: number, yearMax: number): number {
+  const span = yearMax - yearMin;
+  if (span <= 0) return 0;
+  return ((year - yearMin) / span) * CANVAS_WIDTH;
+}
+
+/**
+ * Parse a date string (ISO or PostgreSQL BCE format) into a fractional year.
+ *
+ * PostgreSQL returns BCE dates as "3200-01-01 BC" (with " BC" suffix), NOT
+ * as "-3200-01-01". This function handles both formats.
+ *
+ * @param dateStr  - Date string from the backend.
+ * @param fallback - Fallback value if parsing fails.
+ * @returns Fractional year (e.g. 1939.5 for July 1939).
+ */
+function dateToFractionalYear(dateStr: string, fallback: number): number {
+  let str = dateStr.trim();
+  let isBC = false;
+
+  // Handle PostgreSQL " BC" suffix
+  if (str.endsWith(' BC')) {
+    isBC = true;
+    str = str.slice(0, -3).trim();
+  }
+
+  const parts = str.split('-');
+
+  // Handle ISO negative year prefix (leading "-"), e.g. "-3200-01-01"
+  let yearStr: string;
+  let monthStr: string;
+  let dayStr: string | undefined;
+
+  if (parts[0] === '' && parts.length >= 3) {
+    // e.g. "-3200-01-01" splits as ["", "3200", "01", "01"]
+    isBC = true;
+    yearStr = parts[1];
+    monthStr = parts[2];
+    dayStr = parts[3];
+  } else {
+    yearStr = parts[0];
+    monthStr = parts[1];
+    dayStr = parts[2];
+  }
+
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10);
+  const day = dayStr ? parseInt(dayStr, 10) : 1;
+
+  if (isNaN(year) || isNaN(month)) return fallback;
+
+  /** Fraction-of-year constants */
+  const MONTHS_PER_YEAR = 12;
+  const DAYS_PER_YEAR = 365;
+
+  const signedYear = isBC ? -year : year;
+  return signedYear + (month - 1) / MONTHS_PER_YEAR + (day - 1) / DAYS_PER_YEAR;
+}
+
+/**
+ * Compute canvas X for a historical event using its most precise date.
+ * Prefers date_earliest (sub-year precision) over year_approx.
+ *
+ * @param event   - The historical event.
+ * @param yearMin - Left edge of the viewport year range.
+ * @param yearMax - Right edge of the viewport year range.
+ * @returns X pixel on the canvas.
+ */
+function eventToX(
+  event: HistoricalEvent,
+  yearMin: number,
+  yearMax: number,
+): number {
+  if (event.date_earliest) {
+    return yearToX(
+      dateToFractionalYear(event.date_earliest, event.year_approx),
+      yearMin,
+      yearMax,
+    );
+  }
+  return yearToX(event.year_approx, yearMin, yearMax);
 }
 
 /**
@@ -177,13 +256,17 @@ function computeFallbackY(event: HistoricalEvent): number {
  * This is the primary layout path — it avoids all BFS / collision computation
  * on the client, making the network view load instantly with stable positions.
  *
- * @param events - Filtered historical events (must include network_y field).
- * @param links  - All causality links (filtered to visible set internally).
+ * @param events  - Filtered historical events (must include network_y field).
+ * @param links   - All causality links (filtered to visible set internally).
+ * @param yearMin - Left edge of the viewport year range (from scrubber).
+ * @param yearMax - Right edge of the viewport year range (from scrubber).
  * @returns ReactFlow-compatible nodes and edges.
  */
 function buildFromPrecomputed(
   events: HistoricalEvent[],
   links: CausalityLink[],
+  yearMin: number,
+  yearMax: number,
 ): { nodes: Node[]; edges: Edge[] } | null {
   // Check how many events have precomputed positions
   const precomputed = events.filter((e) => e.network_y != null);
@@ -207,7 +290,7 @@ function buildFromPrecomputed(
       id,
       type: 'event',
       position: {
-        x: yearToX(event.year_approx),
+        x: eventToX(event, yearMin, yearMax),
         y: event.network_y ?? computeFallbackY(event),
       },
       data: { ...event, showLabel: true },
@@ -216,36 +299,38 @@ function buildFromPrecomputed(
     };
   });
 
-  // Build ReactFlow edges (same logic as computeTreeLayout)
+  // Build ReactFlow edges between all visible nodes (no viewport culling —
+  // events are already limited to the current timeViewport).
   const ARROWHEAD_SIZE = 8;
-  const rfEdges: Edge[] = validLinks.map((l) => {
-    const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
-    const strength = l.strength ?? 0.5;
-    const baseStrokeWidth = Math.max(0.8, strength * 2.5);
-    return {
-      id: String(l.id),
-      source: String(l.cause_event_id),
-      target: String(l.effect_event_id),
-      type: 'causality',
-      data: {
-        connection_type: l.connection_type,
-        strength: l.strength,
-        description: l.description,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: ARROWHEAD_SIZE,
-        height: ARROWHEAD_SIZE,
-        color,
-      },
-      animated: l.connection_type === 'causes',
-      style: { stroke: color, strokeWidth: baseStrokeWidth },
-      label: l.connection_type,
-      labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
-      labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
-      labelBgPadding: [6, 3] as [number, number],
-    };
-  });
+  const rfEdges: Edge[] = validLinks
+    .map((l) => {
+      const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
+      const strength = l.strength ?? 0.5;
+      const baseStrokeWidth = Math.max(0.8, strength * 2.5);
+      return {
+        id: String(l.id),
+        source: String(l.cause_event_id),
+        target: String(l.effect_event_id),
+        type: 'causality',
+        data: {
+          connection_type: l.connection_type,
+          strength: l.strength,
+          description: l.description,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: ARROWHEAD_SIZE,
+          height: ARROWHEAD_SIZE,
+          color,
+        },
+        animated: l.connection_type === 'causes',
+        style: { stroke: color, strokeWidth: baseStrokeWidth },
+        label: l.connection_type,
+        labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
+        labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
+        labelBgPadding: [6, 3] as [number, number],
+      };
+    });
 
   return { nodes: rfNodes, edges: rfEdges };
 }
@@ -262,15 +347,20 @@ function buildFromPrecomputed(
  * causal chains on the same side for visual coherence. Isolated nodes get a
  * gentle Y nudge.
  *
- * X is always pinned to yearToX(year_approx).
+ * X is dynamically mapped using the viewport year range so that narrowing
+ * the scrubber spreads nodes across the full canvas width.
  *
- * @param events - Filtered historical events.
- * @param links  - All causality links (will be filtered to the visible set).
+ * @param events  - Filtered historical events.
+ * @param links   - All causality links (will be filtered to the visible set).
+ * @param yearMin - Left edge of the viewport year range (from scrubber).
+ * @param yearMax - Right edge of the viewport year range (from scrubber).
  * @returns ReactFlow-compatible nodes and edges.
  */
 function computeTreeLayout(
   events: HistoricalEvent[],
   links: CausalityLink[],
+  yearMin: number,
+  yearMax: number,
 ): { nodes: Node[]; edges: Edge[] } {
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
@@ -355,7 +445,7 @@ function computeTreeLayout(
 
   for (const id of nodeIdSet) {
     const event = eventById.get(id)!;
-    const x = yearToX(event.year_approx);
+    const x = eventToX(event, yearMin, yearMax);
     const depth = depthMap.get(id)!;
     const sign = signMap.get(id)!;
     const radius = nodeRadius(event.importance_score);
@@ -414,39 +504,40 @@ function computeTreeLayout(
     };
   });
 
-  // ── 7. Convert to ReactFlow edges ───────────────────────────────────────
+  // ── 7. Convert to ReactFlow edges (all edges between rendered nodes) ──
 
   /** Smaller arrowhead size for cleaner visuals. */
   const ARROWHEAD_SIZE = 8;
 
-  const rfEdges: Edge[] = validLinks.map((l) => {
-    const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
-    const strength = l.strength ?? 0.5;
-    const baseStrokeWidth = Math.max(0.8, strength * 2.5);
-    return {
-      id: String(l.id),
-      source: String(l.cause_event_id),
-      target: String(l.effect_event_id),
-      type: 'causality',
-      data: {
-        connection_type: l.connection_type,
-        strength: l.strength,
-        description: l.description,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: ARROWHEAD_SIZE,
-        height: ARROWHEAD_SIZE,
-        color,
-      },
-      animated: l.connection_type === 'causes',
-      style: { stroke: color, strokeWidth: baseStrokeWidth },
-      label: l.connection_type,
-      labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
-      labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
-      labelBgPadding: [6, 3] as [number, number],
-    };
-  });
+  const rfEdges: Edge[] = validLinks
+    .map((l) => {
+      const color = CONNECTION_COLORS[l.connection_type] ?? '#6b7280';
+      const strength = l.strength ?? 0.5;
+      const baseStrokeWidth = Math.max(0.8, strength * 2.5);
+      return {
+        id: String(l.id),
+        source: String(l.cause_event_id),
+        target: String(l.effect_event_id),
+        type: 'causality',
+        data: {
+          connection_type: l.connection_type,
+          strength: l.strength,
+          description: l.description,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: ARROWHEAD_SIZE,
+          height: ARROWHEAD_SIZE,
+          color,
+        },
+        animated: l.connection_type === 'causes',
+        style: { stroke: color, strokeWidth: baseStrokeWidth },
+        label: l.connection_type,
+        labelStyle: { fill: color, fontSize: 11, fontWeight: 700 },
+        labelBgStyle: { fill: 'rgba(15,17,23,0.92)', rx: 4 },
+        labelBgPadding: [6, 3] as [number, number],
+      };
+    });
 
   return { nodes: rfNodes, edges: rfEdges };
 }
@@ -484,12 +575,31 @@ function NetworkViewInner() {
   const { fitView } = useReactFlow();
   const viewport = useViewport();
 
-  // Subscribe to store viewport for time filtering via the scrubber
-  const viewportYearMin = useAppStore((s) => s.viewport.year_min);
-  const viewportYearMax = useAppStore((s) => s.viewport.year_max);
+  // Subscribe to timeViewport — single source of truth for the visible year range
+  const timeViewport = useAppStore((s) => s.timeViewport);
+  const setTimeViewport = useAppStore((s) => s.setTimeViewport);
+
+  // Keep store's rfViewport in sync with the ReactFlow camera
+  const setRfViewportStore = useAppStore((s) => s.setRfViewport);
+
+  /** Throttle onMove store updates to max ~10/sec to avoid 60fps re-renders. */
+  const RF_VIEWPORT_THROTTLE_MS = 100;
+  const lastRfViewportUpdateRef = useRef(0);
+
+  // Consume pendingRfViewport from the store (set by scrubber body drag / permalink)
+  const pendingRfViewport = useAppStore((s) => s.pendingRfViewport);
+  const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
+  const viewportYearMin = timeViewport.yearMin;
+  const viewportYearMax = timeViewport.yearMax;
 
   // Track whether we've done an initial fitView
   const hasFitViewRef = useRef(false);
+
+  // Refs for stale closure safety in wheel handler
+  const timeViewportRef = useRef(timeViewport);
+  useEffect(() => { timeViewportRef.current = timeViewport; }, [timeViewport]);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Fetch all events via the tile endpoint with a broad viewport
   const { data: tileData, isLoading: tilesLoading } = useQuery({
@@ -519,18 +629,12 @@ function NetworkViewInner() {
     [allLinks, tileData],
   );
 
-  // Filter events by the current scrubber viewport
-  const filteredEvents = useMemo(
-    () =>
-      allEvents.filter(
-        (e) =>
-          e.year_approx >= viewportYearMin &&
-          e.year_approx <= viewportYearMax,
-      ),
-    [allEvents, viewportYearMin, viewportYearMax],
-  );
+  // All events are always rendered; the ReactFlow camera determines what's
+  // visible. Filtering by timeViewport caused nodes to disappear when panning.
+  const filteredEvents = useMemo(() => allEvents, [allEvents]);
 
-  // Compute layout: prefer precomputed DB positions, fall back to client-side tree
+  // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
+  // Re-runs when the scrubber range changes so nodes reposition dynamically.
   useEffect(() => {
     if (filteredEvents.length === 0) {
       setNodes([]);
@@ -539,7 +643,12 @@ function NetworkViewInner() {
     }
 
     // Try precomputed DB layout first (instant, stable)
-    const precomputed = buildFromPrecomputed(filteredEvents, allCausalityLinks);
+    const precomputed = buildFromPrecomputed(
+      filteredEvents,
+      allCausalityLinks,
+      viewportYearMin,
+      viewportYearMax,
+    );
     if (precomputed) {
       setNodes(precomputed.nodes);
       setEdges(precomputed.edges);
@@ -550,10 +659,12 @@ function NetworkViewInner() {
     const { nodes: rfNodes, edges: rfEdges } = computeTreeLayout(
       filteredEvents,
       allCausalityLinks,
+      viewportYearMin,
+      viewportYearMax,
     );
     setNodes(rfNodes);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {
@@ -567,29 +678,76 @@ function NetworkViewInner() {
     }
   }, [filteredEvents.length, fitView]);
 
-  // Re-fit when viewport scrubber changes significantly
-  const handleFitView = useCallback(() => {
-    setTimeout(() => {
-      fitView({ padding: 0.15, duration: 400 });
-    }, 50);
-  }, [fitView]);
+  // NOTE: handleFitView on timeViewport change was removed — the scrubber now controls the
+  // ReactFlow camera directly via setPendingRfViewport. Auto-fitView on every scroll-zoom
+  // tick caused the camera to snap back to fit-all, making the view drift left.
 
-  // Track previous viewport to detect scrubber changes
-  const prevViewportRef = useRef({ min: viewportYearMin, max: viewportYearMax });
+  // ── Scroll-based time zoom + Ctrl+scroll visual zoom ──────────────────
+  const { setViewport: setRfViewport, getViewport } = useReactFlow();
+
+  // Apply pending ReactFlow viewport from scrubber body drag or permalink restore
   useEffect(() => {
-    const prev = prevViewportRef.current;
-    const changed =
-      Math.abs(prev.min - viewportYearMin) > 100 ||
-      Math.abs(prev.max - viewportYearMax) > 100;
+    if (!pendingRfViewport) return;
+    setRfViewport(pendingRfViewport, { duration: 0 });
+    setPendingRfViewport(null);
+  }, [pendingRfViewport, setRfViewport, setPendingRfViewport]);
 
-    if (changed && filteredEvents.length > 0) {
-      handleFitView();
-    }
-    prevViewportRef.current = { min: viewportYearMin, max: viewportYearMax };
-  }, [viewportYearMin, viewportYearMax, filteredEvents.length, handleFitView]);
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    /** Minimum time span in years (~1 month). */
+    const MIN_SPAN = 0.083;
+    /** Maximum time span in years. */
+    const MAX_SPAN = 7_100;
+    /** Zoom factor per wheel tick — gentler than 1.25 for a Google Maps feel. */
+    const ZOOM_FACTOR = 1.15;
+
+    const onWheel = (e: WheelEvent) => {
+      const rfVp = getViewport();
+
+      if (e.ctrlKey) {
+        // Ctrl+scroll → visual zoom (ReactFlow camera)
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 0.9 : 1 / 0.9;
+        const newZoom = Math.min(4, Math.max(0.02, rfVp.zoom * factor));
+        const newX = e.clientX - (e.clientX - rfVp.x) * (newZoom / rfVp.zoom);
+        const newY = e.clientY - (e.clientY - rfVp.y) * (newZoom / rfVp.zoom);
+        setRfViewport({ x: newX, y: newY, zoom: newZoom });
+        return;
+      }
+
+      // No modifier → time zoom
+      e.preventDefault();
+      e.stopPropagation();
+
+      const tv = timeViewportRef.current;
+      const span = tv.yearMax - tv.yearMin;
+      const canvasX = (e.clientX - rfVp.x) / rfVp.zoom;
+      const cursorYear = tv.yearMin + (canvasX / CANVAS_WIDTH) * span;
+
+      // Scroll up (deltaY < 0) = zoom in (narrow year range)
+      // Scroll down (deltaY > 0) = zoom out (widen year range)
+      const factor = e.deltaY < 0 ? 1 / ZOOM_FACTOR : ZOOM_FACTOR;
+      const newSpan = Math.min(MAX_SPAN, Math.max(MIN_SPAN, span * factor));
+
+      const ratio = span > 0 ? (cursorYear - tv.yearMin) / span : 0.5;
+      const newYearMin = cursorYear - ratio * newSpan;
+      const newYearMax = newYearMin + newSpan;
+
+      const clampedMin = Math.max(-5000, newYearMin);
+      const clampedMax = Math.min(2100, newYearMax);
+      // Guard: ensure a minimum span (~1 month) and valid range
+      if (clampedMax - clampedMin < MIN_SPAN) return;
+      setTimeViewport({ yearMin: clampedMin, yearMax: clampedMax });
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false, capture: true });
+    return () => el.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
+  }, [getViewport, setRfViewport, setTimeViewport]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+    <div ref={wrapperRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -597,13 +755,9 @@ function NetworkViewInner() {
         onEdgesChange={onEdgesChange}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
-        minZoom={0.02}
+        minZoom={0.3}
         maxZoom={4}
-        defaultViewport={{
-          x: 0,
-          y: typeof window !== 'undefined' ? window.innerHeight / 2 : 400,
-          zoom: 0.08,
-        }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}
@@ -611,8 +765,15 @@ function NetworkViewInner() {
         elementsSelectable
         nodesDraggable
         panOnScroll={false}
-        zoomOnScroll
+        zoomOnScroll={false}
         panOnDrag
+        onMove={(_event, vp) => {
+          const now = Date.now();
+          if (now - lastRfViewportUpdateRef.current > RF_VIEWPORT_THROTTLE_MS) {
+            lastRfViewportUpdateRef.current = now;
+            setRfViewportStore(vp);
+          }
+        }}
       >
         <Background
           color="rgba(255,255,255,0.02)"
