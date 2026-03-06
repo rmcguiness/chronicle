@@ -44,10 +44,15 @@ const CAUSES_ANIMATION_SPEED = 0.8;
  */
 const DEFAULT_NODE_RADIUS = 30;
 
+/** Opacity for edges not connected to the focused node. */
+const FOCUS_EDGE_OPACITY_DIMMED = 0.08;
+
 interface CausalityEdgeData {
   connection_type: ConnectionType;
   strength: number;
   description?: string;
+  /** Whether this edge connects to the focused node in ego-graph mode. */
+  isHighlighted?: boolean;
 }
 
 /**
@@ -155,6 +160,16 @@ function CausalityEdge({
   const isCauses = connectionType === 'causes';
   const isContext = connectionType === 'context';
 
+  // Focus mode: isHighlighted is undefined when no focus is active,
+  // true when this edge connects to the focused node, false when dimmed.
+  const isHighlighted = data?.isHighlighted;
+  const isDimmedByFocus = isHighlighted === false;
+  const edgeOpacity = isDimmedByFocus
+    ? FOCUS_EDGE_OPACITY_DIMMED
+    : hovered
+      ? 1
+      : 0.8;
+
   return (
     <>
       {/* Invisible wider hit area for hover */}
@@ -163,7 +178,7 @@ function CausalityEdge({
         fill="none"
         stroke="transparent"
         strokeWidth={24}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: isDimmedByFocus ? 'default' : 'pointer', pointerEvents: isDimmedByFocus ? 'none' : 'auto' }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       />
@@ -174,11 +189,11 @@ function CausalityEdge({
         fill="none"
         stroke={color}
         strokeWidth={strokeWidth + 4}
-        strokeOpacity={hovered ? 0.25 : 0.1}
+        strokeOpacity={isDimmedByFocus ? 0 : hovered ? 0.25 : 0.1}
         style={{
           pointerEvents: 'none',
           filter: 'blur(3px)',
-          transition: 'stroke-opacity 0.15s',
+          transition: 'stroke-opacity 0.2s ease',
         }}
       />
 
@@ -198,9 +213,9 @@ function CausalityEdge({
           animation: isCauses
             ? `causality-flow ${CAUSES_ANIMATION_SPEED}s linear infinite`
             : undefined,
-          opacity: hovered ? 1 : 0.8,
+          opacity: edgeOpacity,
           filter: hovered ? `drop-shadow(0 0 6px ${color})` : undefined,
-          transition: 'stroke 0.15s, opacity 0.15s',
+          transition: 'stroke 0.15s, opacity 0.2s ease',
           pointerEvents: 'none',
         }}
       />

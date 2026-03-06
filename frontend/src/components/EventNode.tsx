@@ -6,9 +6,26 @@ import { dateToFractionalYear } from "../utils/timeScale";
 import type { HistoricalEvent } from "../types";
 import { CANVAS_CONSTANTS } from "../types";
 import { useAppStore } from "../store";
+import type { NodeFocusState } from "./NetworkView";
+
+/** Accent colour used for the focused node ring. */
+const FOCUS_RING_COLOR = "#60a5fa";
+
+/** Ring width for the focused node (px). */
+const FOCUS_RING_WIDTH = 2;
+
+/** Opacity for dimmed nodes (not part of the ego-graph). */
+const FOCUS_OPACITY_DIMMED = 0.2;
+
+/** Opacity for 1-hop neighbor nodes. */
+const FOCUS_OPACITY_NEIGHBOR = 0.85;
 
 function EventNode({ data: rawData, selected }: NodeProps) {
-  const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
+  const data = rawData as unknown as HistoricalEvent & {
+    showLabel?: boolean;
+    nodeState?: NodeFocusState;
+  };
+  const nodeState: NodeFocusState = data.nodeState ?? "default";
   const [hovered, setHovered] = useState(false);
   /**
    * Tooltip position + whether to render above (true) or below (false) the node.
@@ -88,7 +105,15 @@ function EventNode({ data: rawData, selected }: NodeProps) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        cursor: "pointer",
+        cursor: nodeState === "dimmed" ? "default" : "pointer",
+        opacity:
+          nodeState === "dimmed"
+            ? FOCUS_OPACITY_DIMMED
+            : nodeState === "neighbor"
+              ? FOCUS_OPACITY_NEIGHBOR
+              : 1,
+        pointerEvents: nodeState === "dimmed" ? "none" : "auto",
+        transition: "opacity 0.2s ease",
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -146,11 +171,14 @@ function EventNode({ data: rawData, selected }: NodeProps) {
            */
           borderRadius: isPill ? size / 2 : "50%",
           backgroundColor: color,
-          border: selected
-            ? "3px solid #ffffff"
-            : hovered
-              ? `3px solid rgba(255,255,255,0.8)`
-              : `2px solid rgba(255,255,255,0.3)`,
+          border:
+            nodeState === "focused"
+              ? `${FOCUS_RING_WIDTH}px solid ${FOCUS_RING_COLOR}`
+              : selected
+                ? "3px solid #ffffff"
+                : hovered
+                  ? `3px solid rgba(255,255,255,0.8)`
+                  : `2px solid rgba(255,255,255,0.3)`,
           display: "flex",
           alignItems: "center",
           /*
@@ -162,9 +190,13 @@ function EventNode({ data: rawData, selected }: NodeProps) {
           paddingLeft: isPill ? size * 0.3 : 0,
           fontSize: size * 0.45,
           boxShadow:
-            hovered || selected
-              ? `0 0 ${size * 0.8}px ${color}88, 0 4px 12px rgba(0,0,0,0.5)`
-              : `0 0 ${size * 0.4}px ${color}44, 0 2px 8px rgba(0,0,0,0.4)`,
+            nodeState === "focused"
+              ? `0 0 ${size * 0.8}px ${FOCUS_RING_COLOR}88, 0 0 ${size * 0.4}px ${color}66, 0 4px 12px rgba(0,0,0,0.5)`
+              : nodeState === "neighbor"
+                ? `0 0 ${size * 0.6}px ${color}55, 0 2px 8px rgba(0,0,0,0.4)`
+                : hovered || selected
+                  ? `0 0 ${size * 0.8}px ${color}88, 0 4px 12px rgba(0,0,0,0.5)`
+                  : `0 0 ${size * 0.4}px ${color}44, 0 2px 8px rgba(0,0,0,0.4)`,
           transition: "all 0.15s ease",
           transform: hovered || selected ? "scale(1.05)" : "scale(1)",
           position: "relative",
@@ -175,7 +207,7 @@ function EventNode({ data: rawData, selected }: NodeProps) {
       >
         <span style={{ lineHeight: 1, userSelect: "none", flexShrink: 0 }}>{icon}</span>
         {/* Show title inside the pill when zoomed in enough for the label to be readable */}
-        {isPill && showLabel && (
+        {isPill && showLabel && nodeState !== "dimmed" && (
           <span
             style={{
               marginLeft: size * 0.2,
@@ -195,12 +227,12 @@ function EventNode({ data: rawData, selected }: NodeProps) {
       </div>
 
       {/* Label below node — only for circles; pills show title inside their shape */}
-      {showLabel && !isPill && (
+      {showLabel && !isPill && nodeState !== "dimmed" && (
         <div
           style={{
             marginTop: 4,
             fontSize: timeSpan > 10 ? 30 / timeSpan : 30,
-            fontWeight: 600,
+            fontWeight: nodeState === "focused" ? 800 : 600,
             color: "#e2e8f0",
             textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7)",
             whiteSpace: "nowrap",

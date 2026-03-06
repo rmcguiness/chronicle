@@ -16,7 +16,7 @@
  *   toggling, timeline scrubber (rendered by App.tsx).
  */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -79,6 +79,9 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  * use DB positions instead of client-side tree layout.
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
+
+/** Node state when ego-graph focus is active. */
+export type NodeFocusState = 'focused' | 'neighbor' | 'dimmed' | 'default';
 
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
@@ -559,6 +562,47 @@ function formatYearLabel(year: number): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Focus mode helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute the set of 1-hop neighbor node ids for a given focused node.
+ * Scans all edges for any edge where the focused node is source or target,
+ * and collects the other endpoint.
+ *
+ * @param focusedId - The id of the currently focused node.
+ * @param edges     - All ReactFlow edges currently rendered.
+ * @returns Set of neighbor node ids (does NOT include focusedId itself).
+ */
+function computeNeighborIds(focusedId: string, edges: Edge[]): Set<string> {
+  const neighbors = new Set<string>();
+  for (const edge of edges) {
+    if (edge.source === focusedId) neighbors.add(edge.target);
+    if (edge.target === focusedId) neighbors.add(edge.source);
+  }
+  return neighbors;
+}
+
+/**
+ * Determine the focus state for a node given the current ego-graph focus.
+ *
+ * @param nodeId      - The node to classify.
+ * @param focusedId   - The currently focused node id, or null if no focus.
+ * @param neighborIds - Set of 1-hop neighbor ids of the focused node.
+ * @returns The node's focus state.
+ */
+function getNodeFocusState(
+  nodeId: string,
+  focusedId: string | null,
+  neighborIds: Set<string>,
+): NodeFocusState {
+  if (!focusedId) return 'default';
+  if (nodeId === focusedId) return 'focused';
+  if (neighborIds.has(nodeId)) return 'neighbor';
+  return 'dimmed';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // NetworkViewInner — main component (inside ReactFlowProvider)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -574,6 +618,9 @@ function NetworkViewInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
   const { fitView } = useReactFlow();
   const viewport = useViewport();
+
+  // ── Focus mode state ─────────────────────────────────────────────────────
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   // Subscribe to timeViewport — single source of truth for the visible year range
   const timeViewport = useAppStore((s) => s.timeViewport);
@@ -665,6 +712,61 @@ function NetworkViewInner() {
     setNodes(rfNodes);
     setEdges(rfEdges);
   }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+
+  // ── Apply ego-graph focus state to nodes and edges ──────────────────────
+  useEffect(() => {
+    if (!focusedNodeId) {
+      // Reset all nodes to default state
+      setNodes((prev) =>
+        prev.map((n) =>
+          n.data.nodeState === 'default'
+            ? n
+            : { ...n, data: { ...n.data, nodeState: 'default' as NodeFocusState } },
+        ),
+      );
+      setEdges((prev) =>
+        prev.map((e) =>
+          e.data?.isHighlighted === undefined
+            ? e
+            : { ...e, data: { ...e.data, isHighlighted: undefined } },
+        ),
+      );
+      return;
+    }
+
+    setNodes((prev) => {
+      const neighborIds = computeNeighborIds(focusedNodeId, edges);
+      return prev.map((n) => {
+        const state = getNodeFocusState(n.id, focusedNodeId, neighborIds);
+        return state === n.data.nodeState
+          ? n
+          : { ...n, data: { ...n.data, nodeState: state } };
+      });
+    });
+
+    setEdges((prev) =>
+      prev.map((e) => {
+        const connected =
+          e.source === focusedNodeId || e.target === focusedNodeId;
+        return e.data?.isHighlighted === connected
+          ? e
+          : { ...e, data: { ...e.data, isHighlighted: connected } };
+      }),
+    );
+  }, [focusedNodeId, edges, setNodes, setEdges]);
+
+  /** Handle node click — set ego-graph focus. */
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      setFocusedNodeId(node.id);
+    },
+    [],
+  );
+
+  /** Handle pane click — clear ego-graph focus. */
+  const onPaneClick = useCallback(() => {
+    setFocusedNodeId(null);
+  }, []);
 
   // fitView when data first loads
   useEffect(() => {
@@ -762,6 +864,8 @@ function NetworkViewInner() {
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}
         proOptions={{ hideAttribution: true }}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
         elementsSelectable
         nodesDraggable
         panOnScroll={false}
