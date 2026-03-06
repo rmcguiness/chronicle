@@ -514,6 +514,35 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
   }
 }
 
+/**
+ * Fetch high-importance events (importance_score >= threshold).
+ * Used by the "R" random-jump shortcut.
+ *
+ * @param minImportance - Minimum importance score (default 0.8).
+ * @param limit - Maximum number of events to fetch (default 50).
+ * @returns Array of high-importance events.
+ */
+export async function fetchHighImportanceEvents(
+  minImportance = 0.8,
+  limit = 50,
+): Promise<HistoricalEvent[]> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get('/api/events', {
+        params: { min_importance: minImportance, limit },
+      });
+      const events = data.events ?? (Array.isArray(data) ? data : []);
+      return events as HistoricalEvent[];
+    } catch {
+      // fall through to mock
+    }
+  }
+
+  return MOCK_EVENTS.filter((e) => e.importance_score >= minImportance).slice(0, limit);
+}
+
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
