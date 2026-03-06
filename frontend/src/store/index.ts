@@ -225,6 +225,12 @@ interface AppState {
   /** Toggle or set the "On This Day" panel open state. */
   setOnThisDayOpen: (v: boolean) => void;
 
+  // Compare mode — select two events for side-by-side comparison
+  compareMode: boolean;
+  setCompareMode: (v: boolean) => void;
+  compareEvents: [string | null, string | null];
+  setCompareEvents: (v: [string | null, string | null]) => void;
+
   /** The currently visible year range on the network canvas. Single source of truth for X mapping, node sizing, and the minimap. */
   timeViewport: { yearMin: number; yearMax: number };
   setTimeViewport: (v: { yearMin: number; yearMax: number }) => void;
@@ -331,6 +337,12 @@ export const useAppStore = create<AppState>((set) => ({
   // On This Day panel
   onThisDayOpen: false,
   setOnThisDayOpen: (onThisDayOpen) => set({ onThisDayOpen }),
+
+  // Compare mode
+  compareMode: false,
+  setCompareMode: (compareMode) => set(compareMode ? { compareMode, onThisDayOpen: false } : { compareMode, compareEvents: [null, null] as [string | null, string | null] }),
+  compareEvents: [null, null] as [string | null, string | null],
+  setCompareEvents: (compareEvents) => set({ compareEvents }),
 
   // Time viewport — visible year range on the network canvas
   timeViewport: { yearMin: -800, yearMax: 1500 },

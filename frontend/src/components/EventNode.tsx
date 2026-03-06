@@ -7,6 +7,9 @@ import type { HistoricalEvent } from "../types";
 import { CANVAS_CONSTANTS } from "../types";
 import { useAppStore } from "../store";
 
+const COMPARE_COLOR_A = '#3b82f6';
+const COMPARE_COLOR_B = '#f97316';
+
 function EventNode({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
   const [hovered, setHovered] = useState(false);
@@ -22,6 +25,15 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+
+  // Compare mode state
+  const compareMode = useAppStore((s) => s.compareMode);
+  const compareEvents = useAppStore((s) => s.compareEvents);
+  const setCompareEvents = useAppStore((s) => s.setCompareEvents);
+  const nodeId = String(data.id);
+  const isCompareA = compareEvents[0] === nodeId;
+  const isCompareB = compareEvents[1] === nodeId;
+  const compareRingColor = isCompareA ? COMPARE_COLOR_A : isCompareB ? COMPARE_COLOR_B : null;
 
   /** Minimum pixels from top before we flip the tooltip to render below. */
   const TOOLTIP_FLIP_THRESHOLD = 200;
@@ -92,7 +104,23 @@ function EventNode({ data: rawData, selected }: NodeProps) {
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setSelectedEvent(data.slug)}
+      onClick={() => {
+        if (compareMode) {
+          // Clicking an already-selected node deselects it
+          if (isCompareA) {
+            setCompareEvents([null, compareEvents[1]]);
+          } else if (isCompareB) {
+            setCompareEvents([compareEvents[0], null]);
+          } else if (compareEvents[0] === null) {
+            setCompareEvents([nodeId, compareEvents[1]]);
+          } else if (compareEvents[1] === null) {
+            setCompareEvents([compareEvents[0], nodeId]);
+          }
+          // If both slots full, do nothing
+        } else {
+          setSelectedEvent(data.slug);
+        }
+      }}
     >
       {/*
        * Floating edge handles — both centred on the node so that CausalityEdge
@@ -146,11 +174,15 @@ function EventNode({ data: rawData, selected }: NodeProps) {
            */
           borderRadius: isPill ? size / 2 : "50%",
           backgroundColor: color,
-          border: selected
-            ? "3px solid #ffffff"
-            : hovered
-              ? `3px solid rgba(255,255,255,0.8)`
-              : `2px solid rgba(255,255,255,0.3)`,
+          border: compareRingColor
+            ? `3px solid ${compareRingColor}`
+            : selected
+              ? "3px solid #ffffff"
+              : hovered
+                ? `3px solid rgba(255,255,255,0.8)`
+                : `2px solid rgba(255,255,255,0.3)`,
+          outline: compareRingColor ? `2px solid ${compareRingColor}` : 'none',
+          outlineOffset: 2,
           display: "flex",
           alignItems: "center",
           /*
