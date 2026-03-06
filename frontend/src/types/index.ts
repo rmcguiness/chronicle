@@ -148,6 +148,32 @@ export interface CausalityLink {
   description?: string;
 }
 
+// ─── Causal chain types ──────────────────────────────────────────────────────
+
+/** Lightweight event summary used in causal chain responses. */
+export interface CausalChainEventSummary {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: EventCategory | null;
+}
+
+/** A single node in the causal chain tree. */
+export interface CausalChainNode {
+  event: CausalChainEventSummary;
+  depth: number;
+  children: CausalChainNode[];
+}
+
+/** Response from GET /api/events/{slug}/causal-chain. */
+export interface CausalChainResponse {
+  root: CausalChainEventSummary;
+  chain: CausalChainNode[];
+  direction: 'forward' | 'backward';
+  total_nodes: number;
+}
+
 export interface CanvasViewport {
   year_min: number;
   year_max: number;

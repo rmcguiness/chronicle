@@ -5,6 +5,7 @@ import type {
   TileResponse,
   SearchResult,
   CausalityLink,
+  CausalChainResponse,
   CanvasViewport,
   Perspective,
   ConnectedEvent,
@@ -508,6 +509,33 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 
   try {
     const { data } = await api.get<ArticleResponse>(`/api/events/${slug}/article`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch the causal chain (forward or backward) from an event.
+ * Returns null if the backend is unavailable.
+ *
+ * @param slug - Event slug to trace from
+ * @param direction - "forward" (effects) or "backward" (causes)
+ * @param depth - Maximum hops (1-5)
+ */
+export async function fetchCausalChain(
+  slug: string,
+  direction: 'forward' | 'backward' = 'forward',
+  depth = 5,
+): Promise<CausalChainResponse | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<CausalChainResponse>(
+      `/api/events/${slug}/causal-chain`,
+      { params: { direction, depth } },
+    );
     return data;
   } catch {
     return null;

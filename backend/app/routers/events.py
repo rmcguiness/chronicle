@@ -14,13 +14,16 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from geoalchemy2.functions import ST_X, ST_Y
 from pydantic import BaseModel
-from sqlalchemy import extract, func, or_, select
+from sqlalchemy import extract, func, literal_column, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import CausalityLink, Event, Perspective, Source, WikipediaCache
 from app.schemas import (
+    CausalChainEventSummary,
+    CausalChainNode,
+    CausalChainResponse,
     CausalityLinkItem,
     ConnectedEventItem,
     ConnectionsResponse,
@@ -328,6 +331,150 @@ async def get_connections(
             )
             for lnk in links
         ]
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Causal chain — recursive BFS via WITH RECURSIVE CTE
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""Maximum hop depth for causal chain traversal."""
+CAUSAL_CHAIN_MAX_DEPTH = 5
+
+"""Maximum total nodes returned to prevent explosion on highly connected events."""
+CAUSAL_CHAIN_MAX_NODES = 50
+
+
+@router.get("/{slug}/causal-chain", response_model=CausalChainResponse)
+async def get_causal_chain(
+    slug: str,
+    direction: str = Query(default="forward", regex="^(forward|backward)$"),
+    depth: int = Query(default=5, ge=1, le=5),
+    db: AsyncSession = Depends(get_db),
+) -> CausalChainResponse:
+    """Trace the forward or backward causal chain from an event.
+
+    Uses a recursive CTE on the ``causality_links`` table to walk up to
+    ``depth`` hops. Forward traces effects; backward traces causes.
+
+    Returns a tree of :class:`CausalChainNode` rooted at the given event,
+    limited to :data:`CAUSAL_CHAIN_MAX_NODES` total nodes.
+    """
+    # Resolve slug → event
+    ev_stmt = select(
+        Event.id, Event.slug, Event.title, Event.year_approx, Event.event_category
+    ).where(Event.slug == slug)
+    ev_result = await db.execute(ev_stmt)
+    ev_row = ev_result.fetchone()
+    if ev_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    root_id = ev_row.id
+    root_summary = CausalChainEventSummary(
+        id=ev_row.id,
+        slug=ev_row.slug,
+        title=ev_row.title,
+        year_approx=ev_row.year_approx,
+        category=ev_row.event_category,
+    )
+
+    max_depth = min(depth, CAUSAL_CHAIN_MAX_DEPTH)
+
+    # Build recursive CTE — walk forward (cause→effect) or backward (effect→cause)
+    if direction == "forward":
+        source_col = "cause_event_id"
+        target_col = "effect_event_id"
+    else:
+        source_col = "effect_event_id"
+        target_col = "cause_event_id"
+
+    cte_sql = text(f"""
+        WITH RECURSIVE chain AS (
+            SELECT
+                cl.{target_col} AS event_id,
+                cl.{source_col} AS parent_id,
+                1 AS depth
+            FROM causality_links cl
+            WHERE cl.{source_col} = :root_id
+              AND cl.review_status = 'approved'
+
+            UNION ALL
+
+            SELECT
+                cl.{target_col} AS event_id,
+                cl.{source_col} AS parent_id,
+                c.depth + 1 AS depth
+            FROM causality_links cl
+            JOIN chain c ON cl.{source_col} = c.event_id
+            WHERE c.depth < :max_depth
+              AND cl.review_status = 'approved'
+        )
+        SELECT DISTINCT ON (event_id) event_id, parent_id, depth
+        FROM chain
+        ORDER BY event_id, depth
+        LIMIT :max_nodes
+    """)
+
+    chain_result = await db.execute(
+        cte_sql,
+        {"root_id": root_id, "max_depth": max_depth, "max_nodes": CAUSAL_CHAIN_MAX_NODES},
+    )
+    chain_rows = chain_result.fetchall()
+
+    if not chain_rows:
+        return CausalChainResponse(
+            root=root_summary, chain=[], direction=direction, total_nodes=0
+        )
+
+    # Fetch event summaries for all chain nodes
+    chain_event_ids = [row.event_id for row in chain_rows]
+    events_stmt = select(
+        Event.id, Event.slug, Event.title, Event.year_approx, Event.event_category
+    ).where(Event.id.in_(chain_event_ids))
+    events_result = await db.execute(events_stmt)
+    event_map: dict[UUID, CausalChainEventSummary] = {}
+    for row in events_result.fetchall():
+        event_map[row.id] = CausalChainEventSummary(
+            id=row.id,
+            slug=row.slug,
+            title=row.title,
+            year_approx=row.year_approx,
+            category=row.event_category,
+        )
+
+    # Build parent→children mapping
+    children_map: dict[UUID, list[tuple[UUID, int]]] = {}
+    for row in chain_rows:
+        parent_id = row.parent_id
+        if parent_id not in children_map:
+            children_map[parent_id] = []
+        children_map[parent_id].append((row.event_id, row.depth))
+
+    # Build tree recursively
+    def build_subtree(parent_id: UUID, current_depth: int) -> list[CausalChainNode]:
+        kids = children_map.get(parent_id, [])
+        # Sort children by year for chronological order
+        kids.sort(key=lambda t: (event_map.get(t[0]) and event_map[t[0]].year_approx) or 0)
+        result: list[CausalChainNode] = []
+        for event_id, depth in kids:
+            ev = event_map.get(event_id)
+            if ev is None:
+                continue
+            node = CausalChainNode(
+                event=ev,
+                depth=depth,
+                children=build_subtree(event_id, depth),
+            )
+            result.append(node)
+        return result
+
+    chain_tree = build_subtree(root_id, 0)
+
+    return CausalChainResponse(
+        root=root_summary,
+        chain=chain_tree,
+        direction=direction,
+        total_nodes=len(chain_rows),
     )
 
 

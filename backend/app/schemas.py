@@ -200,6 +200,38 @@ class HealthResponse(BaseModel):
 # ────────────────────────────────────────────
 # Wikipedia cache — GET /api/events/{slug}/wiki
 # ────────────────────────────────────────────
+# ────────────────────────────────────────────
+# Causal chain — GET /api/events/{slug}/causal-chain
+# ────────────────────────────────────────────
+
+
+class CausalChainEventSummary(BaseModel):
+    """Lightweight event summary for causal chain nodes."""
+
+    id: UUID
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    category: Optional[str] = None
+
+
+class CausalChainNode(BaseModel):
+    """A single node in the causal chain tree."""
+
+    event: CausalChainEventSummary
+    depth: int
+    children: List["CausalChainNode"] = []
+
+
+class CausalChainResponse(BaseModel):
+    """Response for GET /api/events/{slug}/causal-chain."""
+
+    root: CausalChainEventSummary
+    chain: List[CausalChainNode] = []
+    direction: str  # "forward" | "backward"
+    total_nodes: int
+
+
 class WikiSummaryOut(BaseModel):
     """
     Wikipedia summary response for an event.

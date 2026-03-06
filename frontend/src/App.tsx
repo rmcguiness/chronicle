@@ -24,6 +24,8 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import CausalChainPanel from './components/CausalChainPanel';
+import CausalChainButton from './components/CausalChainButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -65,6 +67,12 @@ function MainView() {
 
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
+
+      {/* Causal chain button (toolbar) */}
+      <CausalChainButton />
+
+      {/* Causal chain explorer panel */}
+      <CausalChainPanel />
 
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}
