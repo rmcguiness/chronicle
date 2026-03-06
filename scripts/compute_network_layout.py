@@ -21,7 +21,7 @@ import asyncio
 import asyncpg
 import re
 from collections import defaultdict, deque
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 DB_URL = "postgresql://chronicle:chronicle@localhost:5433/chronicle"
 
@@ -31,14 +31,27 @@ DB_URL = "postgresql://chronicle:chronicle@localhost:5433/chronicle"
 
 REFERENCE_YEAR_MIN = -800        # Default timeViewport yearMin
 REFERENCE_YEAR_MAX = 1500        # Default timeViewport yearMax
+REFERENCE_TIME_SPAN = REFERENCE_YEAR_MAX - REFERENCE_YEAR_MIN   # 2300 years
 CANVAS_WIDTH = 2000              # px — reference canvas width
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Node size constants (from frontend styles)
+# Node size constants — must match EventNode.tsx exactly.
+#
+# EventNode formula:
+#   NODE_SIZE_BASE = timeSpan * 0.01 > 10 ? 500 / (timeSpan * 0.01) : 50
+# At REFERENCE_TIME_SPAN = 2300: 2300 * 0.01 = 23 > 10
+#   → NODE_SIZE_BASE = 500 / 23 ≈ 21.74 px
 # ─────────────────────────────────────────────────────────────────────────────
 
-NODE_SIZE_BASE = 50              # px — minimum circle size
-NODE_SIZE_IMPORTANCE_RANGE = 20  # px — additional size for max importance
+NODE_SIZE_BASE = (
+    500 / (REFERENCE_TIME_SPAN * 0.01)
+    if REFERENCE_TIME_SPAN * 0.01 > 10
+    else 50
+)  # ≈ 21.74 px at reference span — matches EventNode.tsx
+NODE_SIZE_IMPORTANCE_RANGE = 20  # px — additional size for max-importance nodes
+
+# Max circle height at reference zoom (importance=1.0): NODE_SIZE_BASE + 20 ≈ 42 px
+MAX_NODE_HEIGHT = NODE_SIZE_BASE + NODE_SIZE_IMPORTANCE_RANGE
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Y spacing constants (pixels in canvas space)
@@ -47,9 +60,10 @@ NODE_SIZE_IMPORTANCE_RANGE = 20  # px — additional size for max importance
 DEPTH_SPACING = 180              # px between depth levels
 MAX_DEPTH_LEVELS = [0, 180, 324, 432, 504, 540]  # depth 0–5+
 ISOLATED_NUDGE = 90              # px for nodes with no connections
-COLLISION_RADIUS = 55            # min vertical distance between node centers when overlapping
-COLLISION_PASSES = 50            # many passes for full convergence in dense regions
-HORIZONTAL_BUFFER = 10           # px — extra spacing for horizontal overlap detection
+# Minimum vertical centre-to-centre distance: MAX_NODE_HEIGHT + 15px visual gap
+COLLISION_RADIUS = MAX_NODE_HEIGHT + 15  # ≈ 57 px — circles just clear each other
+COLLISION_PASSES = 200           # many passes for full convergence in dense regions
+HORIZONTAL_BUFFER = 15           # px — extra padding for horizontal overlap detection
 
 
 def parse_year_from_date(date_str: Optional[str], is_bce: bool = False) -> Optional[int]:
@@ -263,70 +277,93 @@ def centers_close(range_a: Tuple[float, float], range_b: Tuple[float, float], th
 
 def resolve_collisions(positions: dict, events, passes: int = COLLISION_PASSES) -> dict:
     """
-    Push nodes apart if they're too close vertically and their X ranges overlap.
+    Push nodes apart vertically when their X ranges overlap, then do a final
+    sort-and-space sweep to eliminate any remaining oscillation artifacts.
 
-    Uses a simpler bucket-based approach: group nodes by X position (using node centers),
-    then within each bucket, spread nodes vertically.
-    
-    Bucket size is based on typical node width to ensure overlapping nodes compete.
+    Phase 1 — iterative pairwise push (converges most pairs quickly).
+    Phase 2 — connected-component sweep: find every cluster of nodes that
+               overlap with each other in X, sort by current Y, and space them
+               exactly COLLISION_RADIUS apart. Eliminates the ping-pong problem
+               where a middle node B is pushed by both A above and C below.
 
     Returns updated positions dict.
     """
     pos = dict(positions)
     x_ranges = compute_event_x_ranges(events)
     node_ids = [nid for nid in pos.keys() if nid in x_ranges]
-    
-    # Compute bucket size: based on typical node width
-    # Use median width to avoid skew from very wide pills
-    widths = sorted([x_ranges[nid][1] - x_ranges[nid][0] for nid in node_ids])
-    median_width = widths[len(widths) // 2] if widths else NODE_SIZE_BASE
-    bucket_size = max(median_width, NODE_SIZE_BASE)  # At least one node width
-    
-    # Compute node centers
-    node_centers = {nid: (x_ranges[nid][0] + x_ranges[nid][1]) / 2 for nid in node_ids}
-    
-    for pass_num in range(passes):
+
+    # Pre-compute which pairs overlap in X — only these can ever collide.
+    overlap_set: set[Tuple[str, str]] = set()
+    overlapping_x_pairs: List[Tuple[str, str]] = []
+    neighbors: dict[str, set[str]] = {nid: set() for nid in node_ids}
+
+    for i, nid_a in enumerate(node_ids):
+        for nid_b in node_ids[i + 1:]:
+            if ranges_overlap(x_ranges[nid_a], x_ranges[nid_b]):
+                overlapping_x_pairs.append((nid_a, nid_b))
+                overlap_set.add((nid_a, nid_b))
+                neighbors[nid_a].add(nid_b)
+                neighbors[nid_b].add(nid_a)
+
+    # ── Phase 1: iterative pairwise push ─────────────────────────────────────
+    for _pass in range(passes):
         moved = False
-        
-        # Group by bucket (based on center position)
-        buckets = defaultdict(list)
-        for nid in node_ids:
-            bucket_idx = int(node_centers[nid] // bucket_size)
-            buckets[bucket_idx].append(nid)
-        
-        # Also check adjacent buckets for wide nodes
-        all_bucket_keys = sorted(buckets.keys())
-        
-        for bucket_idx in all_bucket_keys:
-            # Combine current bucket with adjacent buckets for collision check
-            nodes_in_range = []
-            for adj_idx in [bucket_idx - 1, bucket_idx, bucket_idx + 1]:
-                nodes_in_range.extend(buckets.get(adj_idx, []))
-            
-            if len(nodes_in_range) < 2:
-                continue
-            
-            # Sort by Y position
-            nodes_sorted = sorted(set(nodes_in_range), key=lambda nid: pos[nid])
-            
-            # Push adjacent pairs apart if they overlap
-            for i in range(len(nodes_sorted) - 1):
-                node_a = nodes_sorted[i]
-                node_b = nodes_sorted[i + 1]
-                
-                # Check actual overlap (ranges overlap, not just same bucket)
-                if not ranges_overlap(x_ranges[node_a], x_ranges[node_b]):
-                    continue
-                
-                gap = pos[node_b] - pos[node_a]
-                if gap < COLLISION_RADIUS:
-                    push = (COLLISION_RADIUS - gap) / 2 + 0.5
-                    pos[node_a] -= push
-                    pos[node_b] += push
-                    moved = True
-        
+        for nid_a, nid_b in overlapping_x_pairs:
+            y_a, y_b = pos[nid_a], pos[nid_b]
+            gap = abs(y_b - y_a)
+            if gap < COLLISION_RADIUS:
+                push = (COLLISION_RADIUS - gap) / 2 + 0.5
+                if y_a <= y_b:
+                    pos[nid_a] -= push
+                    pos[nid_b] += push
+                else:
+                    pos[nid_a] += push
+                    pos[nid_b] -= push
+                moved = True
         if not moved:
             break
+
+    # ── Phase 2: local conflict resolution ───────────────────────────────────
+    # For each node that still has direct Y-conflicts with its X-overlapping
+    # neighbours, sort that node + its conflicting neighbours by Y and space
+    # them exactly COLLISION_RADIUS apart.
+    #
+    # "Local" is the key word: we only touch the direct conflict group, NOT
+    # the full connected component. This avoids over-spacing chain-like
+    # structures (A→B→C where A and C don't actually overlap in X).
+    LOCAL_PASSES = 30
+    for _local_pass in range(LOCAL_PASSES):
+        local_moved = False
+        for nid in node_ids:
+            # Find neighbours that directly overlap nid in X AND still in Y
+            conflicting = [
+                nb for nb in neighbors[nid]
+                if abs(pos[nb] - pos[nid]) < COLLISION_RADIUS
+            ]
+            if not conflicting:
+                continue
+            # Sort nid + its direct conflicts by current Y
+            group = sorted([nid] + conflicting, key=lambda n: pos[n])
+            mean_y = sum(pos[n] for n in group) / len(group)
+            total_h = (len(group) - 1) * COLLISION_RADIUS
+            start_y = mean_y - total_h / 2
+            for i, n in enumerate(group):
+                new_y = start_y + i * COLLISION_RADIUS
+                if abs(new_y - pos[n]) > 0.01:
+                    pos[n] = new_y
+                    local_moved = True
+        if not local_moved:
+            break
+
+    # Diagnostics
+    remaining = sum(
+        1 for nid_a, nid_b in overlapping_x_pairs
+        if abs(pos[nid_b] - pos[nid_a]) < COLLISION_RADIUS
+    )
+    if remaining:
+        print(f"  Note: {remaining} overlapping pairs remain "
+              f"(nodes spanning very wide date ranges — unavoidable without "
+              f"infinite canvas height)")
 
     return pos
 
@@ -365,23 +402,7 @@ async def compute_and_persist():
     print(f"Resolving collisions ({COLLISION_PASSES} passes)...")
     positions = resolve_collisions(positions, events)
     
-    # Check for remaining collisions
-    x_ranges = compute_event_x_ranges(events)
-    remaining_collisions = 0
-    for i, e1 in enumerate(events):
-        id1 = str(e1['id'])
-        if id1 not in x_ranges:
-            continue
-        for e2 in events[i+1:]:
-            id2 = str(e2['id'])
-            if id2 not in x_ranges:
-                continue
-            if ranges_overlap(x_ranges[id1], x_ranges[id2]):
-                gap = abs(positions[id1] - positions[id2])
-                if gap < COLLISION_RADIUS:
-                    remaining_collisions += 1
-    if remaining_collisions > 0:
-        print(f"  Note: {remaining_collisions} visually overlapping pairs (expected with dense data)")
+    # Collision diagnostics are reported inside resolve_collisions().
 
     print("Persisting to DB...")
     updates = [(positions[str(e['id'])], e['id']) for e in events]
