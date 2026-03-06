@@ -20,12 +20,16 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import CausalityLink, Event, Perspective, Source, WikipediaCache
+from sqlalchemy import text as sa_text
+
 from app.schemas import (
     CausalityLinkItem,
     ConnectedEventItem,
     ConnectionsResponse,
     EventDetailOut,
     PerspectiveOut,
+    SimilarEventItem,
+    SimilarEventsResponse,
     SourceOut,
     WikiSummaryOut,
     _LINK_TYPE_MAP,
@@ -121,6 +125,60 @@ async def on_this_day(
     ]
 
     return OnThisDayResponse(month=m, day=d, events=events_out)
+
+
+@router.get("/{slug}/similar", response_model=SimilarEventsResponse)
+async def get_similar_events(
+    slug: str, db: AsyncSession = Depends(get_db)
+) -> SimilarEventsResponse:
+    """Return up to 6 semantically similar events using pgvector cosine similarity.
+
+    Fetches the target event's embedding vector and finds the nearest neighbours
+    in the ``events`` table via the ``<=>`` (cosine distance) operator.  Returns
+    an empty list when the target event has no embedding.
+    """
+    # 1. Fetch the target event's embedding
+    emb_stmt = sa_text(
+        "SELECT embedding FROM events WHERE slug = :slug LIMIT 1"
+    )
+    emb_result = await db.execute(emb_stmt, {"slug": slug})
+    emb_row = emb_result.fetchone()
+
+    if emb_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    if emb_row.embedding is None:
+        return SimilarEventsResponse(events=[])
+
+    # 2. Find nearest neighbours by cosine distance
+    sim_stmt = sa_text(
+        """
+        SELECT id, slug, title, year_approx, event_category, importance_score, date_exact
+        FROM events
+        WHERE slug != :slug AND embedding IS NOT NULL
+        ORDER BY embedding <=> :embedding
+        LIMIT 6
+        """
+    )
+    sim_result = await db.execute(
+        sim_stmt, {"slug": slug, "embedding": emb_row.embedding}
+    )
+    rows = sim_result.fetchall()
+
+    return SimilarEventsResponse(
+        events=[
+            SimilarEventItem(
+                id=row.id,
+                slug=row.slug,
+                title=row.title,
+                year_approx=row.year_approx,
+                category=row.event_category,
+                importance_score=row.importance_score,
+                date_display=row.date_exact,
+            )
+            for row in rows
+        ]
+    )
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:

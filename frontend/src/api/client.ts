@@ -514,6 +514,24 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
   }
 }
 
+/**
+ * Fetch semantically similar events for a given event slug.
+ * Returns an empty array if the backend is unavailable or the event has no embedding.
+ */
+export async function fetchSimilarEvents(slug: string): Promise<import('../types').SimilarEvent[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+
+  try {
+    const { data } = await api.get<{ events: import('../types').SimilarEvent[] }>(
+      `/api/events/${slug}/similar`
+    );
+    return data.events ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────

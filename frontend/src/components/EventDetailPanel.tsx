@@ -22,6 +22,7 @@ import {
   evidenceColor,
   evidenceLabel,
 } from '../utils/categories';
+import RelatedEvents from './RelatedEvents';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Named constants
@@ -490,6 +491,10 @@ function injectStyles(): void {
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.15; }
+    }
   `;
   document.head.appendChild(style);
 }
@@ -695,6 +700,12 @@ export default function EventDetailPanel() {
                   ))}
               </div>
             )}
+
+            {/* ── Related Events (semantic similarity) ─────────────── */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={sectionHeaderStyle}>Related Events</div>
+              <RelatedEvents slug={event.slug} />
+            </div>
           </>
         )}
       </div>

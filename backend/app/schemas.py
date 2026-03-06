@@ -200,6 +200,24 @@ class HealthResponse(BaseModel):
 # ────────────────────────────────────────────
 # Wikipedia cache — GET /api/events/{slug}/wiki
 # ────────────────────────────────────────────
+class SimilarEventItem(BaseModel):
+    """A semantically similar event returned by GET /api/events/{slug}/similar."""
+
+    id: UUID
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    category: Optional[str] = None
+    importance_score: float = 0.5
+    date_display: Optional[str] = None
+
+
+class SimilarEventsResponse(BaseModel):
+    """Response wrapper for the similar-events endpoint."""
+
+    events: List[SimilarEventItem] = []
+
+
 class WikiSummaryOut(BaseModel):
     """
     Wikipedia summary response for an event.

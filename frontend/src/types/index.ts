@@ -139,6 +139,16 @@ export interface ConnectedEvent {
   description?: string;
 }
 
+export interface SimilarEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: EventCategory | null;
+  importance_score: number;
+  date_display: string | null;
+}
+
 export interface CausalityLink {
   id: string;
   cause_event_id: string;
