@@ -162,13 +162,10 @@ export default function NetworkTimeline({ viewport }: NetworkTimelineProps) {
 
   // ── adaptive tick spacing ───────────────────────────────────────────────
 
-  let majorInterval: number;
-  let minorInterval: number;
-
   // Find the appropriate tick level for the current visible span
   const level = TICK_LEVELS.find((l) => visibleSpan > l.minSpan) ?? TICK_LEVELS[TICK_LEVELS.length - 1];
-  majorInterval = level.major;
-  minorInterval = level.minor;
+  const majorInterval = level.major;
+  const minorInterval = level.minor;
 
   // ── generate ticks for visible range ────────────────────────────────────
 
