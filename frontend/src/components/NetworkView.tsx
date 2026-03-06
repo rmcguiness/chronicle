@@ -32,13 +32,15 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
+import GroupNode from './GroupNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
-import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
+import { fetchTiles, fetchAllCausalityLinks, fetchGroups } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
+import { dateToFractionalYear } from '../utils/timeScale';
 import { useAppStore } from '../store';
-import type { HistoricalEvent, CausalityLink } from '../types';
-import { CANVAS_CONSTANTS } from '../types';
+import type { HistoricalEvent, CausalityLink, GroupEvent } from '../types';
+import { CANVAS_CONSTANTS, GROUP_COLLAPSE_ZOOM } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -80,8 +82,11 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
 
-const NODE_TYPES = { event: EventNode };
+const NODE_TYPES = { event: EventNode, group: GroupNode };
 const EDGE_TYPES = { causality: CausalityEdge };
+
+/** Padding around child nodes when computing expanded group bounding box. */
+const GROUP_BOX_PADDING = 40;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Layout helpers
@@ -103,58 +108,7 @@ function yearToX(year: number, yearMin: number, yearMax: number): number {
   return ((year - yearMin) / span) * CANVAS_WIDTH;
 }
 
-/**
- * Parse a date string (ISO or PostgreSQL BCE format) into a fractional year.
- *
- * PostgreSQL returns BCE dates as "3200-01-01 BC" (with " BC" suffix), NOT
- * as "-3200-01-01". This function handles both formats.
- *
- * @param dateStr  - Date string from the backend.
- * @param fallback - Fallback value if parsing fails.
- * @returns Fractional year (e.g. 1939.5 for July 1939).
- */
-function dateToFractionalYear(dateStr: string, fallback: number): number {
-  let str = dateStr.trim();
-  let isBC = false;
-
-  // Handle PostgreSQL " BC" suffix
-  if (str.endsWith(' BC')) {
-    isBC = true;
-    str = str.slice(0, -3).trim();
-  }
-
-  const parts = str.split('-');
-
-  // Handle ISO negative year prefix (leading "-"), e.g. "-3200-01-01"
-  let yearStr: string;
-  let monthStr: string;
-  let dayStr: string | undefined;
-
-  if (parts[0] === '' && parts.length >= 3) {
-    // e.g. "-3200-01-01" splits as ["", "3200", "01", "01"]
-    isBC = true;
-    yearStr = parts[1];
-    monthStr = parts[2];
-    dayStr = parts[3];
-  } else {
-    yearStr = parts[0];
-    monthStr = parts[1];
-    dayStr = parts[2];
-  }
-
-  const year = parseInt(yearStr, 10);
-  const month = parseInt(monthStr, 10);
-  const day = dayStr ? parseInt(dayStr, 10) : 1;
-
-  if (isNaN(year) || isNaN(month)) return fallback;
-
-  /** Fraction-of-year constants */
-  const MONTHS_PER_YEAR = 12;
-  const DAYS_PER_YEAR = 365;
-
-  const signedYear = isBC ? -year : year;
-  return signedYear + (month - 1) / MONTHS_PER_YEAR + (day - 1) / DAYS_PER_YEAR;
-}
+// dateToFractionalYear is imported from ../utils/timeScale — shared with EventNode.
 
 /**
  * Compute canvas X for a historical event using its most precise date.
@@ -189,6 +143,19 @@ function eventToX(
 function nodeRadius(importance: number): number {
   const baseSize = 20 + importance * 20;
   return Math.max(16, Math.min(48, baseSize)) / 2;
+}
+
+/**
+ * Extract the year from a group event's date_earliest or date_latest field.
+ * Handles both "YYYY-MM-DD BC" and "YYYY-MM-DD" formats.
+ *
+ * @param dateStr  - Date string from the backend.
+ * @param fallback - Returned when parsing fails.
+ * @returns Year number (negative for BCE).
+ */
+function dateStrToYear(dateStr: string | null | undefined, fallback: number): number {
+  if (!dateStr) return fallback;
+  return dateToFractionalYear(dateStr, fallback);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -253,13 +220,15 @@ function computeFallbackY(event: HistoricalEvent): number {
  * Builds ReactFlow nodes + edges from precomputed network_y values stored in DB.
  * Falls back to full client-side tree layout when < 80 % of events have network_y.
  *
- * This is the primary layout path — it avoids all BFS / collision computation
- * on the client, making the network view load instantly with stable positions.
+ * Handles group events: groups render as GroupNode type with collapsed pill or
+ * expanded bounding box. Children are hidden when rfZoom < GROUP_COLLAPSE_ZOOM.
  *
- * @param events  - Filtered historical events (must include network_y field).
- * @param links   - All causality links (filtered to visible set internally).
- * @param yearMin - Left edge of the viewport year range (from scrubber).
- * @param yearMax - Right edge of the viewport year range (from scrubber).
+ * @param events   - Filtered historical events (must include network_y field).
+ * @param links    - All causality links (filtered to visible set internally).
+ * @param yearMin  - Left edge of the viewport year range (from scrubber).
+ * @param yearMax  - Right edge of the viewport year range (from scrubber).
+ * @param groupsMap - Map of group event id → GroupEvent metadata.
+ * @param rfZoom   - Current ReactFlow zoom level for collapse decisions.
  * @returns ReactFlow-compatible nodes and edges.
  */
 function buildFromPrecomputed(
@@ -267,6 +236,8 @@ function buildFromPrecomputed(
   links: CausalityLink[],
   yearMin: number,
   yearMax: number,
+  groupsMap: Map<string, GroupEvent>,
+  rfZoom: number,
 ): { nodes: Node[]; edges: Edge[] } | null {
   // Check how many events have precomputed positions
   const precomputed = events.filter((e) => e.network_y != null);
@@ -274,7 +245,32 @@ function buildFromPrecomputed(
     return null; // fall back to client-side tree layout
   }
 
-  const nodeIdSet = new Set(events.map((e) => String(e.id)));
+  const isCollapsed = rfZoom < GROUP_COLLAPSE_ZOOM;
+
+  // Build a set of child event IDs for quick lookup
+  const childEventIds = new Set<string>();
+  for (const event of events) {
+    if (event.parent_event_id) {
+      childEventIds.add(String(event.id));
+    }
+  }
+
+  // Build a map of group id → child events for bounding box calculation
+  const groupChildren = new Map<string, HistoricalEvent[]>();
+  for (const event of events) {
+    if (event.parent_event_id) {
+      const gid = String(event.parent_event_id);
+      if (!groupChildren.has(gid)) groupChildren.set(gid, []);
+      groupChildren.get(gid)!.push(event);
+    }
+  }
+
+  // Determine which events to render based on zoom level
+  const visibleEvents = isCollapsed
+    ? events.filter((e) => !childEventIds.has(String(e.id)))
+    : events;
+
+  const nodeIdSet = new Set(visibleEvents.map((e) => String(e.id)));
 
   // Filter links to visible nodes
   const validLinks = links.filter((l) => {
@@ -284,23 +280,96 @@ function buildFromPrecomputed(
   });
 
   // Build ReactFlow nodes from DB positions
-  const rfNodes: Node[] = events.map((event) => {
-    const id = String(event.id);
-    return {
-      id,
-      type: 'event',
-      position: {
-        x: eventToX(event, yearMin, yearMax),
-        y: event.network_y ?? computeFallbackY(event),
-      },
-      data: { ...event, showLabel: true },
-      selectable: true,
-      draggable: true,
-    };
-  });
+  const rfNodes: Node[] = [];
 
-  // Build ReactFlow edges between all visible nodes (no viewport culling —
-  // events are already limited to the current timeViewport).
+  for (const event of visibleEvents) {
+    const id = String(event.id);
+    const groupMeta = groupsMap.get(id);
+
+    if (event.is_group && groupMeta) {
+      // ── Group node ──────────────────────────────────────────────────
+      const children = groupChildren.get(id) ?? [];
+      const startYear = dateStrToYear(groupMeta.date_earliest, groupMeta.year_approx);
+      const endYear = dateStrToYear(groupMeta.date_latest, groupMeta.year_approx);
+      const timeSpan = yearMax - yearMin;
+      const safeSpan = timeSpan > 0 ? timeSpan : 1;
+      const durationYears = Math.max(1, Math.abs(endYear - startYear));
+      const pillWidth = (durationYears / safeSpan) * CANVAS_WIDTH;
+      const pillHeight = 30;
+
+      if (isCollapsed || children.length === 0) {
+        // Collapsed pill — positioned at group's own date
+        rfNodes.push({
+          id,
+          type: 'group',
+          position: {
+            x: yearToX(Math.min(startYear, endYear), yearMin, yearMax),
+            y: event.network_y ?? computeFallbackY(event),
+          },
+          data: {
+            ...event,
+            child_count: groupMeta.child_count,
+            pillWidth: Math.max(pillWidth, 60),
+            pillHeight,
+            expanded: false,
+          },
+          selectable: true,
+          draggable: true,
+        });
+      } else {
+        // Expanded bounding box — size from children positions
+        const childPositions = children.map((c) => ({
+          x: eventToX(c, yearMin, yearMax),
+          y: c.network_y ?? computeFallbackY(c),
+        }));
+
+        const minX = Math.min(...childPositions.map((p) => p.x));
+        const maxX = Math.max(...childPositions.map((p) => p.x));
+        const minY = Math.min(...childPositions.map((p) => p.y));
+        const maxY = Math.max(...childPositions.map((p) => p.y));
+
+        const boxWidth = maxX - minX + GROUP_BOX_PADDING * 2 + 40;
+        const boxHeight = maxY - minY + GROUP_BOX_PADDING * 2 + 40;
+
+        rfNodes.push({
+          id,
+          type: 'group',
+          position: {
+            x: minX - GROUP_BOX_PADDING,
+            y: minY - GROUP_BOX_PADDING - 20,
+          },
+          data: {
+            ...event,
+            child_count: groupMeta.child_count,
+            pillWidth: Math.max(pillWidth, 60),
+            pillHeight,
+            boxWidth,
+            boxHeight,
+            expanded: true,
+          },
+          selectable: true,
+          draggable: true,
+          // Render behind child nodes
+          zIndex: -1,
+        });
+      }
+    } else {
+      // ── Regular event node ──────────────────────────────────────────
+      rfNodes.push({
+        id,
+        type: 'event',
+        position: {
+          x: eventToX(event, yearMin, yearMax),
+          y: event.network_y ?? computeFallbackY(event),
+        },
+        data: { ...event, showLabel: true },
+        selectable: true,
+        draggable: true,
+      });
+    }
+  }
+
+  // Build ReactFlow edges between all visible nodes
   const ARROWHEAD_SIZE = 8;
   const rfEdges: Edge[] = validLinks
     .map((l) => {
@@ -350,10 +419,12 @@ function buildFromPrecomputed(
  * X is dynamically mapped using the viewport year range so that narrowing
  * the scrubber spreads nodes across the full canvas width.
  *
- * @param events  - Filtered historical events.
- * @param links   - All causality links (will be filtered to the visible set).
- * @param yearMin - Left edge of the viewport year range (from scrubber).
- * @param yearMax - Right edge of the viewport year range (from scrubber).
+ * @param events    - Filtered historical events.
+ * @param links     - All causality links (will be filtered to the visible set).
+ * @param yearMin   - Left edge of the viewport year range (from scrubber).
+ * @param yearMax   - Right edge of the viewport year range (from scrubber).
+ * @param groupsMap - Map of group event id → GroupEvent metadata.
+ * @param rfZoom    - Current ReactFlow zoom for collapse decisions.
  * @returns ReactFlow-compatible nodes and edges.
  */
 function computeTreeLayout(
@@ -361,6 +432,8 @@ function computeTreeLayout(
   links: CausalityLink[],
   yearMin: number,
   yearMax: number,
+  groupsMap: Map<string, GroupEvent>,
+  rfZoom: number,
 ): { nodes: Node[]; edges: Edge[] } {
   const nodeIdSet = new Set(events.map((e) => String(e.id)));
 
@@ -489,20 +562,113 @@ function computeTreeLayout(
     positions.set(id, pos);
   }
 
-  // ── 6. Convert to ReactFlow nodes ───────────────────────────────────────
+  // ── 6. Convert to ReactFlow nodes (group-aware) ─────────────────────────
 
-  const rfNodes: Node[] = events.map((event) => {
+  const isCollapsed = rfZoom < GROUP_COLLAPSE_ZOOM;
+  const childEventIds = new Set<string>();
+  for (const event of events) {
+    if (event.parent_event_id) childEventIds.add(String(event.id));
+  }
+
+  // Group id → child events for bounding box
+  const groupChildrenMap = new Map<string, HistoricalEvent[]>();
+  for (const event of events) {
+    if (event.parent_event_id) {
+      const gid = String(event.parent_event_id);
+      if (!groupChildrenMap.has(gid)) groupChildrenMap.set(gid, []);
+      groupChildrenMap.get(gid)!.push(event);
+    }
+  }
+
+  const rfNodes: Node[] = [];
+  for (const event of events) {
     const id = String(event.id);
+
+    // Hide children when collapsed
+    if (isCollapsed && childEventIds.has(id)) continue;
+
     const pos = positions.get(id)!;
-    return {
-      id,
-      type: 'event',
-      position: { x: pos.x, y: pos.y },
-      data: { ...event, showLabel: true },
-      selectable: true,
-      draggable: true,
-    };
-  });
+    const groupMeta = groupsMap.get(id);
+
+    if (event.is_group && groupMeta) {
+      const children = groupChildrenMap.get(id) ?? [];
+      const startYear = dateStrToYear(groupMeta.date_earliest, groupMeta.year_approx);
+      const endYear = dateStrToYear(groupMeta.date_latest, groupMeta.year_approx);
+      const timeSpan = yearMax - yearMin;
+      const safeSpan = timeSpan > 0 ? timeSpan : 1;
+      const durationYears = Math.max(1, Math.abs(endYear - startYear));
+      const pillWidth = (durationYears / safeSpan) * CANVAS_WIDTH;
+
+      if (isCollapsed || children.length === 0) {
+        rfNodes.push({
+          id,
+          type: 'group',
+          position: { x: pos.x, y: pos.y },
+          data: {
+            ...event,
+            child_count: groupMeta.child_count,
+            pillWidth: Math.max(pillWidth, 60),
+            pillHeight: 30,
+            expanded: false,
+          },
+          selectable: true,
+          draggable: true,
+        });
+      } else {
+        const childPositions = children
+          .map((c) => positions.get(String(c.id)))
+          .filter(Boolean) as { x: number; y: number; radius: number }[];
+
+        if (childPositions.length > 0) {
+          const minX = Math.min(...childPositions.map((p) => p.x));
+          const maxX = Math.max(...childPositions.map((p) => p.x));
+          const minY = Math.min(...childPositions.map((p) => p.y));
+          const maxY = Math.max(...childPositions.map((p) => p.y));
+          rfNodes.push({
+            id,
+            type: 'group',
+            position: { x: minX - GROUP_BOX_PADDING, y: minY - GROUP_BOX_PADDING - 20 },
+            data: {
+              ...event,
+              child_count: groupMeta.child_count,
+              pillWidth: Math.max(pillWidth, 60),
+              pillHeight: 30,
+              boxWidth: maxX - minX + GROUP_BOX_PADDING * 2 + 40,
+              boxHeight: maxY - minY + GROUP_BOX_PADDING * 2 + 40,
+              expanded: true,
+            },
+            selectable: true,
+            draggable: true,
+            zIndex: -1,
+          });
+        } else {
+          rfNodes.push({
+            id,
+            type: 'group',
+            position: { x: pos.x, y: pos.y },
+            data: {
+              ...event,
+              child_count: groupMeta.child_count,
+              pillWidth: Math.max(pillWidth, 60),
+              pillHeight: 30,
+              expanded: false,
+            },
+            selectable: true,
+            draggable: true,
+          });
+        }
+      }
+    } else {
+      rfNodes.push({
+        id,
+        type: 'event',
+        position: { x: pos.x, y: pos.y },
+        data: { ...event, showLabel: true },
+        selectable: true,
+        draggable: true,
+      });
+    }
+  }
 
   // ── 7. Convert to ReactFlow edges (all edges between rendered nodes) ──
 
@@ -615,6 +781,22 @@ function NetworkViewInner() {
     staleTime: 5 * 60_000,
   });
 
+  // Fetch group events for GroupNode rendering
+  const { data: groupsData } = useQuery({
+    queryKey: ['network-groups'],
+    queryFn: fetchGroups,
+    staleTime: 5 * 60_000,
+  });
+
+  /** Map of group event id → GroupEvent metadata. */
+  const groupsMap: Map<string, GroupEvent> = useMemo(() => {
+    const m = new Map<string, GroupEvent>();
+    for (const g of groupsData ?? []) {
+      m.set(String(g.id), g);
+    }
+    return m;
+  }, [groupsData]);
+
   const isLoading = tilesLoading || linksLoading;
 
   // All events from the data source (unfiltered)
@@ -633,9 +815,22 @@ function NetworkViewInner() {
   // visible. Filtering by timeViewport caused nodes to disappear when panning.
   const filteredEvents = useMemo(() => allEvents, [allEvents]);
 
+  // Current ReactFlow zoom — used for group collapse decisions
+  const currentRfZoom = useAppStore((s) => s.rfViewport).zoom;
+
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
   // Re-runs when the scrubber range changes so nodes reposition dynamically.
+  // Also re-runs when rfZoom crosses the GROUP_COLLAPSE_ZOOM threshold.
+  const wasCollapsed = useRef(currentRfZoom < GROUP_COLLAPSE_ZOOM);
+  const collapseState = currentRfZoom < GROUP_COLLAPSE_ZOOM;
+
   useEffect(() => {
+    // Only re-run for zoom changes if the collapse state actually changed
+    if (wasCollapsed.current === collapseState && filteredEvents.length > 0) {
+      // Don't skip the first run
+    }
+    wasCollapsed.current = collapseState;
+
     if (filteredEvents.length === 0) {
       setNodes([]);
       setEdges([]);
@@ -648,6 +843,8 @@ function NetworkViewInner() {
       allCausalityLinks,
       viewportYearMin,
       viewportYearMax,
+      groupsMap,
+      currentRfZoom,
     );
     if (precomputed) {
       setNodes(precomputed.nodes);
@@ -661,10 +858,12 @@ function NetworkViewInner() {
       allCausalityLinks,
       viewportYearMin,
       viewportYearMax,
+      groupsMap,
+      currentRfZoom,
     );
     setNodes(rfNodes);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, groupsMap, collapseState, currentRfZoom, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {
@@ -755,7 +954,7 @@ function NetworkViewInner() {
         onEdgesChange={onEdgesChange}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
-        minZoom={0.3}
+        minZoom={0.05}
         maxZoom={4}
         defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
