@@ -19,10 +19,26 @@ Algorithm:
 
 import asyncio
 import asyncpg
+import re
 from collections import defaultdict, deque
-from typing import Optional
+from typing import Optional, Tuple
 
 DB_URL = "postgresql://chronicle:chronicle@localhost:5433/chronicle"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reference viewport constants (from frontend/src/types/index.ts)
+# ─────────────────────────────────────────────────────────────────────────────
+
+REFERENCE_YEAR_MIN = -800        # Default timeViewport yearMin
+REFERENCE_YEAR_MAX = 1500        # Default timeViewport yearMax
+CANVAS_WIDTH = 2000              # px — reference canvas width
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Node size constants (from frontend styles)
+# ─────────────────────────────────────────────────────────────────────────────
+
+NODE_SIZE_BASE = 50              # px — minimum circle size
+NODE_SIZE_IMPORTANCE_RANGE = 20  # px — additional size for max importance
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Y spacing constants (pixels in canvas space)
@@ -31,14 +47,107 @@ DB_URL = "postgresql://chronicle:chronicle@localhost:5433/chronicle"
 DEPTH_SPACING = 180              # px between depth levels
 MAX_DEPTH_LEVELS = [0, 180, 324, 432, 504, 540]  # depth 0–5+
 ISOLATED_NUDGE = 90              # px for nodes with no connections
-COLLISION_RADIUS = 55            # min distance between node centers at same X-bucket
-COLLISION_PASSES = 20            # more passes than client-side 3 for better resolution
-YEAR_BUCKET_SIZE = 60            # years — nodes within this range compete for Y space
+COLLISION_RADIUS = 55            # min vertical distance between node centers when overlapping
+COLLISION_PASSES = 50            # many passes for full convergence in dense regions
+HORIZONTAL_BUFFER = 10           # px — extra spacing for horizontal overlap detection
+
+
+def parse_year_from_date(date_str: Optional[str], is_bce: bool = False) -> Optional[int]:
+    """
+    Parse year from date string like "1939-09-01".
+    Uses is_bce flag to determine if date is BC/BCE.
+    Returns negative year for BC dates, None if unparseable.
+    """
+    if not date_str:
+        return None
+    date_str = date_str.strip()
+    
+    # Check for BC suffix in string (backup check)
+    bc_match = re.match(r'^(\d{1,4})-\d{2}-\d{2}\s*BC$', date_str, re.IGNORECASE)
+    if bc_match:
+        return -int(bc_match.group(1))
+    
+    # Standard date format (CE or BCE based on flag)
+    ce_match = re.match(r'^(-?\d{1,4})-\d{2}-\d{2}', date_str)
+    if ce_match:
+        year = int(ce_match.group(1))
+        if is_bce:
+            return -abs(year)  # Negate year for BCE
+        return year
+    
+    return None
+
+
+def compute_event_width(
+    date_earliest: Optional[str],
+    date_latest: Optional[str],
+    year_approx: int,
+    importance_score: float,
+    is_bce: bool = False
+) -> float:
+    """
+    Compute the width of an event node in canvas pixels.
+    
+    Pills (events with duration) are sized by their time span.
+    Circles (point-in-time) use the importance-based node size.
+    Returns the larger of the two.
+    """
+    # Node size based on importance (circle size)
+    node_size = NODE_SIZE_BASE + importance_score * NODE_SIZE_IMPORTANCE_RANGE
+    
+    # Parse years from dates
+    start_year = parse_year_from_date(date_earliest, is_bce)
+    end_year = parse_year_from_date(date_latest, is_bce)
+    
+    # Fall back to year_approx if dates are missing
+    if start_year is None:
+        start_year = year_approx
+    if end_year is None:
+        end_year = year_approx
+    
+    # Check for placeholder dates (Jan 1 / Dec 31 same year = no real duration)
+    if date_earliest and date_latest:
+        # If both are just the year boundaries, treat as point-in-time
+        is_placeholder = (
+            date_earliest.endswith("-01-01") and 
+            date_latest.endswith("-12-31") and
+            start_year == end_year
+        )
+        if is_placeholder:
+            return node_size
+    
+    # Compute pill width based on duration
+    duration_years = end_year - start_year
+    if duration_years <= 0:
+        return node_size
+    
+    time_span = REFERENCE_YEAR_MAX - REFERENCE_YEAR_MIN
+    pill_width = (duration_years / time_span) * CANVAS_WIDTH
+    
+    return max(node_size, pill_width)
+
+
+def event_to_x(year: int) -> float:
+    """Convert year to X position in canvas pixels."""
+    time_span = REFERENCE_YEAR_MAX - REFERENCE_YEAR_MIN
+    return ((year - REFERENCE_YEAR_MIN) / time_span) * CANVAS_WIDTH
 
 
 async def load_data(conn):
     """Load all events and causality links from the database."""
-    events = await conn.fetch("SELECT id, year_approx FROM events ORDER BY year_approx")
+    # Cast dates to text to avoid asyncpg date parsing issues with unusual dates
+    # Use is_bce flag to determine BC/BCE dates
+    events = await conn.fetch("""
+        SELECT 
+            id, 
+            year_approx, 
+            date_earliest::text as date_earliest, 
+            date_latest::text as date_latest, 
+            is_bce,
+            importance_score 
+        FROM events 
+        ORDER BY year_approx
+    """)
     links = await conn.fetch("SELECT cause_event_id, effect_event_id FROM causality_links")
     return events, links
 
@@ -104,39 +213,120 @@ def depth_to_y(depth: int, sign: int) -> float:
     return sign * magnitude
 
 
+def compute_event_x_ranges(events) -> dict:
+    """
+    Compute X position and width for each event.
+    
+    Returns dict: id → (x_start, x_end)
+    """
+    x_ranges = {}
+    for e in events:
+        eid = str(e['id'])
+        is_bce = e['is_bce'] if e['is_bce'] is not None else False
+        
+        # Get start year for X position
+        start_year = parse_year_from_date(e['date_earliest'], is_bce)
+        if start_year is None:
+            start_year = e['year_approx']
+        
+        # Compute node width
+        width = compute_event_width(
+            e['date_earliest'],
+            e['date_latest'],
+            e['year_approx'],
+            e['importance_score'] if e['importance_score'] is not None else 0.5,
+            is_bce
+        )
+        
+        x_start = event_to_x(start_year)
+        x_end = x_start + width
+        x_ranges[eid] = (x_start, x_end)
+    
+    return x_ranges
+
+
+def ranges_overlap(range_a: Tuple[float, float], range_b: Tuple[float, float]) -> bool:
+    """Check if two X ranges overlap (with buffer)."""
+    a_start, a_end = range_a
+    b_start, b_end = range_b
+    # Add buffer to each end
+    return (a_start - HORIZONTAL_BUFFER) < (b_end + HORIZONTAL_BUFFER) and \
+           (b_start - HORIZONTAL_BUFFER) < (a_end + HORIZONTAL_BUFFER)
+
+
+def centers_close(range_a: Tuple[float, float], range_b: Tuple[float, float], threshold: float) -> bool:
+    """Check if node centers are within threshold distance."""
+    center_a = (range_a[0] + range_a[1]) / 2
+    center_b = (range_b[0] + range_b[1]) / 2
+    return abs(center_a - center_b) < threshold
+
+
 def resolve_collisions(positions: dict, events, passes: int = COLLISION_PASSES) -> dict:
     """
-    Push nodes apart if they're too close vertically within the same time bucket.
+    Push nodes apart if they're too close vertically and their X ranges overlap.
 
-    Groups nodes by year_approx // YEAR_BUCKET_SIZE, then sorts by Y and
-    pushes any pair closer than COLLISION_RADIUS apart.
+    Uses a simpler bucket-based approach: group nodes by X position (using node centers),
+    then within each bucket, spread nodes vertically.
+    
+    Bucket size is based on typical node width to ensure overlapping nodes compete.
 
     Returns updated positions dict.
     """
-    event_years = {str(e['id']): e['year_approx'] for e in events}
     pos = dict(positions)
-
-    for _ in range(passes):
-        # Group by year bucket
+    x_ranges = compute_event_x_ranges(events)
+    node_ids = [nid for nid in pos.keys() if nid in x_ranges]
+    
+    # Compute bucket size: based on typical node width
+    # Use median width to avoid skew from very wide pills
+    widths = sorted([x_ranges[nid][1] - x_ranges[nid][0] for nid in node_ids])
+    median_width = widths[len(widths) // 2] if widths else NODE_SIZE_BASE
+    bucket_size = max(median_width, NODE_SIZE_BASE)  # At least one node width
+    
+    # Compute node centers
+    node_centers = {nid: (x_ranges[nid][0] + x_ranges[nid][1]) / 2 for nid in node_ids}
+    
+    for pass_num in range(passes):
+        moved = False
+        
+        # Group by bucket (based on center position)
         buckets = defaultdict(list)
-        for node_id, y in pos.items():
-            year = event_years.get(node_id)
-            if year is None:
+        for nid in node_ids:
+            bucket_idx = int(node_centers[nid] // bucket_size)
+            buckets[bucket_idx].append(nid)
+        
+        # Also check adjacent buckets for wide nodes
+        all_bucket_keys = sorted(buckets.keys())
+        
+        for bucket_idx in all_bucket_keys:
+            # Combine current bucket with adjacent buckets for collision check
+            nodes_in_range = []
+            for adj_idx in [bucket_idx - 1, bucket_idx, bucket_idx + 1]:
+                nodes_in_range.extend(buckets.get(adj_idx, []))
+            
+            if len(nodes_in_range) < 2:
                 continue
-            bucket = year // YEAR_BUCKET_SIZE
-            buckets[bucket].append(node_id)
-
-        for bucket_nodes in buckets.values():
-            # Sort by current Y position
-            bucket_nodes.sort(key=lambda nid: pos[nid])
-            # Push apart any nodes within COLLISION_RADIUS
-            for i in range(len(bucket_nodes) - 1):
-                a, b = bucket_nodes[i], bucket_nodes[i + 1]
-                gap = pos[b] - pos[a]
+            
+            # Sort by Y position
+            nodes_sorted = sorted(set(nodes_in_range), key=lambda nid: pos[nid])
+            
+            # Push adjacent pairs apart if they overlap
+            for i in range(len(nodes_sorted) - 1):
+                node_a = nodes_sorted[i]
+                node_b = nodes_sorted[i + 1]
+                
+                # Check actual overlap (ranges overlap, not just same bucket)
+                if not ranges_overlap(x_ranges[node_a], x_ranges[node_b]):
+                    continue
+                
+                gap = pos[node_b] - pos[node_a]
                 if gap < COLLISION_RADIUS:
-                    push = (COLLISION_RADIUS - gap) / 2
-                    pos[a] -= push
-                    pos[b] += push
+                    push = (COLLISION_RADIUS - gap) / 2 + 0.5
+                    pos[node_a] -= push
+                    pos[node_b] += push
+                    moved = True
+        
+        if not moved:
+            break
 
     return pos
 
@@ -174,6 +364,24 @@ async def compute_and_persist():
 
     print(f"Resolving collisions ({COLLISION_PASSES} passes)...")
     positions = resolve_collisions(positions, events)
+    
+    # Check for remaining collisions
+    x_ranges = compute_event_x_ranges(events)
+    remaining_collisions = 0
+    for i, e1 in enumerate(events):
+        id1 = str(e1['id'])
+        if id1 not in x_ranges:
+            continue
+        for e2 in events[i+1:]:
+            id2 = str(e2['id'])
+            if id2 not in x_ranges:
+                continue
+            if ranges_overlap(x_ranges[id1], x_ranges[id2]):
+                gap = abs(positions[id1] - positions[id2])
+                if gap < COLLISION_RADIUS:
+                    remaining_collisions += 1
+    if remaining_collisions > 0:
+        print(f"  Note: {remaining_collisions} visually overlapping pairs (expected with dense data)")
 
     print("Persisting to DB...")
     updates = [(positions[str(e['id'])], e['id']) for e in events]
