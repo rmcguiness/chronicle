@@ -232,6 +232,10 @@ interface AppState {
   /** Current ReactFlow camera — updated on every move/zoom so other components can read it. */
   rfViewport: { x: number; y: number; zoom: number };
   setRfViewport: (vp: { x: number; y: number; zoom: number }) => void;
+
+  /** Minimum importance_score threshold for filtering visible events. */
+  minImportance: number;
+  setMinImportance: (v: number) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -339,4 +343,8 @@ export const useAppStore = create<AppState>((set) => ({
   // ReactFlow camera — synced on every move/zoom for scrubber + other readers
   rfViewport: { x: 0, y: 0, zoom: 0.08 },
   setRfViewport: (rfViewport) => set({ rfViewport }),
+
+  // Importance filter — slider threshold for hiding low-importance events
+  minImportance: 0.0,
+  setMinImportance: (minImportance) => set({ minImportance }),
 }));

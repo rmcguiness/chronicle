@@ -54,7 +54,6 @@ async def get_tiles(
         Event.zoom_min <= zoom,
         Event.importance_score >= min_importance,
         Event.review_status == "approved",
-        Event.importance_score >= min_importance,
     ]
 
     # Parse and apply bounding box filter

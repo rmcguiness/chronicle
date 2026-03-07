@@ -24,6 +24,7 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import ImportanceFilter from './components/ImportanceFilter';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -59,6 +60,11 @@ function MainView() {
 
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
+
+      {/* Importance threshold filter (toolbar) */}
+      <div style={{ position: 'fixed', top: 16, right: 210, zIndex: 30 }}>
+        <ImportanceFilter />
+      </div>
 
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />

@@ -16,7 +16,7 @@
  *   toggling, timeline scrubber (rendered by App.tsx).
  */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -601,10 +601,20 @@ function NetworkViewInner() {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Fetch all events via the tile endpoint with a broad viewport
+  // Importance filter — local fast-filter + debounced API refetch
+  const minImportance = useAppStore((s) => s.minImportance);
+  const [debouncedMinImportance, setDebouncedMinImportance] = useState(minImportance);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedMinImportance(minImportance), 300);
+    return () => clearTimeout(timer);
+  }, [minImportance]);
+
+  // Fetch all events via the tile endpoint with a broad viewport.
+  // The debounced min_importance is passed as a query param for server-side filtering.
   const { data: tileData, isLoading: tilesLoading } = useQuery({
-    queryKey: ['network-tiles'],
-    queryFn: () => fetchTiles(FULL_VIEWPORT),
+    queryKey: ['network-tiles', debouncedMinImportance],
+    queryFn: () => fetchTiles(FULL_VIEWPORT, debouncedMinImportance),
     staleTime: 5 * 60_000,
   });
 
@@ -629,9 +639,14 @@ function NetworkViewInner() {
     [allLinks, tileData],
   );
 
-  // All events are always rendered; the ReactFlow camera determines what's
-  // visible. Filtering by timeViewport caused nodes to disappear when panning.
-  const filteredEvents = useMemo(() => allEvents, [allEvents]);
+  // Local fast-filter: instantly hide events below the slider threshold
+  // (no debounce — feels snappy). The debounced API refetch keeps the server in sync.
+  const filteredEvents = useMemo(
+    () => minImportance > 0
+      ? allEvents.filter((e) => e.importance_score >= minImportance)
+      : allEvents,
+    [allEvents, minImportance],
+  );
 
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
   // Re-runs when the scrubber range changes so nodes reposition dynamically.

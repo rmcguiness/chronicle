@@ -316,7 +316,7 @@ setInterval(() => {
 // API functions
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse> {
+export async function fetchTiles(viewport: CanvasViewport, minImportanceOverride?: number): Promise<TileResponse> {
   const available = await isBackendAvailable();
 
   if (available) {
@@ -327,7 +327,7 @@ export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse
       // Map react-flow fractional zoom (0.05–4+) → backend tile zoom (int 2–10)
       // zoom_min in DB starts at 2, so floor at 2 to always return events
       const tileZoom = Math.max(2, Math.min(10, Math.floor(viewport.zoom * 8) + 2));
-      const minImportance = importanceThreshold(viewport.zoom);
+      const minImportance = minImportanceOverride ?? importanceThreshold(viewport.zoom);
       const { data } = await api.get('/api/canvas/tiles', {
         params: {
           zoom: tileZoom,
