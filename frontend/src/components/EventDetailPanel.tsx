@@ -10,9 +10,9 @@
  */
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchEventDetail, fetchArticle } from '../api/client';
+import { fetchEventDetail, fetchArticle, fetchEventPeople } from '../api/client';
 import type { ArticleResponse } from '../api/client';
-import type { Perspective, ConnectedEvent, Source } from '../types';
+import type { Perspective, ConnectedEvent, Source, EventPerson } from '../types';
 import { useAppStore } from '../store';
 import {
   CATEGORY_COLORS,
@@ -341,6 +341,53 @@ function Spinner() {
   );
 }
 
+/** Person avatar chip for the linked people section. */
+function PersonChip({ person }: { person: EventPerson }) {
+  const formatYears = () => {
+    if (person.birth_year == null) return '';
+    const birth = person.birth_year < 0 ? `${Math.abs(person.birth_year)} BCE` : `${person.birth_year}`;
+    if (person.death_year == null) return birth;
+    const death = person.death_year < 0 ? `${Math.abs(person.death_year)} BCE` : `${person.death_year}`;
+    return `${birth}\u2013${death}`;
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '6px 12px',
+        borderRadius: 20,
+        backgroundColor: 'rgba(139,92,246,0.12)',
+        border: '1px solid rgba(139,92,246,0.3)',
+      }}
+    >
+      <svg
+        width={16}
+        height={16}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#c4b5fd"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>
+          {person.name}
+        </div>
+        <div style={{ fontSize: 10, color: '#94a3b8' }}>
+          {person.role}{formatYears() ? ` · ${formatYears()}` : ''}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Connected event chip for the horizontal mini-timeline. */
 function ConnectedEventChip({ event }: { event: ConnectedEvent }) {
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
@@ -519,6 +566,13 @@ export default function EventDetailPanel() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: linkedPeople } = useQuery({
+    queryKey: ['event-people', selectedEventSlug],
+    queryFn: () => fetchEventPeople(selectedEventSlug!),
+    enabled: !!selectedEventSlug,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const isOpen = detailPanelOpen && selectedEventSlug !== null;
   const color = event ? CATEGORY_COLORS[event.category] : '#6b7280';
   const icon = event ? CATEGORY_ICONS[event.category] : '';
@@ -693,6 +747,20 @@ export default function EventDetailPanel() {
                   .map((p, i) => (
                     <PerspectiveCard key={p.id} perspective={p} index={i} />
                   ))}
+              </div>
+            )}
+
+            {/* ── Linked People ────────────────────────────────────── */}
+            {linkedPeople && linkedPeople.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={sectionHeaderStyle}>
+                  People ({linkedPeople.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {linkedPeople.map((person: EventPerson) => (
+                    <PersonChip key={person.person_id} person={person} />
+                  ))}
+                </div>
               </div>
             )}
           </>

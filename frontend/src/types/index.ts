@@ -174,6 +174,46 @@ export interface SearchResult {
   lng: number;
 }
 
+// ─── People ───────────────────────────────────────────────────────────────────
+
+export interface PersonSummary {
+  id: string;
+  name: string;
+  slug: string;
+  birth_year: number | null;
+  death_year: number | null;
+  nationality: string | null;
+  occupation: string | null;
+  importance_score: number;
+  wikipedia_slug: string | null;
+}
+
+export interface PersonLinkedEvent {
+  event_id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  role: string;
+}
+
+export interface PersonDetail extends PersonSummary {
+  bio: string | null;
+  linked_events: PersonLinkedEvent[];
+}
+
+export interface EventPerson {
+  person_id: string;
+  name: string;
+  slug: string;
+  birth_year: number | null;
+  death_year: number | null;
+  nationality: string | null;
+  occupation: string | null;
+  importance_score: number;
+  role: string;
+}
+
 export interface CanvasTransform {
   x: number;
   y: number;

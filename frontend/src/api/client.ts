@@ -8,6 +8,9 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  PersonSummary,
+  PersonDetail,
+  EventPerson,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -515,6 +518,45 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 }
 
 export type { Perspective, ConnectedEvent };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// People
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function fetchPeople(search?: string): Promise<PersonSummary[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+  try {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    const { data } = await api.get('/api/people', { params });
+    return (data.people ?? []) as PersonSummary[];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchPerson(slug: string): Promise<PersonDetail | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+  try {
+    const { data } = await api.get(`/api/people/${slug}`);
+    return data as PersonDetail;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchEventPeople(eventSlug: string): Promise<EventPerson[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+  try {
+    const { data } = await api.get(`/api/events/${eventSlug}/people`);
+    return (Array.isArray(data) ? data : []) as EventPerson[];
+  } catch {
+    return [];
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // On This Day

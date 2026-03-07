@@ -32,12 +32,13 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
+import PersonNode from './PersonNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
-import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
+import { fetchTiles, fetchAllCausalityLinks, fetchPeople } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
-import type { HistoricalEvent, CausalityLink } from '../types';
+import type { HistoricalEvent, CausalityLink, PersonSummary } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
 
-const NODE_TYPES = { event: EventNode };
+const NODE_TYPES = { event: EventNode, person: PersonNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -559,6 +560,47 @@ function formatYearLabel(year: number): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// People toggle button
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PeopleToggle() {
+  const showPeople = useAppStore((s) => s.showPeople);
+  const setShowPeople = useAppStore((s) => s.setShowPeople);
+  return (
+    <button
+      onClick={() => setShowPeople(!showPeople)}
+      style={{
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        zIndex: 20,
+        padding: '6px 14px',
+        borderRadius: 8,
+        backgroundColor: showPeople ? 'rgba(139,92,246,0.3)' : 'rgba(7,14,34,0.9)',
+        border: showPeople
+          ? '1px solid rgba(139,92,246,0.6)'
+          : '1px solid rgba(96,165,250,0.3)',
+        color: showPeople ? '#c4b5fd' : '#94a3b8',
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        transition: 'all 0.15s',
+      }}
+      title={showPeople ? 'Hide historical figures' : 'Show historical figures'}
+    >
+      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      People {showPeople ? 'ON' : 'OFF'}
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // NetworkViewInner — main component (inside ReactFlowProvider)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -574,6 +616,9 @@ function NetworkViewInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
   const { fitView } = useReactFlow();
   const viewport = useViewport();
+
+  // People toggle
+  const showPeople = useAppStore((s) => s.showPeople);
 
   // Subscribe to timeViewport — single source of truth for the visible year range
   const timeViewport = useAppStore((s) => s.timeViewport);
@@ -615,6 +660,14 @@ function NetworkViewInner() {
     staleTime: 5 * 60_000,
   });
 
+  // Fetch people (only when toggle is on)
+  const { data: peopleData } = useQuery({
+    queryKey: ['network-people'],
+    queryFn: () => fetchPeople(),
+    staleTime: 5 * 60_000,
+    enabled: showPeople,
+  });
+
   const isLoading = tilesLoading || linksLoading;
 
   // All events from the data source (unfiltered)
@@ -633,11 +686,34 @@ function NetworkViewInner() {
   // visible. Filtering by timeViewport caused nodes to disappear when panning.
   const filteredEvents = useMemo(() => allEvents, [allEvents]);
 
+  // People nodes (only when toggle is on and data is available)
+  const peopleNodes: Node[] = useMemo(() => {
+    if (!showPeople || !peopleData || peopleData.length === 0) return [];
+    return peopleData
+      .filter((p: PersonSummary) => p.birth_year != null)
+      .map((p: PersonSummary) => {
+        const birthYear = p.birth_year!;
+        const x = yearToX(birthYear, viewportYearMin, viewportYearMax);
+        // Place people below the event spine to separate them visually
+        const tail = p.id.slice(-4).replace(/-/g, '');
+        const hval = parseInt(tail, 16);
+        const yOffset = 300 + (hval % 200);
+        return {
+          id: `person-${p.id}`,
+          type: 'person' as const,
+          position: { x, y: yOffset },
+          data: { ...p, showLabel: true },
+          selectable: true,
+          draggable: true,
+        };
+      });
+  }, [showPeople, peopleData, viewportYearMin, viewportYearMax]);
+
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
   // Re-runs when the scrubber range changes so nodes reposition dynamically.
   useEffect(() => {
     if (filteredEvents.length === 0) {
-      setNodes([]);
+      setNodes(peopleNodes);
       setEdges([]);
       return;
     }
@@ -650,7 +726,7 @@ function NetworkViewInner() {
       viewportYearMax,
     );
     if (precomputed) {
-      setNodes(precomputed.nodes);
+      setNodes([...precomputed.nodes, ...peopleNodes]);
       setEdges(precomputed.edges);
       return;
     }
@@ -662,9 +738,9 @@ function NetworkViewInner() {
       viewportYearMin,
       viewportYearMax,
     );
-    setNodes(rfNodes);
+    setNodes([...rfNodes, ...peopleNodes]);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges, peopleNodes]);
 
   // fitView when data first loads
   useEffect(() => {
@@ -817,6 +893,9 @@ function NetworkViewInner() {
           {formatYearLabel(viewportYearMax)}
         </div>
       </div>
+
+      {/* People toggle */}
+      <PeopleToggle />
 
       {/* Loading indicator */}
       {isLoading && (

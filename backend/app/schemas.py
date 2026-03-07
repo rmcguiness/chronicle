@@ -200,6 +200,53 @@ class HealthResponse(BaseModel):
 # ────────────────────────────────────────────
 # Wikipedia cache — GET /api/events/{slug}/wiki
 # ────────────────────────────────────────────
+# ────────────────────────────────────────────
+# People — GET /api/people, GET /api/people/{slug}, GET /api/events/{slug}/people
+# ────────────────────────────────────────────
+class PersonOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    slug: str
+    birth_year: Optional[int] = None
+    death_year: Optional[int] = None
+    nationality: Optional[str] = None
+    occupation: Optional[str] = None
+    importance_score: float = 0.5
+    wikipedia_slug: Optional[str] = None
+
+
+class PersonLinkedEventOut(BaseModel):
+    event_id: UUID
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    category: Optional[str] = None
+    role: str
+
+
+class PersonDetailOut(PersonOut):
+    bio: Optional[str] = None
+    linked_events: List[PersonLinkedEventOut] = []
+
+
+class PersonListResponse(BaseModel):
+    people: List[PersonOut]
+
+
+class EventPersonOut(BaseModel):
+    person_id: UUID
+    name: str
+    slug: str
+    birth_year: Optional[int] = None
+    death_year: Optional[int] = None
+    nationality: Optional[str] = None
+    occupation: Optional[str] = None
+    importance_score: float = 0.5
+    role: str
+
+
 class WikiSummaryOut(BaseModel):
     """
     Wikipedia summary response for an event.

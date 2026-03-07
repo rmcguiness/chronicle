@@ -324,6 +324,7 @@ class Person(Base):
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
     name: Mapped[str] = mapped_column(Text, nullable=False)
+    slug: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     aliases: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
     birth_year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     birth_year_circa: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -332,9 +333,13 @@ class Person(Base):
     birth_location: Mapped[Optional[object]] = mapped_column(
         Geometry("POINT", srid=4326), nullable=True
     )
+    nationality: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     nationalities: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
+    occupation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     roles: Mapped[Optional[List[str]]] = mapped_column(ARRAY(Text), nullable=True)
     gender: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    importance_score: Mapped[float] = mapped_column(Float, default=0.5)
+    bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     wikidata_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True, unique=True)
     wikipedia_slug: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -344,6 +349,14 @@ class Person(Base):
     )
 
     event_people: Mapped[List["EventPerson"]] = relationship(back_populates="person")
+
+    __table_args__ = (
+        CheckConstraint(
+            "importance_score BETWEEN 0 AND 1", name="ck_people_importance_score"
+        ),
+        Index("idx_people_slug", "slug"),
+        Index("idx_people_importance", "importance_score"),
+    )
 
 
 # ────────────────────────────────────────────
