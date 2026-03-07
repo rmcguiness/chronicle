@@ -24,6 +24,8 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import MinimapButton from './components/MinimapButton';
+import TimelineMinimap from './components/TimelineMinimap';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -60,6 +62,9 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Minimap toggle button (toolbar) */}
+      <MinimapButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -69,6 +74,9 @@ function MainView() {
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}
       <TimelineScrubber />
+
+      {/* Timeline minimap (bottom-right corner) */}
+      <TimelineMinimap />
 
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
