@@ -21,6 +21,7 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models import CausalityLink, Event, Perspective, Source, WikipediaCache
 from app.schemas import (
+    CanvasEventItem,
     CausalityLinkItem,
     ConnectedEventItem,
     ConnectionsResponse,
@@ -121,6 +122,62 @@ async def on_this_day(
     ]
 
     return OnThisDayResponse(month=m, day=d, events=events_out)
+
+
+@router.get("/random", response_model=CanvasEventItem)
+async def get_random_event(
+    min_importance: float = Query(default=0.6, ge=0.0, le=1.0, description="Minimum importance score"),
+    db: AsyncSession = Depends(get_db),
+) -> CanvasEventItem:
+    """Return a single random event with importance >= min_importance.
+
+    Response shape matches CanvasEventItem (the same shape used by the tile
+    endpoint) so the frontend can treat it like any other visible event.
+    """
+    stmt = (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.date_earliest,
+            Event.date_latest,
+            ST_X(Event.geo_point).label("lng"),
+            ST_Y(Event.geo_point).label("lat"),
+            Event.geo_modern,
+            Event.geo_era_label,
+            Event.event_category,
+            Event.importance_score,
+            Event.tags,
+            Event.zoom_min,
+            Event.network_y,
+        )
+        .where(Event.importance_score >= min_importance)
+        .order_by(func.random())
+        .limit(1)
+    )
+    result = await db.execute(stmt)
+    row = result.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="No events match the filter")
+
+    return CanvasEventItem(
+        id=row.id,
+        slug=row.slug,
+        title=row.title,
+        year_approx=row.year_approx,
+        date_earliest=row.date_earliest,
+        date_latest=row.date_latest,
+        lat=float(row.lat) if row.lat is not None else None,
+        lng=float(row.lng) if row.lng is not None else None,
+        geo_modern=row.geo_modern,
+        geo_era_label=row.geo_era_label,
+        category=row.event_category,
+        importance_score=row.importance_score or 0.5,
+        tags=list(row.tags) if row.tags else None,
+        zoom_min=row.zoom_min or 1,
+        network_y=row.network_y,
+    )
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:

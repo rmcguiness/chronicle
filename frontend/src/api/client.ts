@@ -553,6 +553,17 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
 }
 
 /**
+ * Fetch a single random event with importance >= min_importance.
+ * Returns a HistoricalEvent-shaped object from GET /api/events/random.
+ */
+export async function fetchRandomEvent(minImportance = 0.6): Promise<HistoricalEvent> {
+  const { data } = await api.get<HistoricalEvent>('/api/events/random', {
+    params: { min_importance: minImportance },
+  });
+  return data;
+}
+
+/**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.
  */
