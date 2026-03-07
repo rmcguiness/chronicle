@@ -65,6 +65,25 @@ class OnThisDayResponse(BaseModel):
     events: list[OnThisDayEventItem]
 
 
+@router.get("/random", response_model=EventDetailOut)
+async def get_random_event(
+    min_importance: float = Query(default=0.7, ge=0.0, le=1.0, description="Minimum importance score"),
+    db: AsyncSession = Depends(get_db),
+) -> EventDetailOut:
+    """Return a single random event with importance >= min_importance (full detail)."""
+    stmt = (
+        select(Event.slug)
+        .where(Event.importance_score >= min_importance)
+        .order_by(func.random())
+        .limit(1)
+    )
+    result = await db.execute(stmt)
+    slug = result.scalar_one_or_none()
+    if not slug:
+        raise HTTPException(status_code=404, detail="No events found")
+    return await get_event(slug, db)
+
+
 @router.get("/on-this-day", response_model=OnThisDayResponse)
 async def on_this_day(
     month: int | None = Query(default=None, ge=1, le=12, description="Month (1-12), defaults to today"),

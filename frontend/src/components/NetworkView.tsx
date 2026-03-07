@@ -37,6 +37,7 @@ import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
+import SurpriseButton from './SurpriseButton';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
 
@@ -907,10 +908,20 @@ export default function NetworkView() {
           from { stroke-dashoffset: 16; }
           to { stroke-dashoffset: 0; }
         }
+        @keyframes pulse-ring {
+          0% { box-shadow: 0 0 0 0 rgba(96,165,250,0.7); }
+          50% { box-shadow: 0 0 0 20px rgba(96,165,250,0); }
+          100% { box-shadow: 0 0 0 0 rgba(96,165,250,0); }
+        }
+        .react-flow__node.surprise-highlight {
+          animation: pulse-ring 1s ease-out 2;
+          border-radius: 50%;
+        }
       `}</style>
 
       <ReactFlowProvider>
         <NetworkViewInner />
+        <SurpriseButton />
       </ReactFlowProvider>
     </div>
   );

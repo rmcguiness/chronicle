@@ -552,6 +552,26 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
   return data;
 }
 
+/** Response shape from GET /api/events/random. */
+export interface RandomEventResponse {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  importance_score: number;
+}
+
+/**
+ * Fetch a single random event (full detail) with importance >= min_importance.
+ */
+export async function fetchRandomEvent(minImportance = 0.7): Promise<EventDetail> {
+  const { data } = await api.get<EventDetail>('/api/events/random', {
+    params: { min_importance: minImportance },
+  });
+  return data;
+}
+
 /**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.
