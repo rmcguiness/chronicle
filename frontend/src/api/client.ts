@@ -514,6 +514,14 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
   }
 }
 
+/**
+ * Fetch a single random event from the backend (full detail).
+ */
+export async function fetchRandomEvent(): Promise<EventDetail> {
+  const { data } = await api.get<EventDetail>('/api/events/random');
+  return data;
+}
+
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -549,6 +557,25 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
   if (month !== undefined) params.set('month', String(month));
   if (day !== undefined) params.set('day', String(day));
   const { data } = await api.get<OnThisDayResponse>('/api/events/on-this-day', { params });
+  return data;
+}
+
+/** Response shape from GET /api/events/random. */
+export interface RandomEventResponse {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  date_display: string | null;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+  short_description: string | null;
+}
+
+/** Fetch a single random event from the backend. */
+export async function fetchRandomEvent(): Promise<RandomEventResponse> {
+  const { data } = await api.get<RandomEventResponse>('/api/events/random');
   return data;
 }
 

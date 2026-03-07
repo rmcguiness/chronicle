@@ -34,6 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
+import RandomButton from './RandomButton';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
@@ -785,6 +786,9 @@ function NetworkViewInner() {
 
       {/* Fixed timeline spine overlay — always at 50 % viewport height */}
       <NetworkTimeline viewport={viewport} />
+
+      {/* Random event exploration button */}
+      <RandomButton />
 
       {/* Year-axis info label */}
       <div

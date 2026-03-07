@@ -65,6 +65,55 @@ class OnThisDayResponse(BaseModel):
     events: list[OnThisDayEventItem]
 
 
+class RandomEventResponse(BaseModel):
+    """Response wrapper for the random event endpoint."""
+
+    id: UUID
+    slug: str
+    title: str
+    year_approx: int | None
+    date_display: str | None
+    category: str | None
+    importance_score: float
+    region: str | None
+    short_description: str | None
+
+
+@router.get("/random", response_model=RandomEventResponse)
+async def random_event(db: AsyncSession = Depends(get_db)) -> RandomEventResponse:
+    """Return a single random event from the database."""
+    stmt = (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.date_exact,
+            Event.event_category,
+            Event.importance_score,
+            Event.geo_modern,
+        )
+        .order_by(func.random())
+        .limit(1)
+    )
+    result = await db.execute(stmt)
+    row = result.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="No events found")
+
+    return RandomEventResponse(
+        id=row.id,
+        slug=row.slug,
+        title=row.title,
+        year_approx=row.year_approx,
+        date_display=row.date_exact,
+        category=row.event_category,
+        importance_score=row.importance_score,
+        region=row.geo_modern,
+        short_description=None,
+    )
+
+
 @router.get("/on-this-day", response_model=OnThisDayResponse)
 async def on_this_day(
     month: int | None = Query(default=None, ge=1, le=12, description="Month (1-12), defaults to today"),
@@ -121,6 +170,18 @@ async def on_this_day(
     ]
 
     return OnThisDayResponse(month=m, day=d, events=events_out)
+
+
+@router.get("/random", response_model=EventDetailOut)
+async def get_random_event(db: AsyncSession = Depends(get_db)) -> EventDetailOut:
+    """Return a single random event (full detail, same shape as GET /{slug})."""
+    stmt = select(Event.slug).order_by(func.random()).limit(1)
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+    if not row:
+        raise HTTPException(status_code=404, detail="No events found")
+    # Delegate to the existing detail builder
+    return await get_event(row, db)
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:
