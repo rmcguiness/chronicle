@@ -552,6 +552,27 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
   return data;
 }
 
+/** A single event returned by GET /api/events/this-week. */
+export interface ThisWeekEvent {
+  id: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  importance_score: number;
+  date_display: string | null;
+}
+
+/** Response shape from GET /api/events/this-week. */
+export interface ThisWeekResponse {
+  events: ThisWeekEvent[];
+}
+
+/** Fetch up to 3 notable events whose date falls within ±3 days of today. */
+export async function fetchThisWeek(): Promise<ThisWeekResponse> {
+  const { data } = await api.get<ThisWeekResponse>('/api/events/this-week');
+  return data;
+}
+
 /**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.

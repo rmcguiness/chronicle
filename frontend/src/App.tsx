@@ -24,6 +24,7 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import ThisWeekBanner from './components/ThisWeekBanner';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -48,6 +49,9 @@ function MainView() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
+      {/* This Week in History banner — above the canvas */}
+      <ThisWeekBanner />
+
       {/* Network causality graph — the primary view */}
       <NetworkView />
 
