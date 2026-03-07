@@ -169,6 +169,28 @@ class ConnectionsResponse(BaseModel):
 
 
 # ────────────────────────────────────────────
+# What Happened Next — GET /api/events/{slug}/what-happened-next
+# ────────────────────────────────────────────
+class WhatHappenedNextEventItem(BaseModel):
+    """A single event in the 'What Happened Next?' response."""
+
+    slug: str
+    title: str
+    year_approx: int
+    importance_score: float
+    category: Optional[str] = None
+    description: Optional[str] = None
+
+
+class WhatHappenedNextResponse(BaseModel):
+    """Response for the What Happened Next endpoint."""
+
+    source_slug: str
+    source_year: int
+    events: List[WhatHappenedNextEventItem]
+
+
+# ────────────────────────────────────────────
 # Search — GET /api/search
 # ────────────────────────────────────────────
 class SearchResultItem(BaseModel):

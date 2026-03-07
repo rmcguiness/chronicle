@@ -12,9 +12,9 @@ from uuid import UUID
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
-from geoalchemy2.functions import ST_X, ST_Y
+from geoalchemy2.functions import ST_DWithin, ST_X, ST_Y
 from pydantic import BaseModel
-from sqlalchemy import extract, func, or_, select
+from sqlalchemy import and_, extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -27,6 +27,8 @@ from app.schemas import (
     EventDetailOut,
     PerspectiveOut,
     SourceOut,
+    WhatHappenedNextEventItem,
+    WhatHappenedNextResponse,
     WikiSummaryOut,
     _LINK_TYPE_MAP,
 )
@@ -328,6 +330,96 @@ async def get_connections(
             )
             for lnk in links
         ]
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# What Happened Next — top events in next 50 years, same region
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ~20 degrees ≈ 2 200 km at the equator — a generous "same region" radius
+_REGION_DISTANCE_DEG = 20.0
+
+
+@router.get("/{slug}/what-happened-next", response_model=WhatHappenedNextResponse)
+async def what_happened_next(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+) -> WhatHappenedNextResponse:
+    """Return the 5 most important events in the next 50 years near the source event.
+
+    Geographic proximity is determined by PostGIS ``ST_DWithin`` (≈ 2 200 km
+    radius).  Events tagged ``'global'`` are always included regardless of
+    location.  Results are ordered by ``importance_score`` descending.
+    """
+    # ── 1. Fetch source event ────────────────────────────────────────────────
+    src_stmt = select(
+        Event.id,
+        Event.slug,
+        Event.year_approx,
+        Event.geo_point,
+    ).where(Event.slug == slug)
+    src_result = await db.execute(src_stmt)
+    src = src_result.fetchone()
+    if src is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    if src.year_approx is None:
+        return WhatHappenedNextResponse(source_slug=slug, source_year=0, events=[])
+
+    year_lo = src.year_approx + 1
+    year_hi = src.year_approx + 50
+
+    # ── 2. Build the candidate query ─────────────────────────────────────────
+    base_filter = and_(
+        Event.year_approx.isnot(None),
+        Event.year_approx >= year_lo,
+        Event.year_approx <= year_hi,
+        Event.id != src.id,
+    )
+
+    geo_or_global: list = []
+    if src.geo_point is not None:
+        geo_or_global.append(
+            and_(
+                Event.geo_point.isnot(None),
+                ST_DWithin(Event.geo_point, src.geo_point, _REGION_DISTANCE_DEG),
+            )
+        )
+    # Always include global events
+    geo_or_global.append(Event.tags.any("global"))
+
+    stmt = (
+        select(
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.importance_score,
+            Event.event_category,
+        )
+        .where(base_filter, or_(*geo_or_global))
+        .order_by(Event.importance_score.desc())
+        .limit(5)
+    )
+
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    events_out = [
+        WhatHappenedNextEventItem(
+            slug=row.slug,
+            title=row.title,
+            year_approx=row.year_approx,
+            importance_score=row.importance_score,
+            category=row.event_category,
+        )
+        for row in rows
+    ]
+
+    return WhatHappenedNextResponse(
+        source_slug=slug,
+        source_year=src.year_approx,
+        events=events_out,
     )
 
 

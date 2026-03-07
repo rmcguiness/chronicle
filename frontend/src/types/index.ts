@@ -174,6 +174,23 @@ export interface SearchResult {
   lng: number;
 }
 
+// ─── What Happened Next ──────────────────────────────────────────────────────
+
+export interface WhatHappenedNextEvent {
+  slug: string;
+  title: string;
+  year_approx: number;
+  importance_score: number;
+  category: EventCategory | null;
+  description: string | null;
+}
+
+export interface WhatHappenedNextResponse {
+  source_slug: string;
+  source_year: number;
+  events: WhatHappenedNextEvent[];
+}
+
 export interface CanvasTransform {
   x: number;
   y: number;

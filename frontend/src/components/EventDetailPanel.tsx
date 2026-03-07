@@ -11,6 +11,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
+import WhatHappenedNext from './WhatHappenedNext';
 import type { ArticleResponse } from '../api/client';
 import type { Perspective, ConnectedEvent, Source } from '../types';
 import { useAppStore } from '../store';
@@ -490,6 +491,10 @@ function injectStyles(): void {
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.15; }
+    }
   `;
   document.head.appendChild(style);
 }
@@ -695,6 +700,11 @@ export default function EventDetailPanel() {
                   ))}
               </div>
             )}
+
+            {/* ── What Happened Next ──────────────────────────────── */}
+            <div style={{ marginBottom: 20 }}>
+              <WhatHappenedNext slug={event.slug} />
+            </div>
           </>
         )}
       </div>

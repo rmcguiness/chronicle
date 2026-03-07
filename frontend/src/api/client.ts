@@ -514,6 +514,28 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
   }
 }
 
+/**
+ * Fetch the "What Happened Next?" events for a given event slug.
+ * Returns up to 5 important events in the next 50 years within the same region.
+ */
+export async function fetchWhatHappenedNext(
+  slug: string,
+  signal?: AbortSignal,
+): Promise<import('../types').WhatHappenedNextResponse | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<import('../types').WhatHappenedNextResponse>(
+      `/api/events/${slug}/what-happened-next`,
+      { signal },
+    );
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
