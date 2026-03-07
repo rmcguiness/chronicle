@@ -198,6 +198,26 @@ class HealthResponse(BaseModel):
 
 
 # ────────────────────────────────────────────
+# Causal path — POST /api/events/causal-path
+# ────────────────────────────────────────────
+
+
+class CausalPathRequest(BaseModel):
+    """Request body for POST /api/events/causal-path."""
+
+    start_slug: str
+    end_slug: str
+
+
+class CausalPathResponse(BaseModel):
+    """Response for POST /api/events/causal-path."""
+
+    path: List[CausalChainEventSummary]
+    found: bool
+    hops: int
+
+
+# ────────────────────────────────────────────
 # Wikipedia cache — GET /api/events/{slug}/wiki
 # ────────────────────────────────────────────
 class WikiSummaryOut(BaseModel):

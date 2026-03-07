@@ -8,7 +8,7 @@
  * Does NOT: fetch data (see api/client.ts), compute layout (see utils/).
  */
 import { create } from 'zustand';
-import type { HistoricalEvent, CanvasTransform, CanvasViewport, EventCategory, Region } from '../types';
+import type { HistoricalEvent, CanvasTransform, CanvasViewport, EventCategory, Region, CausalChainEventSummary } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -232,6 +232,33 @@ interface AppState {
   /** Current ReactFlow camera — updated on every move/zoom so other components can read it. */
   rfViewport: { x: number; y: number; zoom: number };
   setRfViewport: (vp: { x: number; y: number; zoom: number }) => void;
+
+  /** Whether path selection mode is active. */
+  pathModeActive: boolean;
+  setPathModeActive: (v: boolean) => void;
+
+  /** Start event slug for causal path finder. */
+  pathStartSlug: string | null;
+  setPathStartSlug: (slug: string | null) => void;
+
+  /** End event slug for causal path finder. */
+  pathEndSlug: string | null;
+  setPathEndSlug: (slug: string | null) => void;
+
+  /** The resolved causal path (event summaries in order). */
+  causalPath: CausalChainEventSummary[];
+  setCausalPath: (path: CausalChainEventSummary[]) => void;
+
+  /** Number of hops in the current path (0 when no path). */
+  causalPathHops: number;
+  setCausalPathHops: (n: number) => void;
+
+  /** Whether the path finder is currently loading. */
+  pathLoading: boolean;
+  setPathLoading: (v: boolean) => void;
+
+  /** Reset path mode to initial state. */
+  resetPathMode: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -339,4 +366,27 @@ export const useAppStore = create<AppState>((set) => ({
   // ReactFlow camera — synced on every move/zoom for scrubber + other readers
   rfViewport: { x: 0, y: 0, zoom: 0.08 },
   setRfViewport: (rfViewport) => set({ rfViewport }),
+
+  // Causal path finder
+  pathModeActive: false,
+  setPathModeActive: (pathModeActive) => set({ pathModeActive }),
+  pathStartSlug: null,
+  setPathStartSlug: (pathStartSlug) => set({ pathStartSlug }),
+  pathEndSlug: null,
+  setPathEndSlug: (pathEndSlug) => set({ pathEndSlug }),
+  causalPath: [],
+  setCausalPath: (causalPath) => set({ causalPath }),
+  causalPathHops: 0,
+  setCausalPathHops: (causalPathHops) => set({ causalPathHops }),
+  pathLoading: false,
+  setPathLoading: (pathLoading) => set({ pathLoading }),
+  resetPathMode: () =>
+    set({
+      pathModeActive: false,
+      pathStartSlug: null,
+      pathEndSlug: null,
+      causalPath: [],
+      causalPathHops: 0,
+      pathLoading: false,
+    }),
 }));

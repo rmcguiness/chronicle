@@ -21,6 +21,9 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models import CausalityLink, Event, Perspective, Source, WikipediaCache
 from app.schemas import (
+    CausalChainEventSummary,
+    CausalPathRequest,
+    CausalPathResponse,
     CausalityLinkItem,
     ConnectedEventItem,
     ConnectionsResponse,
@@ -329,6 +332,131 @@ async def get_connections(
             for lnk in links
         ]
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Causal path — shortest path between two events via BFS on causality graph
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""Maximum BFS depth for causal path search."""
+CAUSAL_PATH_MAX_DEPTH = 8
+
+
+@router.post("/causal-path", response_model=CausalPathResponse)
+async def find_causal_path(
+    body: CausalPathRequest,
+    db: AsyncSession = Depends(get_db),
+) -> CausalPathResponse:
+    """Find the shortest causal path between two events using BFS.
+
+    Walks the ``causality_links`` table bidirectionally (both cause→effect
+    and effect→cause) with a recursive CTE, limited to
+    :data:`CAUSAL_PATH_MAX_DEPTH` hops.
+    """
+    # Resolve slugs → event IDs
+    start_stmt = select(Event.id).where(Event.slug == body.start_slug)
+    end_stmt = select(Event.id).where(Event.slug == body.end_slug)
+
+    start_result = await db.execute(start_stmt)
+    end_result = await db.execute(end_stmt)
+    start_row = start_result.fetchone()
+    end_row = end_result.fetchone()
+
+    if start_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{body.start_slug}' not found")
+    if end_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{body.end_slug}' not found")
+
+    start_id = start_row[0]
+    end_id = end_row[0]
+
+    if start_id == end_id:
+        # Same event — trivial path
+        ev_stmt = select(
+            Event.id, Event.slug, Event.title, Event.year_approx, Event.event_category
+        ).where(Event.id == start_id)
+        ev_row = (await db.execute(ev_stmt)).fetchone()
+        summary = CausalChainEventSummary(
+            id=ev_row.id, slug=ev_row.slug, title=ev_row.title,
+            year_approx=ev_row.year_approx, category=ev_row.event_category,
+        )
+        return CausalPathResponse(path=[summary], found=True, hops=0)
+
+    # BFS via recursive CTE — walk both directions (undirected graph)
+    cte_sql = text("""
+        WITH RECURSIVE path AS (
+            SELECT
+                CASE
+                    WHEN cl.cause_event_id = :start_id THEN cl.effect_event_id
+                    ELSE cl.cause_event_id
+                END AS target_event_id,
+                ARRAY[:start_id,
+                    CASE
+                        WHEN cl.cause_event_id = :start_id THEN cl.effect_event_id
+                        ELSE cl.cause_event_id
+                    END
+                ] AS visited,
+                1 AS depth
+            FROM causality_links cl
+            WHERE (cl.cause_event_id = :start_id OR cl.effect_event_id = :start_id)
+              AND cl.review_status = 'approved'
+
+            UNION ALL
+
+            SELECT
+                CASE
+                    WHEN cl.cause_event_id = p.target_event_id THEN cl.effect_event_id
+                    ELSE cl.cause_event_id
+                END AS target_event_id,
+                p.visited || CASE
+                    WHEN cl.cause_event_id = p.target_event_id THEN cl.effect_event_id
+                    ELSE cl.cause_event_id
+                END,
+                p.depth + 1
+            FROM causality_links cl
+            JOIN path p ON (cl.cause_event_id = p.target_event_id OR cl.effect_event_id = p.target_event_id)
+            WHERE NOT (
+                CASE
+                    WHEN cl.cause_event_id = p.target_event_id THEN cl.effect_event_id
+                    ELSE cl.cause_event_id
+                END = ANY(p.visited)
+            )
+            AND p.depth < :max_depth
+            AND cl.review_status = 'approved'
+        )
+        SELECT visited FROM path
+        WHERE target_event_id = :end_id
+        ORDER BY depth
+        LIMIT 1
+    """)
+
+    result = await db.execute(
+        cte_sql,
+        {"start_id": start_id, "end_id": end_id, "max_depth": CAUSAL_PATH_MAX_DEPTH},
+    )
+    row = result.fetchone()
+
+    if row is None:
+        return CausalPathResponse(path=[], found=False, hops=0)
+
+    visited_ids: list[UUID] = row.visited
+
+    # Fetch event summaries for all nodes in the path
+    events_stmt = select(
+        Event.id, Event.slug, Event.title, Event.year_approx, Event.event_category
+    ).where(Event.id.in_(visited_ids))
+    events_result = await db.execute(events_stmt)
+    event_map: dict[UUID, CausalChainEventSummary] = {}
+    for ev in events_result.fetchall():
+        event_map[ev.id] = CausalChainEventSummary(
+            id=ev.id, slug=ev.slug, title=ev.title,
+            year_approx=ev.year_approx, category=ev.event_category,
+        )
+
+    # Build ordered path list
+    path = [event_map[eid] for eid in visited_ids if eid in event_map]
+
+    return CausalPathResponse(path=path, found=True, hops=len(path) - 1)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

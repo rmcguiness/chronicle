@@ -8,7 +8,11 @@ import { CANVAS_CONSTANTS } from "../types";
 import { useAppStore } from "../store";
 
 function EventNode({ data: rawData, selected }: NodeProps) {
-  const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
+  const data = rawData as unknown as HistoricalEvent & {
+    showLabel?: boolean;
+    pathBadge?: 'Start' | 'End';
+    pathDimmed?: boolean;
+  };
   const [hovered, setHovered] = useState(false);
   /**
    * Tooltip position + whether to render above (true) or below (false) the node.
@@ -22,6 +26,7 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+  const pathModeActive = useAppStore((s) => s.pathModeActive);
 
   /** Minimum pixels from top before we flip the tooltip to render below. */
   const TOOLTIP_FLIP_THRESHOLD = 200;
@@ -88,11 +93,24 @@ function EventNode({ data: rawData, selected }: NodeProps) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        cursor: "pointer",
+        cursor: pathModeActive ? "crosshair" : "pointer",
+        opacity: data.pathDimmed ? 0.2 : 1,
+        transition: "opacity 200ms ease",
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setSelectedEvent(data.slug)}
+      onClick={() => {
+        if (pathModeActive) {
+          const store = useAppStore.getState();
+          if (!store.pathStartSlug) {
+            store.setPathStartSlug(data.slug);
+          } else if (store.pathStartSlug !== data.slug && !store.pathEndSlug) {
+            store.setPathEndSlug(data.slug);
+          }
+        } else {
+          setSelectedEvent(data.slug);
+        }
+      }}
     >
       {/*
        * Floating edge handles — both centred on the node so that CausalityEdge
@@ -193,6 +211,29 @@ function EventNode({ data: rawData, selected }: NodeProps) {
           </span>
         )}
       </div>
+
+      {/* Path badge (Start / End) */}
+      {data.pathBadge && (
+        <div
+          style={{
+            position: 'absolute',
+            top: -10,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '1px 6px',
+            borderRadius: 4,
+            background: '#f97316',
+            color: '#fff',
+            fontSize: 9,
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            zIndex: 20,
+            letterSpacing: '0.05em',
+          }}
+        >
+          {data.pathBadge}
+        </div>
+      )}
 
       {/* Label below node — only for circles; pills show title inside their shape */}
       {showLabel && !isPill && (

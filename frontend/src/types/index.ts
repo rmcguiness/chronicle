@@ -148,6 +148,22 @@ export interface CausalityLink {
   description?: string;
 }
 
+/** Lightweight event summary used in causal chain/path responses. */
+export interface CausalChainEventSummary {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: EventCategory | null;
+}
+
+/** Response from POST /api/events/causal-path. */
+export interface CausalPathResponse {
+  path: CausalChainEventSummary[];
+  found: boolean;
+  hops: number;
+}
+
 export interface CanvasViewport {
   year_min: number;
   year_max: number;

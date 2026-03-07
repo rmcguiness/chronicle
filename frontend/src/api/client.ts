@@ -5,6 +5,7 @@ import type {
   TileResponse,
   SearchResult,
   CausalityLink,
+  CausalPathResponse,
   CanvasViewport,
   Perspective,
   ConnectedEvent,
@@ -569,6 +570,28 @@ export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
   }
 
   return MOCK_LINKS;
+}
+
+/**
+ * Find the shortest causal path between two events via BFS.
+ * Returns null if the backend is unavailable.
+ */
+export async function fetchCausalPath(
+  startSlug: string,
+  endSlug: string,
+): Promise<CausalPathResponse | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.post<CausalPathResponse>('/api/events/causal-path', {
+      start_slug: startSlug,
+      end_slug: endSlug,
+    });
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 /**

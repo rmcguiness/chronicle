@@ -37,8 +37,14 @@ import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
-import type { HistoricalEvent, CausalityLink } from '../types';
+import type { HistoricalEvent, CausalityLink, CausalChainEventSummary } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
+
+/** Bright orange used to highlight causal path edges. */
+const PATH_HIGHLIGHT_COLOR = '#f97316';
+
+/** Opacity applied to non-path edges when a path is active. */
+const DIMMED_EDGE_OPACITY = 0.15;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -589,6 +595,11 @@ function NetworkViewInner() {
   // Consume pendingRfViewport from the store (set by scrubber body drag / permalink)
   const pendingRfViewport = useAppStore((s) => s.pendingRfViewport);
   const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
+
+  // Causal path finder state
+  const causalPath = useAppStore((s) => s.causalPath);
+  const pathStartSlug = useAppStore((s) => s.pathStartSlug);
+  const pathEndSlug = useAppStore((s) => s.pathEndSlug);
   const viewportYearMin = timeViewport.yearMin;
   const viewportYearMax = timeViewport.yearMax;
 
@@ -665,6 +676,74 @@ function NetworkViewInner() {
     setNodes(rfNodes);
     setEdges(rfEdges);
   }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+
+  // Overlay causal path highlighting onto existing nodes/edges
+  useEffect(() => {
+    if (causalPath.length === 0 && !pathStartSlug) return; // no path mode active
+
+    const pathIdSet = new Set(causalPath.map((e: CausalChainEventSummary) => e.id));
+    const hasPath = pathIdSet.size > 0;
+
+    // Build set of consecutive edge pairs in the path for edge highlighting
+    const pathEdgePairs = new Set<string>();
+    for (let i = 0; i < causalPath.length - 1; i++) {
+      const a = causalPath[i].id;
+      const b = causalPath[i + 1].id;
+      // Edges can go either direction (cause→effect or effect→cause)
+      pathEdgePairs.add(`${a}:${b}`);
+      pathEdgePairs.add(`${b}:${a}`);
+    }
+
+    // Find slug→id mapping from current nodes
+    const slugToId = new Map<string, string>();
+    setNodes((prev: Node[]) => {
+      for (const n of prev) {
+        const d = n.data as Record<string, unknown>;
+        if (d.slug) slugToId.set(d.slug as string, n.id);
+      }
+
+      return prev.map((node: Node) => {
+        const d = node.data as Record<string, unknown>;
+        const slug = d.slug as string | undefined;
+        let pathBadge: string | undefined;
+        if (slug === pathStartSlug) pathBadge = 'Start';
+        else if (slug === pathEndSlug) pathBadge = 'End';
+
+        const pathDimmed = hasPath && !pathIdSet.has(node.id);
+
+        return {
+          ...node,
+          data: { ...d, pathBadge, pathDimmed },
+        };
+      });
+    });
+
+    if (hasPath) {
+      setEdges((prev: Edge[]) =>
+        prev.map((edge: Edge) => {
+          const key = `${edge.source}:${edge.target}`;
+          const isPathEdge = pathEdgePairs.has(key);
+
+          if (isPathEdge) {
+            return {
+              ...edge,
+              style: { ...edge.style, stroke: PATH_HIGHLIGHT_COLOR, strokeWidth: 3, opacity: 1 },
+              markerEnd: {
+                ...(edge.markerEnd as Record<string, unknown>),
+                color: PATH_HIGHLIGHT_COLOR,
+              },
+              zIndex: 10,
+            };
+          }
+          return {
+            ...edge,
+            style: { ...edge.style, opacity: DIMMED_EDGE_OPACITY },
+            zIndex: 0,
+          };
+        }),
+      );
+    }
+  }, [causalPath, pathStartSlug, pathEndSlug, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {

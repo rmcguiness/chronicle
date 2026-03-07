@@ -24,9 +24,12 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import PathFinderButton from './components/PathFinderButton';
+import PathBreadcrumb from './components/PathBreadcrumb';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
+import { useCausalPath } from './hooks/useCausalPath';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -45,6 +48,8 @@ const queryClient = new QueryClient({
 function MainView() {
   // Activates hash ↔ store sync: read on mount, write on change, listen for hashchange
   usePermalink();
+  // Wires up the causal path finder auto-fetch
+  useCausalPath();
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
@@ -60,11 +65,17 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Path finder toolbar button */}
+      <PathFinderButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
+
+      {/* Causal path breadcrumb trail (above timeline) */}
+      <PathBreadcrumb />
 
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}
