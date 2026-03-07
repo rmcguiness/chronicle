@@ -34,6 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
+import HeatmapOverlay from './HeatmapOverlay';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
@@ -579,6 +580,9 @@ function NetworkViewInner() {
   const timeViewport = useAppStore((s) => s.timeViewport);
   const setTimeViewport = useAppStore((s) => s.setTimeViewport);
 
+  // Heatmap overlay toggle
+  const showHeatmap = useAppStore((s) => s.showHeatmap);
+
   // Keep store's rfViewport in sync with the ReactFlow camera
   const setRfViewportStore = useAppStore((s) => s.setRfViewport);
 
@@ -785,6 +789,16 @@ function NetworkViewInner() {
 
       {/* Fixed timeline spine overlay — always at 50 % viewport height */}
       <NetworkTimeline viewport={viewport} />
+
+      {/* Density heatmap overlay — toggled from toolbar */}
+      {showHeatmap && (
+        <HeatmapOverlay
+          nodes={nodes}
+          viewport={viewport}
+          yearMin={viewportYearMin}
+          yearMax={viewportYearMax}
+        />
+      )}
 
       {/* Year-axis info label */}
       <div

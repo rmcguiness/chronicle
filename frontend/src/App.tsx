@@ -24,6 +24,7 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import HeatmapToggle from './components/HeatmapToggle';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -59,6 +60,9 @@ function MainView() {
 
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
+
+      {/* Heatmap toggle button (toolbar) */}
+      <HeatmapToggle />
 
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
