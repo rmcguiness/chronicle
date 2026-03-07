@@ -1,6 +1,7 @@
 """
 GET /api/events/{slug}             — full event detail with perspectives + connected events
 GET /api/events/{slug}/connections — causality connections (flat list)
+GET /api/events/{slug}/followon    — events in the 50 years after this event
 GET /api/events/{slug}/article     — Wikipedia article summary for an event
 GET /api/events/{slug}/wiki        — Wikipedia summary (cached, TTL 7 days)
 """
@@ -329,6 +330,86 @@ async def get_connections(
             for lnk in links
         ]
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Follow-on events — "What happened next?" within 50 years
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class FollowOnEventItem(BaseModel):
+    """A single event returned by the follow-on endpoint."""
+
+    id: UUID
+    title: str
+    slug: str
+    year_approx: int | None
+    date_display: str | None
+    category: str | None
+    importance_score: float
+    region: str | None
+
+
+@router.get("/{slug}/followon", response_model=list[FollowOnEventItem])
+async def get_followon_events(
+    slug: str,
+    same_region: bool = Query(default=False, description="Only return events in the same region"),
+    db: AsyncSession = Depends(get_db),
+) -> list[FollowOnEventItem]:
+    """Return up to 10 events in the 1–50 years after the given event, ordered by importance."""
+    # Look up the source event
+    src_stmt = select(Event.id, Event.year_approx, Event.geo_modern).where(Event.slug == slug)
+    src_result = await db.execute(src_stmt)
+    src_row = src_result.fetchone()
+    if not src_row:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    if src_row.year_approx is None:
+        return []
+
+    year_start = src_row.year_approx + 1
+    year_end = src_row.year_approx + 50
+
+    stmt = (
+        select(
+            Event.id,
+            Event.title,
+            Event.slug,
+            Event.year_approx,
+            Event.date_exact,
+            Event.event_category,
+            Event.importance_score,
+            Event.geo_modern,
+        )
+        .where(
+            Event.year_approx.isnot(None),
+            Event.year_approx >= year_start,
+            Event.year_approx <= year_end,
+            Event.id != src_row.id,
+        )
+        .order_by(Event.importance_score.desc())
+        .limit(10)
+    )
+
+    if same_region and src_row.geo_modern:
+        stmt = stmt.where(Event.geo_modern == src_row.geo_modern)
+
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    return [
+        FollowOnEventItem(
+            id=row.id,
+            title=row.title,
+            slug=row.slug,
+            year_approx=row.year_approx,
+            date_display=row.date_exact,
+            category=row.event_category,
+            importance_score=row.importance_score,
+            region=row.geo_modern,
+        )
+        for row in rows
+    ]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

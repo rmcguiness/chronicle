@@ -23,6 +23,7 @@ import TimelineScrubber from './components/TimelineScrubber';
 import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
+import FollowOnPanel from './components/FollowOnPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
@@ -65,6 +66,9 @@ function MainView() {
 
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
+
+      {/* Follow-on events panel (slides in left of detail panel) */}
+      <FollowOnPanel />
 
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}

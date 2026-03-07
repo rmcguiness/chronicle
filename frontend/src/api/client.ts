@@ -552,6 +552,35 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
   return data;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Follow-on events ("What happened next?")
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event returned by the follow-on endpoint. */
+export interface FollowOnEvent {
+  id: string;
+  title: string;
+  slug: string;
+  year_approx: number | null;
+  date_display: string | null;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+}
+
+/**
+ * Fetch up to 10 events in the 1–50 years after a given event.
+ */
+export async function fetchFollowOnEvents(
+  slug: string,
+  sameRegion = false,
+): Promise<FollowOnEvent[]> {
+  const { data } = await api.get<FollowOnEvent[]>(`/api/events/${slug}/followon`, {
+    params: { same_region: sameRegion },
+  });
+  return data;
+}
+
 /**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.
