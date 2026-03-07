@@ -39,6 +39,99 @@ router = APIRouter(prefix="/api/events", tags=["events"])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Era summary — aggregate stats for a year range (decade/century)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class EraSummaryTopEvent(BaseModel):
+    title: str
+    importance_score: float
+    slug: str
+
+
+class EraSummaryResponse(BaseModel):
+    event_count: int
+    top_events: list[EraSummaryTopEvent]
+    categories: dict[str, int]
+    avg_importance: float
+
+
+@router.get("/era-summary", response_model=EraSummaryResponse)
+async def era_summary(
+    year_from: int = Query(..., description="Start year (inclusive)"),
+    year_to: int = Query(..., description="End year (inclusive)"),
+    db: AsyncSession = Depends(get_db),
+) -> EraSummaryResponse:
+    """Aggregate event statistics for a year range."""
+    # Category breakdown
+    cat_stmt = (
+        select(
+            Event.event_category,
+            func.count().label("cnt"),
+        )
+        .where(
+            Event.year_approx.isnot(None),
+            Event.year_approx >= year_from,
+            Event.year_approx <= year_to,
+            Event.review_status == "approved",
+        )
+        .group_by(Event.event_category)
+    )
+    cat_result = await db.execute(cat_stmt)
+    cat_rows = cat_result.fetchall()
+
+    categories: dict[str, int] = {}
+    event_count = 0
+    for row in cat_rows:
+        key = row.event_category or "other"
+        categories[key] = row.cnt
+        event_count += row.cnt
+
+    # Top 5 events by importance
+    top_stmt = (
+        select(Event.title, Event.importance_score, Event.slug)
+        .where(
+            Event.year_approx.isnot(None),
+            Event.year_approx >= year_from,
+            Event.year_approx <= year_to,
+            Event.review_status == "approved",
+        )
+        .order_by(Event.importance_score.desc())
+        .limit(5)
+    )
+    top_result = await db.execute(top_stmt)
+    top_rows = top_result.fetchall()
+    top_events = [
+        EraSummaryTopEvent(
+            title=row.title,
+            importance_score=row.importance_score,
+            slug=row.slug,
+        )
+        for row in top_rows
+    ]
+
+    # Average importance
+    avg_stmt = (
+        select(func.avg(Event.importance_score))
+        .where(
+            Event.year_approx.isnot(None),
+            Event.year_approx >= year_from,
+            Event.year_approx <= year_to,
+            Event.review_status == "approved",
+        )
+    )
+    avg_result = await db.execute(avg_stmt)
+    avg_importance = float(avg_result.scalar() or 0)
+
+    return EraSummaryResponse(
+        event_count=event_count,
+        top_events=top_events,
+        categories=categories,
+        avg_importance=round(avg_importance, 3),
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # On This Day — events matching a given month/day across all years
 # ─────────────────────────────────────────────────────────────────────────────
 

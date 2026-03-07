@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  EraSummary,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -586,4 +587,21 @@ export async function fetchWikiData(
     summary: result.summary,
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Era Summary
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function fetchEraSummary(yearFrom: number, yearTo: number): Promise<EraSummary | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+  try {
+    const { data } = await api.get<EraSummary>('/api/events/era-summary', {
+      params: { year_from: yearFrom, year_to: yearTo },
+    });
+    return data;
+  } catch {
+    return null;
+  }
 }

@@ -174,6 +174,21 @@ export interface SearchResult {
   lng: number;
 }
 
+// ─── Era Summary ──────────────────────────────────────────────────────────────
+
+export interface EraSummaryTopEvent {
+  title: string;
+  importance_score: number;
+  slug: string;
+}
+
+export interface EraSummary {
+  event_count: number;
+  top_events: EraSummaryTopEvent[];
+  categories: Record<string, number>;
+  avg_importance: number;
+}
+
 export interface CanvasTransform {
   x: number;
   y: number;

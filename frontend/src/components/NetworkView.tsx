@@ -34,6 +34,8 @@ import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
+import EraSummaryTooltip from './EraSummaryTooltip';
+
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
@@ -875,6 +877,9 @@ function NetworkViewInner() {
           </span>
         </div>
       )}
+
+      {/* Era summary tooltip — appears on 800ms hover over canvas background */}
+      <EraSummaryTooltip containerRef={wrapperRef} />
     </div>
   );
 }
