@@ -24,6 +24,7 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import EraNav from './components/EraNav';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -56,6 +57,9 @@ function MainView() {
 
       {/* Category legend (top-left) */}
       <CategoryLegend />
+
+      {/* Era navigation dropdown (toolbar) */}
+      <EraNav />
 
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
