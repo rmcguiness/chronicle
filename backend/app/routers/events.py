@@ -1,6 +1,8 @@
 """
+GET /api/events/most-connected     — top 20 events by total causal link count
 GET /api/events/{slug}             — full event detail with perspectives + connected events
 GET /api/events/{slug}/connections — causality connections (flat list)
+GET /api/events/{slug}/connection-count — incoming/outgoing/total connection counts
 GET /api/events/{slug}/article     — Wikipedia article summary for an event
 GET /api/events/{slug}/wiki        — Wikipedia summary (cached, TTL 7 days)
 """
@@ -121,6 +123,84 @@ async def on_this_day(
     ]
 
     return OnThisDayResponse(month=m, day=d, events=events_out)
+
+
+class MostConnectedItem(BaseModel):
+    """A single row in the most-connected leaderboard."""
+
+    slug: str
+    title: str
+    year_approx: int | None
+    total_connections: int
+
+
+class MostConnectedResponse(BaseModel):
+    """Top N events ranked by total causal link count."""
+
+    events: list[MostConnectedItem]
+
+
+@router.get("/most-connected", response_model=MostConnectedResponse)
+async def most_connected(
+    db: AsyncSession = Depends(get_db),
+) -> MostConnectedResponse:
+    """Return the top 20 events ranked by total causal-link count."""
+    cause_count = (
+        select(
+            CausalityLink.cause_event_id.label("event_id"),
+            func.count().label("cnt"),
+        )
+        .group_by(CausalityLink.cause_event_id)
+        .subquery()
+    )
+    effect_count = (
+        select(
+            CausalityLink.effect_event_id.label("event_id"),
+            func.count().label("cnt"),
+        )
+        .group_by(CausalityLink.effect_event_id)
+        .subquery()
+    )
+
+    total = func.coalesce(cause_count.c.cnt, 0) + func.coalesce(effect_count.c.cnt, 0)
+
+    stmt = (
+        select(
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            total.label("total_connections"),
+        )
+        .outerjoin(cause_count, cause_count.c.event_id == Event.id)
+        .outerjoin(effect_count, effect_count.c.event_id == Event.id)
+        .where(total > 0)
+        .order_by(total.desc())
+        .limit(20)
+    )
+
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    return MostConnectedResponse(
+        events=[
+            MostConnectedItem(
+                slug=row.slug,
+                title=row.title,
+                year_approx=row.year_approx,
+                total_connections=row.total_connections,
+            )
+            for row in rows
+        ]
+    )
+
+
+class ConnectionCountResponse(BaseModel):
+    """Incoming / outgoing / total connection counts for an event."""
+
+    slug: str
+    incoming: int
+    outgoing: int
+    total: int
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:
@@ -328,6 +408,42 @@ async def get_connections(
             )
             for lnk in links
         ]
+    )
+
+
+@router.get("/{slug}/connection-count", response_model=ConnectionCountResponse)
+async def get_connection_count(
+    slug: str, db: AsyncSession = Depends(get_db)
+) -> ConnectionCountResponse:
+    """Return incoming, outgoing, and total connection counts for an event."""
+    event_stmt = select(Event.id).where(Event.slug == slug)
+    result = await db.execute(event_stmt)
+    row = result.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+    event_id: UUID = row[0]
+
+    outgoing_stmt = (
+        select(func.count())
+        .select_from(CausalityLink)
+        .where(CausalityLink.cause_event_id == event_id)
+    )
+    incoming_stmt = (
+        select(func.count())
+        .select_from(CausalityLink)
+        .where(CausalityLink.effect_event_id == event_id)
+    )
+
+    out_result = await db.execute(outgoing_stmt)
+    in_result = await db.execute(incoming_stmt)
+    outgoing = out_result.scalar() or 0
+    incoming = in_result.scalar() or 0
+
+    return ConnectionCountResponse(
+        slug=slug,
+        incoming=incoming,
+        outgoing=outgoing,
+        total=incoming + outgoing,
     )
 
 

@@ -571,6 +571,48 @@ export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
   return MOCK_LINKS;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Connection count & most-connected
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ConnectionCount {
+  slug: string;
+  incoming: number;
+  outgoing: number;
+  total: number;
+}
+
+export async function fetchConnectionCount(slug: string): Promise<ConnectionCount | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<ConnectionCount>(`/api/events/${slug}/connection-count`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+export interface MostConnectedEvent {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  total_connections: number;
+}
+
+export async function fetchMostConnected(): Promise<MostConnectedEvent[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+
+  try {
+    const { data } = await api.get<{ events: MostConnectedEvent[] }>('/api/events/most-connected');
+    return data.events ?? [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Fetch Wikipedia data for an event, returning a WikiData | WikiDataNotFound
  * discriminated union compatible with EventDetailPage.

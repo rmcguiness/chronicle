@@ -24,6 +24,7 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import MostConnectedPanel from './components/MostConnectedPanel';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -65,6 +66,9 @@ function MainView() {
 
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
+
+      {/* Most connected events panel (bottom-left) */}
+      <MostConnectedPanel />
 
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}

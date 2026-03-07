@@ -6,6 +6,7 @@ import { dateToFractionalYear } from "../utils/timeScale";
 import type { HistoricalEvent } from "../types";
 import { CANVAS_CONSTANTS } from "../types";
 import { useAppStore } from "../store";
+import ConnectionsBadge from "./ConnectionsBadge";
 
 function EventNode({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
@@ -192,6 +193,8 @@ function EventNode({ data: rawData, selected }: NodeProps) {
             {data.title}
           </span>
         )}
+        {/* Connection count badge — bottom-right corner */}
+        <ConnectionsBadge slug={data.slug} nodeSize={size} />
       </div>
 
       {/* Label below node — only for circles; pills show title inside their shape */}
