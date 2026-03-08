@@ -3,6 +3,7 @@ GET /api/events/{slug}             — full event detail with perspectives + con
 GET /api/events/{slug}/connections — causality connections (flat list)
 GET /api/events/{slug}/article     — Wikipedia article summary for an event
 GET /api/events/{slug}/wiki        — Wikipedia summary (cached, TTL 7 days)
+GET /api/events/{slug}/world-context — nearby world events grouped by region
 """
 from __future__ import annotations
 
@@ -121,6 +122,160 @@ async def on_this_day(
     ]
 
     return OnThisDayResponse(month=m, day=d, events=events_out)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# World Context — events happening around the same time, grouped by region
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _classify_region(lat: float, lng: float) -> str:
+    """Classify a lat/lng pair into a broad world region label."""
+    if lng < -25:
+        return "Americas"
+    if lng > 65:
+        return "Asia"
+    if lat >= 35:
+        return "Europe"
+    if lat < 35:
+        return "Middle East & Africa"
+    return "Global"
+
+
+class WorldContextEventItem(BaseModel):
+    """A single event in the world-context response."""
+
+    id: UUID
+    slug: str
+    title: str
+    year_approx: int | None
+    category: str | None
+    importance_score: float
+    region: str | None
+
+
+class WorldContextRegionGroup(BaseModel):
+    """A group of events within a single region."""
+
+    region: str
+    events: list[WorldContextEventItem]
+
+
+class WorldContextCenterEvent(BaseModel):
+    """Minimal info about the selected center event."""
+
+    slug: str
+    title: str
+    year_approx: int | None
+
+
+class WorldContextResponse(BaseModel):
+    """Response for GET /api/events/{slug}/world-context."""
+
+    center_event: WorldContextCenterEvent
+    window_years: int
+    regions: list[WorldContextRegionGroup]
+
+
+@router.get("/{slug}/world-context", response_model=WorldContextResponse)
+async def get_world_context(
+    slug: str,
+    window_years: int = Query(default=25, ge=1, le=500, description="Year window (±)"),
+    db: AsyncSession = Depends(get_db),
+) -> WorldContextResponse:
+    """Return nearby world events (±window_years) grouped by region.
+
+    Finds all events whose year_approx is within the given window of the
+    selected event, ordered by importance_score descending, limited to 12.
+    Results are grouped by geographic region derived from lat/lng.
+    """
+    # 1. Find the center event
+    center_stmt = select(
+        Event.id, Event.slug, Event.title, Event.year_approx
+    ).where(Event.slug == slug)
+    center_result = await db.execute(center_stmt)
+    center_row = center_result.fetchone()
+    if center_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    if center_row.year_approx is None:
+        return WorldContextResponse(
+            center_event=WorldContextCenterEvent(
+                slug=center_row.slug,
+                title=center_row.title,
+                year_approx=center_row.year_approx,
+            ),
+            window_years=window_years,
+            regions=[],
+        )
+
+    # 2. Query nearby events (excluding the center event itself)
+    nearby_stmt = (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.event_category,
+            Event.importance_score,
+            Event.geo_modern,
+            ST_X(Event.geo_point).label("lng"),
+            ST_Y(Event.geo_point).label("lat"),
+        )
+        .where(
+            Event.year_approx.isnot(None),
+            Event.slug != slug,
+            func.abs(Event.year_approx - center_row.year_approx) <= window_years,
+        )
+        .order_by(Event.importance_score.desc())
+        .limit(12)
+    )
+    result = await db.execute(nearby_stmt)
+    rows = result.fetchall()
+
+    # 3. Group by region
+    region_map: dict[str, list[WorldContextEventItem]] = {}
+    for row in rows:
+        lat = float(row.lat) if row.lat is not None else None
+        lng = float(row.lng) if row.lng is not None else None
+        if lat is not None and lng is not None:
+            region = _classify_region(lat, lng)
+        else:
+            region = row.geo_modern or "Unknown"
+
+        item = WorldContextEventItem(
+            id=row.id,
+            slug=row.slug,
+            title=row.title,
+            year_approx=row.year_approx,
+            category=row.event_category,
+            importance_score=row.importance_score,
+            region=region,
+        )
+        region_map.setdefault(region, []).append(item)
+
+    # Sort region groups: Europe first, then alphabetical
+    region_order = ["Europe", "Americas", "Asia", "Middle East & Africa", "Global"]
+    sorted_regions = sorted(
+        region_map.items(),
+        key=lambda kv: (
+            region_order.index(kv[0]) if kv[0] in region_order else len(region_order),
+            kv[0],
+        ),
+    )
+
+    return WorldContextResponse(
+        center_event=WorldContextCenterEvent(
+            slug=center_row.slug,
+            title=center_row.title,
+            year_approx=center_row.year_approx,
+        ),
+        window_years=window_years,
+        regions=[
+            WorldContextRegionGroup(region=region, events=events)
+            for region, events in sorted_regions
+        ],
+    )
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:

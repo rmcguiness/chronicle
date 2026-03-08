@@ -552,6 +552,59 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
   return data;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// World Context
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event in a world-context region group. */
+export interface WorldContextEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+}
+
+/** A group of events within a single region. */
+export interface WorldContextRegionGroup {
+  region: string;
+  events: WorldContextEvent[];
+}
+
+/** Response shape from GET /api/events/{slug}/world-context. */
+export interface WorldContextResponse {
+  center_event: { slug: string; title: string; year_approx: number | null };
+  window_years: number;
+  regions: WorldContextRegionGroup[];
+}
+
+/**
+ * Fetch nearby world events grouped by region for a given event.
+ * Returns null if the backend is unavailable.
+ *
+ * @param slug - Event slug to find context for
+ * @param windowYears - Year window (±), defaults to 25
+ */
+export async function fetchWorldContext(
+  slug: string,
+  windowYears = 25,
+): Promise<WorldContextResponse | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<WorldContextResponse>(
+      `/api/events/${slug}/world-context`,
+      { params: { window_years: windowYears } },
+    );
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.

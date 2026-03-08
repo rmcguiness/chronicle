@@ -24,6 +24,8 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import WorldContextPanel from './components/WorldContextPanel';
+import WorldContextButton from './components/WorldContextButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -60,11 +62,17 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* World Context button (toolbar, visible when event selected) */}
+      <WorldContextButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
+
+      {/* World Context slide-in panel */}
+      <WorldContextPanel />
 
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}
