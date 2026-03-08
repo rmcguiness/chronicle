@@ -757,7 +757,7 @@ function NetworkViewInner() {
         edgeTypes={EDGE_TYPES}
         minZoom={0.3}
         maxZoom={4}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
+        /* fitView replaces defaultViewport for consistent initial framing across screen sizes */
         fitView
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}

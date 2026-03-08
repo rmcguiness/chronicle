@@ -32,6 +32,15 @@ import type { ConnectionType } from '../types';
 /** Minimum stroke width in screen pixels, prevents edges from vanishing at low zoom. */
 const MIN_STROKE_WIDTH_PX = 2;
 
+/** Base arrowhead size in canvas pixels before zoom compensation. */
+const ARROWHEAD_BASE_SIZE = 8;
+
+/** Minimum arrowhead size in screen pixels, prevents arrows from vanishing at low zoom. */
+const MIN_ARROWHEAD_SCREEN_PX = 6;
+
+/** Opening half-angle (radians) of the arrowhead triangle. */
+const ARROWHEAD_HALF_ANGLE = Math.PI * 0.8;
+
 /** Dash array length for the animated "causes" edges. */
 const CAUSES_DASH_LENGTH = 10;
 
@@ -85,7 +94,6 @@ function CausalityEdge({
   targetX,
   targetY,
   data: rawData,
-  markerEnd,
 }: EdgeProps) {
   const data = rawData as CausalityEdgeData | undefined;
   const [hovered, setHovered] = useState(false);
@@ -152,6 +160,20 @@ function CausalityEdge({
   const baseStrokeWidth = Math.max(1.5, strength * 4);
   const strokeWidth = Math.max(baseStrokeWidth, MIN_STROKE_WIDTH_PX / zoom);
 
+  /**
+   * Zoom-compensated arrowhead: size in canvas units is scaled inversely with
+   * zoom so the arrow stays at least MIN_ARROWHEAD_SCREEN_PX on screen. This
+   * replaces the fixed-size markerEnd which becomes invisible at zoom < 0.3.
+   */
+  const arrowSize = Math.max(ARROWHEAD_BASE_SIZE, MIN_ARROWHEAD_SCREEN_PX / zoom);
+  const arrowAngle = Math.atan2(ny, nx);
+  const arrowTipX = floatTargetX;
+  const arrowTipY = floatTargetY;
+  const baseX1 = arrowTipX + Math.cos(arrowAngle + ARROWHEAD_HALF_ANGLE) * arrowSize;
+  const baseY1 = arrowTipY + Math.sin(arrowAngle + ARROWHEAD_HALF_ANGLE) * arrowSize;
+  const baseX2 = arrowTipX + Math.cos(arrowAngle - ARROWHEAD_HALF_ANGLE) * arrowSize;
+  const baseY2 = arrowTipY + Math.sin(arrowAngle - ARROWHEAD_HALF_ANGLE) * arrowSize;
+
   const isCauses = connectionType === 'causes';
   const isContext = connectionType === 'context';
 
@@ -185,7 +207,6 @@ function CausalityEdge({
       <BaseEdge
         id={id}
         path={edgePath}
-        markerEnd={markerEnd as string}
         style={{
           stroke: hovered ? '#ffffff' : color,
           strokeWidth: hovered ? strokeWidth + 1 : strokeWidth,
@@ -203,6 +224,13 @@ function CausalityEdge({
           transition: 'stroke 0.15s, opacity 0.15s',
           pointerEvents: 'none',
         }}
+      />
+
+      {/* Custom arrowhead — scales inversely with zoom so it stays visible */}
+      <polygon
+        points={`${arrowTipX},${arrowTipY} ${baseX1},${baseY1} ${baseX2},${baseY2}`}
+        fill={hovered ? '#ffffff' : color}
+        style={{ pointerEvents: 'none', transition: 'fill 0.15s' }}
       />
 
       {/* Hover tooltip — shows connection type + optional description */}

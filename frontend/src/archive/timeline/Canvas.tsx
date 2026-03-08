@@ -88,6 +88,13 @@ const LABEL_STRIP_WIDTH = 72;
 /** Duration (ms) for the band collapse/expand CSS height transition. */
 const BAND_TRANSITION_MS = 220;
 
+/**
+ * Minimum screen-space height (px) a band must reach before the rotated
+ * region label is rendered.  Below this threshold the label overlaps
+ * neighbouring bands or becomes unreadable, so we hide it entirely.
+ */
+const MIN_LABEL_BAND_HEIGHT_PX = 60;
+
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
@@ -395,11 +402,20 @@ function SwimLaneOverlay({ rfTransform, bandLayout, collapsedBands, onToggleBand
               </span>
             </button>
 
-            {!isCollapsed && (
+            {/* Rotated label — hidden when band is too short to avoid overlap */}
+            {!isCollapsed && screenHeight >= MIN_LABEL_BAND_HEIGHT_PX && (
               <div
                 style={{
                   position: 'absolute',
-                  top: screenHeight / 2,
+                  /*
+                   * Clamp label Y so it stays within the visible band area,
+                   * below the collapse button (COLLAPSED_BAND_HEIGHT_PX) and
+                   * above the bottom edge.
+                   */
+                  top: Math.min(
+                    Math.max(COLLAPSED_BAND_HEIGHT_PX + 10, screenHeight / 2),
+                    screenHeight - 10,
+                  ),
                   left: 8,
                   transform: 'translateY(-50%) rotate(-90deg)',
                   transformOrigin: 'center center',
