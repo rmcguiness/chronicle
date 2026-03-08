@@ -182,6 +182,7 @@ class SearchResultItem(BaseModel):
     lat: Optional[float] = None
     lng: Optional[float] = None
     score: float = 1.0
+    result_type: str = "event"             # "event" or "person"
 
 
 class SearchResponse(BaseModel):

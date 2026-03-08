@@ -16,7 +16,7 @@ import type { SearchResult } from '../types';
 const SEARCH_RESULTS_MAX_HEIGHT_PX = 360;
 
 /** Debounce delay in ms for search input. */
-const DEBOUNCE_DELAY_MS = 300;
+const DEBOUNCE_DELAY_MS = 250;
 
 /** Minimum query length to trigger search. */
 const MIN_QUERY_LENGTH = 2;
@@ -319,8 +319,21 @@ export default function SearchBar() {
 
                   {/* Text */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
                       {result.title}
+                      <span style={{
+                        fontSize: 9,
+                        fontWeight: 600,
+                        padding: '1px 6px',
+                        borderRadius: 9,
+                        backgroundColor: result.result_type === 'person' ? 'rgba(34,197,94,0.2)' : 'rgba(59,130,246,0.2)',
+                        color: result.result_type === 'person' ? '#4ade80' : '#60a5fa',
+                        flexShrink: 0,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}>
+                        {result.result_type === 'person' ? 'person' : 'event'}
+                      </span>
                     </div>
                     <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
                       {result.year_approx}

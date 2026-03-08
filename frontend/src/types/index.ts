@@ -172,6 +172,7 @@ export interface SearchResult {
   importance_score: number;
   lat: number;
   lng: number;
+  result_type?: 'event' | 'person';
 }
 
 export interface CanvasTransform {
