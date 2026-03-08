@@ -1,4 +1,5 @@
 """
+GET /api/events/this-week          — top 3 notable events near today's date across history
 GET /api/events/{slug}             — full event detail with perspectives + connected events
 GET /api/events/{slug}/connections — causality connections (flat list)
 GET /api/events/{slug}/article     — Wikipedia article summary for an event
@@ -36,6 +37,98 @@ from app.services.wiki_service import fetch_wikipedia_summary
 _WIKI_CACHE_TTL = timedelta(days=7)
 
 router = APIRouter(prefix="/api/events", tags=["events"])
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# This Week in History — top 3 notable events within ±3 days of today
+# ─────────────────────────────────────────────────────────────────────────────
+
+_THIS_WEEK_CACHE_TTL = timedelta(hours=24)
+_this_week_cache: dict[str, tuple[datetime, "ThisWeekResponse"]] = {}
+
+
+class ThisWeekEventItem(BaseModel):
+    """A single event item returned by the This Week endpoint."""
+
+    id: UUID
+    title: str
+    year_approx: int | None
+    category: str | None
+    importance_score: float
+    date_display: str | None
+
+
+class ThisWeekResponse(BaseModel):
+    """Response wrapper for the This Week in History endpoint."""
+
+    events: list[ThisWeekEventItem]
+
+
+@router.get("/this-week", response_model=ThisWeekResponse)
+async def this_week_in_history(
+    db: AsyncSession = Depends(get_db),
+) -> ThisWeekResponse:
+    """Return up to 3 notable events whose date_exact falls within ±3 days of today's
+    month/day across all years, sorted by importance_score descending.
+
+    Results are cached in memory for 24 hours.
+    """
+    now = datetime.now(tz=timezone.utc)
+    cache_key = f"{now.month}-{now.day}"
+
+    # Check cache
+    if cache_key in _this_week_cache:
+        cached_at, cached_response = _this_week_cache[cache_key]
+        if (now - cached_at) < _THIS_WEEK_CACHE_TTL:
+            return cached_response
+
+    # Build the set of (month, day) pairs within ±3 days of today
+    day_pairs: list[tuple[int, int]] = []
+    for offset in range(-3, 4):
+        d = now + timedelta(days=offset)
+        day_pairs.append((d.month, d.day))
+
+    date_col = func.cast(Event._date_exact, func.DATE)
+
+    # OR together month/day matches for each day in the window
+    day_filters = [
+        (extract("month", date_col) == m) & (extract("day", date_col) == d)
+        for m, d in day_pairs
+    ]
+
+    stmt = (
+        select(
+            Event.id,
+            Event.title,
+            Event.year_approx,
+            Event.event_category,
+            Event.importance_score,
+            Event.date_exact,
+        )
+        .where(Event._date_exact.isnot(None), or_(*day_filters))
+        .order_by(Event.importance_score.desc())
+        .limit(3)
+    )
+
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    response = ThisWeekResponse(
+        events=[
+            ThisWeekEventItem(
+                id=row.id,
+                title=row.title,
+                year_approx=row.year_approx,
+                category=row.event_category,
+                importance_score=row.importance_score,
+                date_display=row.date_exact,
+            )
+            for row in rows
+        ]
+    )
+
+    _this_week_cache[cache_key] = (now, response)
+    return response
 
 
 # ─────────────────────────────────────────────────────────────────────────────
