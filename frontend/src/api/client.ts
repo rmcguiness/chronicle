@@ -587,3 +587,31 @@ export async function fetchWikiData(
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
 }
+
+/** Response shape from GET /api/events/{slug}/wiki (DB-cached Wikipedia summary). */
+export interface WikiSummaryResponse {
+  found: boolean;
+  wiki_url?: string | null;
+  wiki_title?: string | null;
+  summary?: string | null;
+  thumbnail_url?: string | null;
+  thumbnail_width?: number | null;
+  thumbnail_height?: number | null;
+  fetched_at?: string | null;
+}
+
+/**
+ * Fetch the DB-cached Wikipedia summary for an event.
+ * Returns the full summary response including thumbnail metadata.
+ */
+export async function fetchWikiSummary(slug: string): Promise<WikiSummaryResponse | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<WikiSummaryResponse>(`/api/events/${slug}/wiki`);
+    return data;
+  } catch {
+    return null;
+  }
+}

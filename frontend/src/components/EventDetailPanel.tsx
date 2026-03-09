@@ -10,8 +10,8 @@
  */
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchEventDetail, fetchArticle } from '../api/client';
-import type { ArticleResponse } from '../api/client';
+import { fetchEventDetail, fetchWikiSummary } from '../api/client';
+import type { WikiSummaryResponse } from '../api/client';
 import type { Perspective, ConnectedEvent, Source } from '../types';
 import { useAppStore } from '../store';
 import {
@@ -390,35 +390,34 @@ function ConnectedEventChip({ event }: { event: ConnectedEvent }) {
 
 /** Combined fetch state for ArticleContent — batched into one object to avoid
  *  synchronous multi-setState calls inside a useEffect (react-hooks/set-state-in-effect). */
-interface ArticleFetchState {
+interface WikiFetchState {
   loading: boolean;
   notFound: boolean;
-  article: ArticleResponse | null;
+  wiki: WikiSummaryResponse | null;
 }
 
-/** Renders the Wikipedia article content or a fallback message. */
+/** Renders the Wikipedia article summary with optional thumbnail and source badge. */
 function ArticleContent({ slug }: { slug: string }) {
-  const [fetchState, setFetchState] = useState<ArticleFetchState>({
+  const [fetchState, setFetchState] = useState<WikiFetchState>({
     loading: true,
     notFound: false,
-    article: null,
+    wiki: null,
   });
 
-  const { loading, notFound, article } = fetchState;
+  const { loading, notFound, wiki } = fetchState;
 
   useEffect(() => {
     let cancelled = false;
-    // Reset all fetch state atomically before re-fetching. The single setState call avoids
-    // multiple cascade renders; the synchronous call is intentional (slug-change reset).
+    // Reset all fetch state atomically before re-fetching.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFetchState({ loading: true, notFound: false, article: null });
+    setFetchState({ loading: true, notFound: false, wiki: null });
 
-    fetchArticle(slug).then((result) => {
+    fetchWikiSummary(slug).then((result) => {
       if (cancelled) return;
-      if (!result || result.summary === null) {
-        setFetchState({ loading: false, notFound: true, article: null });
+      if (!result || !result.found) {
+        setFetchState({ loading: false, notFound: true, wiki: null });
       } else {
-        setFetchState({ loading: false, notFound: false, article: result });
+        setFetchState({ loading: false, notFound: false, wiki: result });
       }
     });
 
@@ -427,7 +426,42 @@ function ArticleContent({ slug }: { slug: string }) {
     };
   }, [slug]);
 
-  if (loading) return <Spinner />;
+  if (loading) {
+    return (
+      <div style={{ padding: '8px 0' }}>
+        {/* Loading skeleton */}
+        <div
+          style={{
+            height: 14,
+            width: '90%',
+            borderRadius: 4,
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            marginBottom: 8,
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
+        <div
+          style={{
+            height: 14,
+            width: '75%',
+            borderRadius: 4,
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            marginBottom: 8,
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
+        <div
+          style={{
+            height: 14,
+            width: '60%',
+            borderRadius: 4,
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
+      </div>
+    );
+  }
 
   if (notFound) {
     return (
@@ -437,38 +471,57 @@ function ArticleContent({ slug }: { slug: string }) {
     );
   }
 
-  if (!article) return null;
+  if (!wiki) return null;
 
   return (
     <div>
-      <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, margin: '0 0 12px' }}>
-        {article.summary}
-      </p>
-      {article.sections.map((section, i) => (
-        <div key={i} style={{ marginBottom: 12 }}>
-          <h4 style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px' }}>
-            {section.heading}
-          </h4>
-          <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, margin: 0 }}>
-            {section.content}
-          </p>
-        </div>
-      ))}
-      {article.source_url && (
+      {/* Thumbnail + summary row */}
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        {wiki.thumbnail_url && (
+          <img
+            src={wiki.thumbnail_url}
+            alt={wiki.wiki_title ?? ''}
+            width={wiki.thumbnail_width ? Math.min(wiki.thumbnail_width, 100) : 100}
+            style={{
+              borderRadius: 6,
+              flexShrink: 0,
+              objectFit: 'cover',
+              maxHeight: 100,
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          />
+        )}
+        <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, margin: 0, flex: 1 }}>
+          {wiki.summary}
+        </p>
+      </div>
+
+      {/* Wikipedia badge link */}
+      {wiki.wiki_url && (
         <a
-          href={article.source_url}
+          href={wiki.wiki_url}
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            fontSize: 11,
-            color: '#60a5fa',
-            textDecoration: 'none',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 4,
+            gap: 6,
+            marginTop: 10,
+            padding: '4px 10px',
+            borderRadius: 6,
+            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+            border: '1px solid rgba(96, 165, 250, 0.2)',
+            color: '#60a5fa',
+            fontSize: 11,
+            fontWeight: 600,
+            textDecoration: 'none',
+            transition: 'background 0.15s',
           }}
         >
-          Read more on Wikipedia →
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+            <path d="M12.09 13.119c-.14 1.064-.496 2.4-1.063 3.783-.567 1.383-1.28 2.96-1.81 3.775-.53.816-.963 1.323-1.413 1.323-.45 0-.883-.507-1.413-1.323-.53-.815-1.243-2.392-1.81-3.775-.567-1.383-.923-2.72-1.063-3.783-.14-1.064.009-1.724.009-1.724h8.554s.149.66.009 1.724zM19.2 3.975l-3.26 8.19h-1.665l2.865-7.19H15.3l-2.865 7.19H10.77l2.865-7.19H11.8L8.935 12.165H7.27l3.26-8.19h8.67z" />
+          </svg>
+          Wikipedia
         </a>
       )}
     </div>
@@ -489,6 +542,10 @@ function injectStyles(): void {
     @keyframes fadeSlideIn {
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
     }
   `;
   document.head.appendChild(style);
