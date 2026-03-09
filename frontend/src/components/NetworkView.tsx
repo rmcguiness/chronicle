@@ -32,10 +32,19 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
+import ClusterNode from './ClusterNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
+import {
+  getZoomTier,
+  clusterEvents,
+  CLUSTER_TIER1_WINDOW_YEARS,
+  CLUSTER_TIER2_WINDOW_YEARS,
+  type ZoomTier,
+  type ClusterResult,
+} from '../utils/cluster';
 import { useAppStore } from '../store';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
@@ -80,7 +89,7 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
 
-const NODE_TYPES = { event: EventNode };
+const NODE_TYPES = { event: EventNode, cluster: ClusterNode };
 const EDGE_TYPES = { causality: CausalityEdge };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -633,6 +642,25 @@ function NetworkViewInner() {
   // visible. Filtering by timeViewport caused nodes to disappear when panning.
   const filteredEvents = useMemo(() => allEvents, [allEvents]);
 
+  // Compute zoom tier based on visible time span (re-cluster only on tier change)
+  const timeSpan = viewportYearMax - viewportYearMin;
+  const zoomTier = useMemo(() => getZoomTier(timeSpan), [timeSpan]);
+  // Track previous tier to avoid re-clustering on every zoom frame
+  const prevTierRef = useRef<ZoomTier>(zoomTier);
+  const effectiveTier = useMemo(() => {
+    if (zoomTier !== prevTierRef.current) {
+      prevTierRef.current = zoomTier;
+    }
+    return zoomTier;
+  }, [zoomTier]);
+
+  // Cluster events when in Tier 1 or 2
+  const clusterResults: ClusterResult[] | null = useMemo(() => {
+    if (effectiveTier === 1) return clusterEvents(filteredEvents, CLUSTER_TIER1_WINDOW_YEARS);
+    if (effectiveTier === 2) return clusterEvents(filteredEvents, CLUSTER_TIER2_WINDOW_YEARS);
+    return null;
+  }, [filteredEvents, effectiveTier]);
+
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
   // Re-runs when the scrubber range changes so nodes reposition dynamically.
   useEffect(() => {
@@ -642,6 +670,53 @@ function NetworkViewInner() {
       return;
     }
 
+    // Tier 1 or 2: use clustered nodes
+    if (clusterResults) {
+      const maxClusterCount = clusterResults.reduce(
+        (max, r) => (r.type === 'cluster' ? Math.max(max, r.cluster.count) : max),
+        1,
+      );
+
+      const clusterNodes: Node[] = clusterResults.map((result) => {
+        if (result.type === 'single') {
+          const event = result.event;
+          const id = String(event.id);
+          return {
+            id,
+            type: 'event',
+            position: {
+              x: eventToX(event, viewportYearMin, viewportYearMax),
+              y: event.network_y ?? computeFallbackY(event),
+            },
+            data: { ...event, showLabel: false },
+            selectable: true,
+            draggable: false,
+          };
+        }
+        const { cluster } = result;
+        const rep = cluster.representative;
+        return {
+          id: `cluster-${cluster.binStart}`,
+          type: 'cluster',
+          position: {
+            x: eventToX(rep, viewportYearMin, viewportYearMax),
+            y: rep.network_y ?? computeFallbackY(rep),
+          },
+          data: { ...cluster, maxClusterCount },
+          selectable: false,
+          draggable: false,
+        };
+      });
+
+      // No edges shown in clustered view (too cluttered)
+      setNodes(clusterNodes);
+      setEdges([]);
+      return;
+    }
+
+    // Tier 3 and 4: individual events
+    const showDate = effectiveTier === 4;
+
     // Try precomputed DB layout first (instant, stable)
     const precomputed = buildFromPrecomputed(
       filteredEvents,
@@ -650,7 +725,12 @@ function NetworkViewInner() {
       viewportYearMax,
     );
     if (precomputed) {
-      setNodes(precomputed.nodes);
+      // Inject showDate and showLabel into node data
+      const patchedNodes = precomputed.nodes.map((n) => ({
+        ...n,
+        data: { ...n.data, showLabel: true, showDate },
+      }));
+      setNodes(patchedNodes);
       setEdges(precomputed.edges);
       return;
     }
@@ -662,9 +742,13 @@ function NetworkViewInner() {
       viewportYearMin,
       viewportYearMax,
     );
-    setNodes(rfNodes);
+    const patchedNodes = rfNodes.map((n) => ({
+      ...n,
+      data: { ...n.data, showDate },
+    }));
+    setNodes(patchedNodes);
     setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges, clusterResults, effectiveTier]);
 
   // fitView when data first loads
   useEffect(() => {

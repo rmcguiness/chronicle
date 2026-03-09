@@ -8,7 +8,7 @@ import { CANVAS_CONSTANTS } from "../types";
 import { useAppStore } from "../store";
 
 function EventNode({ data: rawData, selected }: NodeProps) {
-  const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
+  const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean; showDate?: boolean };
   const [hovered, setHovered] = useState(false);
   /**
    * Tooltip position + whether to render above (true) or below (false) the node.
@@ -213,6 +213,25 @@ function EventNode({ data: rawData, selected }: NodeProps) {
           }}
         >
           {data.title}
+        </div>
+      )}
+
+      {/* Date display below title — Tier 4 (high zoom) only */}
+      {data.showDate && data.date_display && (
+        <div
+          style={{
+            marginTop: 2,
+            fontSize: timeSpan > 10 ? 22 / timeSpan : 22,
+            fontWeight: 400,
+            color: "#94a3b8",
+            textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+            whiteSpace: "nowrap",
+            textAlign: "center",
+            pointerEvents: "none",
+            fontFamily: "monospace",
+          }}
+        >
+          {data.date_display}
         </div>
       )}
 
