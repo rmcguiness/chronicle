@@ -192,6 +192,32 @@ export const REGIONS: { id: Region; label: string }[] = [
   { id: 'global', label: 'Global / Multi-region' },
 ];
 
+// ─── Cluster node type (zoom-based event clustering) ──────────────────────────
+
+/** Data payload for a cluster bubble that collapses multiple events at low zoom. */
+export interface ClusterNode {
+  /** Unique id in the form 'cluster-{minYear}-{maxYear}'. */
+  id: string;
+  /** Discriminator — always 'cluster'. */
+  type: 'cluster';
+  /** Center X of the cluster in canvas pixels. */
+  x: number;
+  /** Y position of the highest-importance event in the cluster. */
+  y: number;
+  /** Number of events collapsed into this cluster. */
+  count: number;
+  /** The original events that were collapsed. */
+  events: HistoricalEvent[];
+  /** Most common category among clustered events. */
+  dominantCategory: string;
+  /** Earliest year_approx in the cluster. */
+  minYear: number;
+  /** Latest year_approx in the cluster. */
+  maxYear: number;
+  /** Maximum importance_score in the cluster. */
+  importance: number;
+}
+
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {
   // Time axis: pixels per year at zoom 1

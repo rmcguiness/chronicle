@@ -32,10 +32,12 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 import EventNode from './EventNode';
+import ClusterNodeComponent from './ClusterNode';
 import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
+import { clusterEvents, getVisibleEventIds } from '../utils/cluster';
 import { useAppStore } from '../store';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
@@ -80,7 +82,7 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
 
-const NODE_TYPES = { event: EventNode };
+const NODE_TYPES = { event: EventNode, cluster: ClusterNodeComponent };
 const EDGE_TYPES = { causality: CausalityEdge };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -633,14 +635,20 @@ function NetworkViewInner() {
   // visible. Filtering by timeViewport caused nodes to disappear when panning.
   const filteredEvents = useMemo(() => allEvents, [allEvents]);
 
+  // Current RF zoom — used for zoom-based clustering
+  const rfZoom = viewport.zoom;
+
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
-  // Re-runs when the scrubber range changes so nodes reposition dynamically.
+  // Re-runs when the scrubber range or RF zoom changes (clustering depends on zoom).
   useEffect(() => {
     if (filteredEvents.length === 0) {
       setNodes([]);
       setEdges([]);
       return;
     }
+
+    let layoutNodes: Node[];
+    let layoutEdges: Edge[];
 
     // Try precomputed DB layout first (instant, stable)
     const precomputed = buildFromPrecomputed(
@@ -650,21 +658,33 @@ function NetworkViewInner() {
       viewportYearMax,
     );
     if (precomputed) {
-      setNodes(precomputed.nodes);
-      setEdges(precomputed.edges);
-      return;
+      layoutNodes = precomputed.nodes;
+      layoutEdges = precomputed.edges;
+    } else {
+      // Fall back to full client-side tree layout
+      const layout = computeTreeLayout(
+        filteredEvents,
+        allCausalityLinks,
+        viewportYearMin,
+        viewportYearMax,
+      );
+      layoutNodes = layout.nodes;
+      layoutEdges = layout.edges;
     }
 
-    // Fall back to full client-side tree layout
-    const { nodes: rfNodes, edges: rfEdges } = computeTreeLayout(
-      filteredEvents,
-      allCausalityLinks,
-      viewportYearMin,
-      viewportYearMax,
+    // Apply zoom-based clustering (collapses nearby events at low zoom)
+    const timeToX = (year: number) => yearToX(year, viewportYearMin, viewportYearMax);
+    const clusteredNodes = clusterEvents(layoutNodes, rfZoom, timeToX);
+
+    // Filter edges: only keep edges between individually visible (non-clustered) events
+    const visibleIds = getVisibleEventIds(clusteredNodes);
+    const visibleEdges = layoutEdges.filter(
+      (e) => visibleIds.has(e.source) && visibleIds.has(e.target),
     );
-    setNodes(rfNodes);
-    setEdges(rfEdges);
-  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
+
+    setNodes(clusteredNodes);
+    setEdges(visibleEdges);
+  }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, rfZoom, setNodes, setEdges]);
 
   // fitView when data first loads
   useEffect(() => {
@@ -755,7 +775,7 @@ function NetworkViewInner() {
         onEdgesChange={onEdgesChange}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
-        minZoom={0.3}
+        minZoom={0.05}
         maxZoom={4}
         defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
