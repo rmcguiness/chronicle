@@ -201,8 +201,16 @@ export const CANVAS_CONSTANTS = {
   BASE_YEAR_MIN: -5000,
   BASE_YEAR_MAX: 2100,
   // Region swim-lane layout
+  // BAND_HEIGHT: kept for backward compatibility with legacy code; prefer BAND_HEIGHTS.
   BAND_HEIGHT: 200,
   BAND_COUNT: 5,
+  /**
+   * Default per-band heights used before event data loads (equal fallback).
+   * At runtime, band heights are computed dynamically by bandDensity.ts based on
+   * event density per region (see MIN_BAND_HEIGHT / MAX_BAND_HEIGHT in bandDensity.ts).
+   * This array has BAND_COUNT entries, one per region in REGIONS order.
+   */
+  BAND_HEIGHTS: [200, 200, 200, 200, 200] as readonly number[],
   // Canvas height = BAND_COUNT * BAND_HEIGHT
   CANVAS_HEIGHT: 1000,
   // Legacy lat bounds (used by store coordinate helpers)
