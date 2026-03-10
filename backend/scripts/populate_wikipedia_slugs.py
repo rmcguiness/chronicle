@@ -5,8 +5,8 @@ Populate wikipedia_slug and article_summary for Chronicle events.
 For each event without a wikipedia_slug, searches Wikipedia's REST API
 to find a matching article, then stores the slug and a summary excerpt.
 
-Run from backend/ directory:
-    python scripts/populate_wikipedia_slugs.py [--limit N]
+Run from project root:
+    python3 backend/scripts/populate_wikipedia_slugs.py [--limit N]
 """
 from __future__ import annotations
 
@@ -38,51 +38,82 @@ SESSION.headers.update({"User-Agent": "Chronicle/1.0 (historical-timeline-app; c
 def title_variants(title: str) -> list[str]:
     """Generate search variants from an event title."""
     variants = [title]
+    base = title
 
     # Remove em-dash suffixes: "X — Y" -> "X", then "Y"
     if " — " in title:
-        variants.append(title.split(" — ")[0].strip())
-        variants.append(title.split(" — ")[1].strip())
+        before = title.split(" — ")[0].strip()
+        after = title.split(" — ", 1)[1].strip()
+        variants.append(before)
+        variants.append(after)
+        base = before
 
     # Remove parenthetical qualifiers
-    no_parens = re.sub(r"\s*\(.*?\)", "", title).strip()
-    if no_parens and no_parens != title:
+    no_parens = re.sub(r"\s*\(.*?\)", "", base).strip()
+    if no_parens and no_parens != base:
         variants.append(no_parens)
 
-    # "X Constructed/Founded/etc" -> "X"
+    # Remove quoted parts: "X — 'What Hath God Wrought'" -> X
+    no_quotes = re.sub(r"\s*['\u2018\u2019\u201c\u201d].+?['\u2018\u2019\u201c\u201d]", "", base).strip()
+    if no_quotes and no_quotes != base:
+        variants.append(no_quotes)
+
+    # "Subject Verbs Object" -> "Subject" (expanded verb list)
     m = re.match(
         r"^(.+?)\s+(?:Constructed|Founded|Established|Built|Completed|Signed|"
-        r"Begins|Ends|Erupts|Falls|Invented|Discovered|Appear|Revolutionizes|"
-        r"Abdicates|Unifies)$",
-        title, re.IGNORECASE,
+        r"Begins|Ends|Erupts|Falls|Invented|Discovered|Appear|Appears|Revolutionizes|"
+        r"Abdicates|Unifies|Redraws|Enters|Conquers|Rebuilds|Centralizes|"
+        r"Invades|Spreads|Reforms|Defeats|Publishes|Composes|Writes|Destroys|"
+        r"Captures|Adopts|Emerges|Collapses|Expands|Launches|Creates|Introduces)\b",
+        base, re.IGNORECASE,
     )
     if m:
         variants.append(m.group(1))
 
-    # "Event of Subject" -> "Subject"
+    # "Subject Verbs Object" -> full title for search (good for Wikipedia search API)
+    # Also try "Subject Object" without the verb
+    m = re.match(
+        r"^(.+?)\s+(?:Conquers|Enters|Invades|Redraws|Rebuilds|Defeats|Captures)\s+(.+)$",
+        base, re.IGNORECASE,
+    )
+    if m:
+        variants.append(f"{m.group(1)} {m.group(2)}")
+
+    # "Event of Subject" -> full phrase, then "Subject" alone
+    m = re.match(
+        r"^((?:Assassination|Death|Birth|Execution|Coronation|Founding|"
+        r"Fall|Rise|Siege|Battle|Treaty|Sack|Discovery|Invention|"
+        r"Construction|Signing|Declaration|Dissolution|Unification|"
+        r"Liberation|Conquest|Invasion|Domestication|Rebellion|Split) of .+)$",
+        base, re.IGNORECASE,
+    )
+    if m:
+        variants.append(m.group(1))
     m = re.match(
         r"^(?:Assassination|Death|Birth|Execution|Coronation|Founding|"
         r"Fall|Rise|Siege|Battle|Treaty|Sack|Discovery|Invention|"
         r"Construction|Signing|Declaration|Dissolution|Unification|"
-        r"Liberation|Conquest) of (.+)$",
-        title, re.IGNORECASE,
+        r"Liberation|Conquest|Invasion|Domestication|Rebellion|Split) of (.+)$",
+        base, re.IGNORECASE,
     )
     if m:
         variants.append(m.group(1))
 
-    # "X Publishes/Composes Y" -> "Y"
-    m = re.match(r"^.+?\s+(?:Publishes|Composes|Writes)\s+(.+)$", title, re.IGNORECASE)
+    # "X Publishes/Composes/Writes Y" -> "Y"
+    m = re.match(r"^.+?\s+(?:Publishes|Composes|Writes)\s+(.+)$", base, re.IGNORECASE)
     if m:
         variants.append(m.group(1))
 
-    # "X's Y" -> "Y" (e.g. "Newton's Principia" -> "Principia")
-    m = re.match(r"^.+?'s\s+(.+)$", title)
+    # "X's Y" -> "Y", and also "X's Y" as-is (possessive titles often match)
+    m = re.match(r"^(.+?)['\u2019]s\s+(.+)$", base)
     if m:
+        variants.append(f"{m.group(1)}'s {m.group(2)}")
+        variants.append(m.group(2))
         variants.append(m.group(1))
 
     # Remove leading articles
-    no_article = re.sub(r"^(The|A|An)\s+", "", title, flags=re.IGNORECASE).strip()
-    if no_article and no_article != title:
+    no_article = re.sub(r"^(The|A|An)\s+", "", base, flags=re.IGNORECASE).strip()
+    if no_article and no_article != base:
         variants.append(no_article)
 
     # Deduplicate while preserving order
@@ -126,29 +157,31 @@ def search_wikipedia(title: str) -> tuple[str | None, str | None]:
             extract = data.get("extract", "")[:500]
             return slug, extract
 
-    # Fallback: Wikipedia search API
-    params = {
-        "action": "query",
-        "list": "search",
-        "srsearch": title,
-        "srlimit": 1,
-        "format": "json",
-    }
-    try:
-        resp = SESSION.get(WIKIPEDIA_SEARCH_API, params=params, timeout=10)
-        time.sleep(REQUEST_DELAY)
-        if resp.status_code == 200:
-            results = resp.json().get("query", {}).get("search", [])
-            if results:
-                found_title = results[0]["title"]
-                data = fetch_summary(found_title)
-                time.sleep(REQUEST_DELAY)
-                if data:
-                    slug = data.get("title", found_title).replace(" ", "_")
-                    extract = data.get("extract", "")[:500]
-                    return slug, extract
-    except Exception:
-        pass
+    # Fallback: Wikipedia search API with more results
+    for search_query in variants[:3]:
+        params = {
+            "action": "query",
+            "list": "search",
+            "srsearch": search_query,
+            "srlimit": 3,
+            "format": "json",
+            "utf8": 1,
+        }
+        try:
+            resp = SESSION.get(WIKIPEDIA_SEARCH_API, params=params, timeout=10)
+            time.sleep(REQUEST_DELAY)
+            if resp.status_code == 200:
+                results = resp.json().get("query", {}).get("search", [])
+                for result in results:
+                    found_title = result["title"]
+                    data = fetch_summary(found_title)
+                    time.sleep(REQUEST_DELAY)
+                    if data:
+                        slug = data.get("title", found_title).replace(" ", "_")
+                        extract = data.get("extract", "")[:500]
+                        return slug, extract
+        except Exception:
+            pass
 
     return None, None
 
@@ -177,19 +210,23 @@ async def main(limit: int | None = None) -> None:
         batch = rows[batch_start : batch_start + BATCH_SIZE]
         updates: list[tuple] = []
 
-        for row in batch:
+        for i, row in enumerate(batch):
             event_id = row["id"]
             event_title = row["title"]
 
             slug, summary = search_wikipedia(event_title)
 
             if slug:
-                print(f"✅ Found: {event_title} → {slug}")
+                print(f"  \u2705 {event_title} \u2192 {slug}")
                 updates.append((event_id, slug, summary))
                 found += 1
             else:
-                print(f"❌ Not found: {event_title}")
+                print(f"  \u274c {event_title}")
                 not_found += 1
+
+            idx = batch_start + i + 1
+            if idx % 10 == 0:
+                print(f"  ... progress: {idx}/{total} ({found} found so far)")
 
         if updates:
             async with pool.acquire() as conn:
@@ -202,7 +239,7 @@ async def main(limit: int | None = None) -> None:
                     updates,
                 )
 
-        print(f"\n--- Batch complete ({batch_start + len(batch)}/{total}) ---\n")
+        print(f"\n--- Batch {batch_start // BATCH_SIZE + 1} complete ({batch_start + len(batch)}/{total}) ---\n")
 
     SESSION.close()
     await pool.close()
