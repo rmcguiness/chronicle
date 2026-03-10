@@ -517,3 +517,46 @@ class CanvasTile(Base):
     __table_args__ = (
         Index("idx_canvas_tiles_zoom_time", "zoom_level", "time_start", "time_end"),
     )
+
+
+# ────────────────────────────────────────────
+# PENDING EVENTS (FEAT-02: submission queue)
+# ────────────────────────────────────────────
+class PendingEvent(Base):
+    """
+    Staging table for public event submissions (FEAT-02).
+
+    Events submitted via /admin/submit land here first. An admin must
+    explicitly approve (copies to the events table) or reject them.
+    This table never merges directly with events — it is a disposable queue.
+    """
+
+    __tablename__ = "pending_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    year_approx: Mapped[int] = mapped_column(Integer, nullable=False)
+    lat: Mapped[float] = mapped_column(Float, nullable=False)
+    lng: Mapped[float] = mapped_column(Float, nullable=False)
+    category: Mapped[str] = mapped_column(Text, nullable=False)
+    importance_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.5)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    # status tracks lifecycle: pending → approved or rejected
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="pending")
+    submitted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "importance_score BETWEEN 0.1 AND 1.0",
+            name="ck_pending_events_importance_score",
+        ),
+        CheckConstraint(
+            "status IN ('pending', 'approved', 'rejected')",
+            name="ck_pending_events_status",
+        ),
+        Index("idx_pending_events_status", "status"),
+    )

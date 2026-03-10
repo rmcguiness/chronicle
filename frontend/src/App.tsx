@@ -13,6 +13,9 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /admin         → Legacy admin review (X-Admin-Key)
+ *  /admin/submit  → Public event submission form (FEAT-02)
+ *  /admin/review  → Token-gated pending events review (FEAT-02)
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -26,6 +29,8 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import AdminSubmit from './pages/AdminSubmit';
+import AdminReview from './pages/AdminReview';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -83,6 +88,8 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/submit" element={<AdminSubmit />} />
+        <Route path="/admin/review" element={<AdminReview />} />
       </Routes>
     </QueryClientProvider>
   );
