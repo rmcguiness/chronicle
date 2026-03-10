@@ -578,6 +578,7 @@ function NetworkViewInner() {
   // Subscribe to timeViewport — single source of truth for the visible year range
   const timeViewport = useAppStore((s) => s.timeViewport);
   const setTimeViewport = useAppStore((s) => s.setTimeViewport);
+  const setDetailPanelOpen = useAppStore((s) => s.setDetailPanelOpen);
 
   // Keep store's rfViewport in sync with the ReactFlow camera
   const setRfViewportStore = useAppStore((s) => s.setRfViewport);
@@ -767,6 +768,7 @@ function NetworkViewInner() {
         panOnScroll={false}
         zoomOnScroll={false}
         panOnDrag
+        onPaneClick={() => setDetailPanelOpen(false)}
         onMove={(_event, vp) => {
           const now = Date.now();
           if (now - lastRfViewportUpdateRef.current > RF_VIEWPORT_THROTTLE_MS) {

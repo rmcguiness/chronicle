@@ -341,6 +341,56 @@ function Spinner() {
   );
 }
 
+/**
+ * Connected event row rendered in the scrollable list section.
+ * Clicking navigates to that event.
+ */
+function ConnectedEventListItem({ event }: { event: ConnectedEvent }) {
+  const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+  const setFlyToEvent = useAppStore((s) => s.setFlyToEvent);
+  const visibleEvents = useAppStore((s) => s.visibleEvents);
+
+  const handleClick = () => {
+    // Fly to the event on the canvas if it's currently visible
+    const found = visibleEvents.find((e) => e.id === event.id || e.slug === event.slug);
+    if (found) setFlyToEvent(found);
+    setSelectedEvent(event.slug);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        padding: '10px 14px',
+        borderRadius: 8,
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        color: '#e2e8f0',
+        cursor: 'pointer',
+        marginBottom: 8,
+        textAlign: 'left',
+        fontSize: 13,
+        transition: 'background 0.15s',
+      }}
+    >
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {event.title}
+        </div>
+        <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+          {formatYear(event.year_approx)} · {event.direction === 'effect' ? '→ effect' : '← cause'}
+          {event.connection_type ? ` · ${event.connection_type.replace('_', ' ')}` : ''}
+        </div>
+      </div>
+      <span style={{ color: '#475569', fontSize: 16, flexShrink: 0, marginLeft: 8 }}>›</span>
+    </button>
+  );
+}
+
 /** Connected event chip for the horizontal mini-timeline. */
 function ConnectedEventChip({ event }: { event: ConnectedEvent }) {
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
@@ -682,6 +732,21 @@ export default function EventDetailPanel() {
               <ArticleContent slug={event.slug} />
             </div>
 
+            {/* ── Connected events list ─────────────────────────────── */}
+            {event.connected_events && event.connected_events.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={sectionHeaderStyle}>
+                  Connected Events ({event.connected_events.length})
+                </div>
+                {event.connected_events
+                  .slice()
+                  .sort((a, b) => a.year_approx - b.year_approx)
+                  .map((ce) => (
+                    <ConnectedEventListItem key={ce.id} event={ce} />
+                  ))}
+              </div>
+            )}
+
             {/* ── Perspectives ──────────────────────────────────────── */}
             {event.perspectives.length > 0 && (
               <div style={{ marginBottom: 20 }}>
@@ -717,9 +782,12 @@ export default function EventDetailPanel() {
               paddingBottom: 4,
             }}
           >
-            {event.connected_events.map((ce) => (
-              <ConnectedEventChip key={ce.id} event={ce} />
-            ))}
+            {event.connected_events
+              .slice()
+              .sort((a, b) => a.year_approx - b.year_approx)
+              .map((ce) => (
+                <ConnectedEventChip key={ce.id} event={ce} />
+              ))}
           </div>
         </div>
       )}
