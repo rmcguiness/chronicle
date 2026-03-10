@@ -21,6 +21,7 @@ import SearchBar from './components/SearchBar';
 import EventDetailPanel from './components/EventDetailPanel';
 import TimelineScrubber from './components/TimelineScrubber';
 import CategoryLegend from './components/CategoryLegend';
+import CategoryFilter from './components/CategoryFilter';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
@@ -65,6 +66,9 @@ function MainView() {
 
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
+
+      {/* Category filter bar — sits just above the scrubber, filters node visibility */}
+      <CategoryFilter />
 
       {/* Bottom timeline scrubber — shown in both timeline and network modes.
           In network mode it acts as a time-range filter for visible events. */}

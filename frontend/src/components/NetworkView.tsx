@@ -578,6 +578,7 @@ function NetworkViewInner() {
   // Subscribe to timeViewport — single source of truth for the visible year range
   const timeViewport = useAppStore((s) => s.timeViewport);
   const setTimeViewport = useAppStore((s) => s.setTimeViewport);
+  const activeCategories = useAppStore((s) => s.activeCategories);
 
   // Keep store's rfViewport in sync with the ReactFlow camera
   const setRfViewportStore = useAppStore((s) => s.setRfViewport);
@@ -629,9 +630,14 @@ function NetworkViewInner() {
     [allLinks, tileData],
   );
 
-  // All events are always rendered; the ReactFlow camera determines what's
-  // visible. Filtering by timeViewport caused nodes to disappear when panning.
-  const filteredEvents = useMemo(() => allEvents, [allEvents]);
+  // Filter events by active categories from the Zustand store.
+  // All categories are active by default; toggling a category in CategoryFilter
+  // removes it from `activeCategories`, hiding those nodes from the canvas.
+  // ReactFlow camera still controls what's *visible* within the rendered set.
+  const filteredEvents = useMemo(
+    () => allEvents.filter((e) => activeCategories.has(e.category)),
+    [allEvents, activeCategories],
+  );
 
   // Compute layout: prefer precomputed DB positions, fall back to client-side tree.
   // Re-runs when the scrubber range changes so nodes reposition dynamically.
