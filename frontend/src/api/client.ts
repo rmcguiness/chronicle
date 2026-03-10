@@ -9,7 +9,7 @@ import type {
   Perspective,
   ConnectedEvent,
 } from '../types';
-import { importanceThreshold } from '../utils/categories';
+import { importanceThreshold } from '../utils/lod';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Axios instance — reads VITE_API_URL from environment (with localhost fallback)
@@ -337,11 +337,29 @@ export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse
           min_importance: minImportance,
         },
       });
-      // Backend response: { events, links, computed_at } — matches TileResponse
+
+      // Warn developers when the result set is truncated by the limit —
+      // this signals that full pagination UI may be needed for this viewport.
+      if (
+        typeof data.total === 'number' &&
+        typeof data.limit === 'number' &&
+        data.total > data.limit
+      ) {
+        console.warn(
+          `[Chronicle] Tile response truncated: ${data.total} events match filters ` +
+          `but only ${data.limit} were returned (offset=${data.offset ?? 0}). ` +
+          `Consider implementing pagination or tightening the viewport.`,
+        );
+      }
+
+      // Backend response: { events, links, computed_at, total, limit, offset }
       return {
         events: (data.events ?? []) as HistoricalEvent[],
         links: (data.links ?? []) as CausalityLink[],
         computed_at: data.computed_at ?? new Date().toISOString(),
+        total: data.total as number | undefined,
+        limit: data.limit as number | undefined,
+        offset: data.offset as number | undefined,
       };
     } catch {
       // fall through to mock

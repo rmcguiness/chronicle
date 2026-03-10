@@ -54,7 +54,6 @@ async def get_tiles(
         Event.zoom_min <= zoom,
         Event.importance_score >= min_importance,
         Event.review_status == "approved",
-        Event.importance_score >= min_importance,
     ]
 
     # Parse and apply bounding box filter
@@ -104,6 +103,10 @@ async def get_tiles(
         .offset(offset)
         .limit(limit)
     )
+
+    # ── Total count (before limit/offset) for pagination metadata ─────────────
+    count_stmt = select(func.count()).select_from(Event).where(and_(*conditions))
+    total_count: int = (await db.execute(count_stmt)).scalar_one()
 
     result = await db.execute(stmt)
     rows = result.fetchall()
@@ -164,4 +167,7 @@ async def get_tiles(
         events=events,
         links=links,
         computed_at=datetime.now(timezone.utc).isoformat(),
+        total=total_count,
+        limit=limit,
+        offset=offset,
     )

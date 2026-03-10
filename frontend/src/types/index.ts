@@ -160,6 +160,12 @@ export interface TileResponse {
   events: HistoricalEvent[];
   links: CausalityLink[];
   computed_at: string;
+  /** Total events matching current filters (before limit/offset). Present when backend supports pagination. */
+  total?: number;
+  /** Limit that was applied by the backend. */
+  limit?: number;
+  /** Offset that was applied by the backend. */
+  offset?: number;
 }
 
 export interface SearchResult {

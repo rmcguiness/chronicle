@@ -103,6 +103,10 @@ class CanvasTileResponse(BaseModel):
     events: List[CanvasEventItem]
     links: List[CausalityLinkItem] = []
     computed_at: str                        # ISO datetime string
+    # Pagination metadata — lets the frontend detect when results are truncated
+    total: int = 0                          # total events matching filters (before limit/offset)
+    limit: int = 500                        # limit that was applied
+    offset: int = 0                         # offset that was applied
 
 
 # ────────────────────────────────────────────
