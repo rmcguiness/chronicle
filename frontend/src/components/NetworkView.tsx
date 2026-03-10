@@ -11,12 +11,16 @@
  * screen height, providing persistent year-reference tick marks.
  *
  * Owns: tree layout computation, ReactFlow rendering, viewport
- *   filtering (events outside the scrubber range are hidden).
+ *   filtering (events outside the scrubber range are hidden),
+ *   and the BookmarksMenu button (mounted here because it requires
+ *   the ReactFlowProvider context).
  * Does NOT own: event detail panel, data fetching strategy, view mode
- *   toggling, timeline scrubber (rendered by App.tsx).
+ *   toggling, timeline scrubber (rendered by App.tsx), bookmark state
+ *   (lives in store/index.ts).
  */
 
 import { useEffect, useMemo, useRef } from 'react';
+import BookmarksMenu from './BookmarksMenu';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -785,6 +789,19 @@ function NetworkViewInner() {
 
       {/* Fixed timeline spine overlay — always at 50 % viewport height */}
       <NetworkTimeline viewport={viewport} />
+
+      {/* Bookmarks menu — top-right floating button */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 12,
+          right: 12,
+          zIndex: 30,
+          pointerEvents: 'all',
+        }}
+      >
+        <BookmarksMenu />
+      </div>
 
       {/* Year-axis info label */}
       <div

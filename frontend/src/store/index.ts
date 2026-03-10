@@ -24,35 +24,63 @@ const COLLAPSED_REGIONS_STORAGE_KEY = 'chronicle:collapsedBands';
 export interface Bookmark {
   id: string;
   name: string;
+  /** ReactFlow canvas offset x. */
   x: number;
+  /** ReactFlow canvas offset y. */
   y: number;
+  /** ReactFlow zoom level. */
   zoom: number;
-  /** Default bookmarks cannot be deleted */
+  /** Scrubber year range left edge — restores the time range on navigate. */
+  yearMin?: number;
+  /** Scrubber year range right edge — restores the time range on navigate. */
+  yearMax?: number;
+  /** Default bookmarks cannot be deleted by the user. */
   isDefault?: boolean;
 }
 
-/** Pre-seeded default bookmarks */
+/**
+ * Pre-seeded default bookmarks covering major historical eras.
+ * `x`, `y`, `zoom` are ReactFlow camera transforms (zoom=0.7 centres the
+ * 2 000 px canvas in a typical ~1 400 px window); `yearMin`/`yearMax` drive
+ * the scrubber so nodes reposition to the correct era on restore.
+ */
 const DEFAULT_BOOKMARKS: Bookmark[] = [
-  { id: 'default-ancient', name: 'Ancient Civilizations', x: -(-3000 - (-5000)) * CANVAS_CONSTANTS.PIXELS_PER_YEAR * 0.3 + 960, y: 80, zoom: 0.3, isDefault: true },
-  { id: 'default-industrial', name: 'Industrial Revolution', x: -(1800 - (-5000)) * CANVAS_CONSTANTS.PIXELS_PER_YEAR * 0.3 + 960, y: 80, zoom: 0.3, isDefault: true },
-  { id: 'default-wars', name: 'World Wars', x: -(1939 - (-5000)) * CANVAS_CONSTANTS.PIXELS_PER_YEAR * 0.3 + 960, y: 80, zoom: 0.3, isDefault: true },
+  { id: 'default-ancient',     name: 'Ancient Civilizations', x: 0, y: 0, zoom: 0.7, yearMin: -3000, yearMax: -500,  isDefault: true },
+  { id: 'default-classical',   name: 'Classical World',       x: 0, y: 0, zoom: 0.7, yearMin:  -500, yearMax:  500,  isDefault: true },
+  { id: 'default-medieval',    name: 'Medieval',              x: 0, y: 0, zoom: 0.7, yearMin:   500, yearMax: 1500,  isDefault: true },
+  { id: 'default-industrial',  name: 'Industrial Revolution', x: 0, y: 0, zoom: 0.7, yearMin:  1750, yearMax: 1900,  isDefault: true },
+  { id: 'default-wars',        name: 'World Wars',            x: 0, y: 0, zoom: 0.7, yearMin:  1914, yearMax: 1945,  isDefault: true },
+  { id: 'default-modern',      name: 'Modern Era',            x: 0, y: 0, zoom: 0.7, yearMin:  1945, yearMax: 2000,  isDefault: true },
 ];
 
-/** Load bookmarks from localStorage, falling back to defaults */
+/**
+ * Load bookmarks from localStorage.
+ * Default bookmarks are always prepended — they cannot be lost if the user
+ * clears their saved list or if we add new defaults in future releases.
+ * Only user-created (non-default) entries are persisted and restored.
+ */
 function loadBookmarks(): Bookmark[] {
   try {
     const raw = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Bookmark[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) {
+        const userBookmarks = parsed.filter((b) => !b.isDefault);
+        return [...DEFAULT_BOOKMARKS, ...userBookmarks];
+      }
     }
-  } catch { /* ignore */ }
+  } catch { /* ignore parse/quota errors */ }
   return [...DEFAULT_BOOKMARKS];
 }
 
-/** Persist bookmarks to localStorage */
+/**
+ * Persist only user-created bookmarks to localStorage.
+ * Default bookmarks are re-injected from the constant on each load so they
+ * do not need to occupy localStorage space and cannot be accidentally deleted.
+ */
 function saveBookmarks(bookmarks: Bookmark[]): void {
-  localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks));
+  const userOnly = bookmarks.filter((b) => !b.isDefault);
+  localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(userOnly));
 }
 
 /** Load persisted collapsed regions from localStorage. */
