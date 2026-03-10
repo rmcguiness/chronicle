@@ -51,7 +51,6 @@ import {
 import {
   computeBandLayout,
   computeScreenLayout,
-  defaultBandLayout,
   getBandByIndex,
   COLLAPSED_BAND_HEIGHT_PX,
 } from '../utils/bandDensity';
@@ -496,7 +495,16 @@ function CanvasInner() {
   // ── Local state ────────────────────────────────────────────────────────────
   const [rfTransform, setRfTransform] = useState(INITIAL_VIEWPORT);
   const [allFilteredEvents, setAllFilteredEvents] = useState<HistoricalEvent[]>([]);
-  const [bandLayout, setBandLayout] = useState<BandLayout[]>(() => defaultBandLayout());
+  /**
+   * Band heights derived from the current filtered event set — recomputed via
+   * useMemo whenever allFilteredEvents changes instead of being held in separate
+   * useState+useEffect. Cold start (empty array) produces equal default bands.
+   * Min: MIN_BAND_HEIGHT=120px; Max: MAX_BAND_HEIGHT=600px (see utils/bandDensity).
+   */
+  const bandLayout = useMemo(
+    () => computeBandLayout(allFilteredEvents),
+    [allFilteredEvents],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({
     width: window.innerWidth,
@@ -571,18 +579,20 @@ function CanvasInner() {
     const isMock = filteredEvents.some((e) => String(e.id).length < 10);
     setUsingMockData(isMock);
 
-    // Density-based band heights (UI-05 layout)
-    const newBandLayout = computeBandLayout(filteredEvents);
-    setBandLayout(newBandLayout);
+    // Compute density-based band heights locally for immediate node positioning.
+    // The `bandLayout` useMemo will produce the same result on the next render
+    // after allFilteredEvents state updates — no separate setState needed.
+    const newLayout = computeBandLayout(filteredEvents);
 
     if (filteredEvents.length <= GL_THRESHOLD) {
-      // Build initial node positions
+      // Build initial node positions using dynamic cumulative band offsets
       const rawNodes = filteredEvents.map((e) =>
-        eventToNode(e, currentZoom, newBandLayout, collapsedBands),
+        eventToNode(e, currentZoom, newLayout, collapsedBands),
       );
 
-      // UI-04: Resolve Y-axis collisions to prevent event icon stacking
-      const newNodes = resolveCollisions(rawNodes);
+      // Y-axis collision resolution — pass dynamic layout so nodes are clamped
+      // to the correct (density-proportional) band boundaries (not fixed heights)
+      const newNodes = resolveCollisions(rawNodes, newLayout);
 
       const eventIds = new Set(filteredEvents.map((e) => String(e.id)));
       const newEdges = (tileData.links ?? [])
