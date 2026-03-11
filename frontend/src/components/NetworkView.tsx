@@ -16,7 +16,7 @@
  *   toggling, timeline scrubber (rendered by App.tsx).
  */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -27,6 +27,7 @@ import {
   useViewport,
   type Node,
   type Edge,
+  type OnMove,
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -36,6 +37,7 @@ import CausalityEdge from './CausalityEdge';
 import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
+import { isNodeInViewport } from '../utils/viewport';
 import { useAppStore } from '../store';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
@@ -543,6 +545,40 @@ function computeTreeLayout(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Viewport culling (PERF-02)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** ReactFlow viewport transform shape used for culling. */
+interface RfTransform {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+/**
+ * Filters a full node list to only those whose canvas X position falls within
+ * the current ReactFlow viewport (plus the {@link VIEWPORT_BUFFER_PX} buffer).
+ *
+ * Only X-axis culling is applied — events are positioned horizontally by year
+ * and swim-lane bands span the full screen height, so Y culling would
+ * incorrectly hide events near the vertical edges.
+ *
+ * Nodes marked `hidden: true` (collapsed bands, LOD threshold) are excluded
+ * regardless of position — the viewport filter is additive with hidden state.
+ *
+ * @param nodes     - Full source-of-truth node array (not mutated).
+ * @param transform - Current ReactFlow viewport transform {x, y, zoom}.
+ * @returns Subset of nodes within the padded viewport bounds and not hidden.
+ */
+function applyViewportCulling(nodes: Node[], transform: RfTransform): Node[] {
+  return nodes.filter(
+    (n) =>
+      !n.hidden &&
+      isNodeInViewport(n.position.x, transform.x, transform.zoom, window.innerWidth),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Year-axis label formatter
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -594,6 +630,15 @@ function NetworkViewInner() {
 
   // Track whether we've done an initial fitView
   const hasFitViewRef = useRef(false);
+
+  // PERF-02: Source-of-truth node list (all computed nodes, not yet culled).
+  // `setNodes` receives the viewport-culled subset; this ref holds the full list
+  // so `onMoveEnd` can re-filter without rebuilding from scratch.
+  const allNodesRef = useRef<Node[]>([]);
+
+  // PERF-02: Current ReactFlow viewport transform — updated on every onMove tick
+  // so the initial culling pass in the layout effect uses the live camera position.
+  const rfTransformRef = useRef<RfTransform>({ x: 0, y: 0, zoom: 0.9 });
 
   // Refs for stale closure safety in wheel handler
   const timeViewportRef = useRef(timeViewport);
@@ -650,7 +695,11 @@ function NetworkViewInner() {
       viewportYearMax,
     );
     if (precomputed) {
-      setNodes(precomputed.nodes);
+      // PERF-02: Store full list then cull to viewport before passing to ReactFlow.
+      allNodesRef.current = precomputed.nodes;
+      const culled = applyViewportCulling(precomputed.nodes, rfTransformRef.current);
+      console.log(`[PERF-02] Rendering ${culled.length}/${precomputed.nodes.length} nodes in viewport`);
+      setNodes(culled);
       setEdges(precomputed.edges);
       return;
     }
@@ -662,7 +711,11 @@ function NetworkViewInner() {
       viewportYearMin,
       viewportYearMax,
     );
-    setNodes(rfNodes);
+    // PERF-02: Store full list then cull to viewport before passing to ReactFlow.
+    allNodesRef.current = rfNodes;
+    const culledFallback = applyViewportCulling(rfNodes, rfTransformRef.current);
+    console.log(`[PERF-02] Rendering ${culledFallback.length}/${rfNodes.length} nodes in viewport`);
+    setNodes(culledFallback);
     setEdges(rfEdges);
   }, [filteredEvents, allCausalityLinks, viewportYearMin, viewportYearMax, setNodes, setEdges]);
 
@@ -746,6 +799,21 @@ function NetworkViewInner() {
     return () => el.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
   }, [getViewport, setRfViewport, setTimeViewport]);
 
+  // PERF-02: Re-apply viewport culling when panning/zooming stops.
+  // Runs on onMoveEnd only — not on every mouse-move tick — to avoid culling
+  // overhead at 60fps. The rfTransformRef is kept current by onMove so the
+  // initial layout pass also uses the live camera position.
+  const onMoveEnd: OnMove = useCallback(
+    (_event, rfVp) => {
+      rfTransformRef.current = rfVp;
+      if (allNodesRef.current.length === 0) return;
+      const culled = applyViewportCulling(allNodesRef.current, rfVp);
+      console.log(`[PERF-02] Rendering ${culled.length}/${allNodesRef.current.length} nodes in viewport`);
+      setNodes(culled);
+    },
+    [setNodes],
+  );
+
   return (
     <div ref={wrapperRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <ReactFlow
@@ -768,12 +836,16 @@ function NetworkViewInner() {
         zoomOnScroll={false}
         panOnDrag
         onMove={(_event, vp) => {
+          // Always keep rfTransformRef current — used by onMoveEnd culling and
+          // the initial layout effect to cull against the live camera position.
+          rfTransformRef.current = vp;
           const now = Date.now();
           if (now - lastRfViewportUpdateRef.current > RF_VIEWPORT_THROTTLE_MS) {
             lastRfViewportUpdateRef.current = now;
             setRfViewportStore(vp);
           }
         }}
+        onMoveEnd={onMoveEnd}
       >
         <Background
           color="rgba(255,255,255,0.02)"
