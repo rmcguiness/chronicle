@@ -2,498 +2,619 @@
 """
 add_more_figures.py
 
-Adds 60+ historical figures to the Chronicle database, focusing on 
-underrepresented regions, women, and diverse eras. Also creates 
-event_people links to connect figures to relevant existing events.
+Adds 60+ additional historical figures to the Chronicle database,
+covering underrepresented regions, notable women, scientists, and leaders.
+
+Also creates event_people links connecting figures to relevant events.
 """
 
 import asyncio
 import asyncpg
-import uuid
+from typing import Optional
 
 DB_URL = "postgresql://chronicle:chronicle@localhost:5433/chronicle"
 
 # ────────────────────────────────────────────────────────────────────────────
-# NEW PEOPLE DATA
-# Format: (name, birth_year, death_year, nationalities[], roles[], gender, 
-#          wikipedia_slug, description)
-# For BCE dates, use negative years (e.g., -1500 for 1500 BCE)
+# NEW HISTORICAL FIGURES
+# Format: (name, birth_year, death_year, nationalities, roles, gender, description, wikipedia_slug, aliases)
+# For BCE dates, use negative years (e.g., -69 for 69 BCE)
 # ────────────────────────────────────────────────────────────────────────────
 
-NEW_PEOPLE = [
+NEW_FIGURES = [
     # ═══════════════════════════════════════════════════════════════════════
-    # WOMEN IN HISTORY
+    # NOTABLE WOMEN
     # ═══════════════════════════════════════════════════════════════════════
     
     ("Hatshepsut", -1507, -1458, ["Egyptian"], ["Pharaoh", "Ruler"], "female",
-     "Hatshepsut",
-     "One of ancient Egypt's most successful pharaohs, ruling for over 20 years during the 18th Dynasty. She expanded trade networks and commissioned extensive building projects including her mortuary temple at Deir el-Bahri."),
+     "One of ancient Egypt's most successful pharaohs, ruling for over 20 years during the 18th Dynasty. She expanded trade networks and commissioned extensive building projects including her famous mortuary temple at Deir el-Bahri.",
+     "Hatshepsut", []),
     
     ("Nefertiti", -1370, -1330, ["Egyptian"], ["Queen", "Ruler"], "female",
-     "Nefertiti",
-     "Powerful queen of Egypt and wife of Pharaoh Akhenaten, playing a prominent role in the religious revolution to monotheistic Atenism. Her iconic painted bust is one of the most copied works of ancient Egypt."),
+     "Great Royal Wife of Pharaoh Akhenaten, famous for her beauty and power. She may have ruled Egypt briefly after her husband's death. Her painted limestone bust is one of the most recognized works of ancient art.",
+     "Nefertiti", []),
     
     ("Wu Zetian", 624, 705, ["Chinese"], ["Empress", "Ruler"], "female",
-     "Wu_Zetian",
-     "The only woman in Chinese history to assume the title of Empress Regnant, ruling the Tang Dynasty for 15 years. She expanded China's borders, reformed the civil service examination, and promoted Buddhism."),
+     "The only woman in Chinese history to assume the title of Empress Regnant, ruling the Tang dynasty. She expanded China's borders, reformed the civil service examination system, and elevated Buddhism.",
+     "Wu_Zetian", ["Empress Wu", "Wu Zhao"]),
     
-    ("Eleanor of Aquitaine", 1122, 1204, ["French", "English"], ["Queen", "Duchess", "Patron"], "female",
-     "Eleanor_of_Aquitaine",
-     "One of the most powerful women of the Middle Ages, Queen consort of both France and England. She participated in the Second Crusade and was a patron of literature and the arts."),
+    ("Eleanor of Aquitaine", 1122, 1204, ["French", "English"], ["Queen", "Duchess", "Ruler"], "female",
+     "One of the wealthiest and most powerful women in medieval Europe. Queen consort of France, then England, she participated in the Second Crusade and was mother to Richard the Lionheart and King John.",
+     "Eleanor_of_Aquitaine", []),
     
-    ("Hildegard of Bingen", 1098, 1179, ["German"], ["Abbess", "Writer", "Composer", "Philosopher"], "female",
-     "Hildegard_of_Bingen",
-     "Medieval polymath who composed liturgical music, wrote theological and botanical works, and founded monasteries. She is considered the founder of scientific natural history in Germany."),
-    
-    ("Murasaki Shikibu", 978, 1014, ["Japanese"], ["Writer", "Lady-in-waiting"], "female",
-     "Murasaki_Shikibu",
-     "Japanese novelist and lady-in-waiting at the Imperial court, author of The Tale of Genji, often called the world's first novel and a masterpiece of Japanese literature."),
-    
-    ("Catherine the Great", 1729, 1796, ["Russian", "German"], ["Empress", "Ruler"], "female",
-     "Catherine_the_Great",
-     "Longest-ruling female leader of Russia, who presided over the Russian Enlightenment and expanded the Russian Empire. She was a patron of arts, literature, and education."),
-    
-    ("Harriet Tubman", 1822, 1913, ["American"], ["Abolitionist", "Activist", "Scout"], "female",
-     "Harriet_Tubman",
-     "Escaped slave who became a conductor on the Underground Railroad, leading roughly 70 enslaved people to freedom. She later served as a scout and spy for the Union Army during the Civil War."),
+    ("Boudicca", 30, 61, ["British", "Celtic"], ["Queen", "Warrior", "Leader"], "female",
+     "Queen of the Iceni tribe who led a major uprising against Roman occupation of Britain in 60-61 CE. Her rebellion destroyed several Roman settlements including Londinium before being defeated.",
+     "Boudica", ["Boadicea", "Boudica"]),
     
     ("Ada Lovelace", 1815, 1852, ["British"], ["Mathematician", "Writer"], "female",
-     "Ada_Lovelace",
-     "English mathematician and writer, often regarded as the first computer programmer for her work on Charles Babbage's Analytical Engine. Her notes include what is recognized as the first algorithm."),
+     "Often regarded as the first computer programmer for her work on Charles Babbage's Analytical Engine. Her notes include what is recognized as the first algorithm intended to be processed by a machine.",
+     "Ada_Lovelace", ["Augusta Ada King, Countess of Lovelace"]),
     
-    ("Sojourner Truth", 1797, 1883, ["American"], ["Abolitionist", "Activist"], "female",
-     "Sojourner_Truth",
-     "African American abolitionist and women's rights activist, born into slavery, who became a powerful orator. Her famous 'Ain't I a Woman?' speech became iconic in the fight for equality."),
+    ("Harriet Tubman", 1822, 1913, ["American"], ["Abolitionist", "Activist", "Spy"], "female",
+     "American abolitionist who escaped slavery and subsequently made about 13 missions to rescue approximately 70 enslaved people using the Underground Railroad. She later served as a spy for the Union Army during the Civil War.",
+     "Harriet_Tubman", ["Araminta Ross"]),
     
-    ("Emmeline Pankhurst", 1858, 1928, ["British"], ["Suffragette", "Activist"], "female",
-     "Emmeline_Pankhurst",
-     "British political activist and leader of the suffragette movement who helped women win the right to vote. She founded the Women's Social and Political Union, known for militant tactics."),
+    ("Empress Theodora", 500, 548, ["Byzantine"], ["Empress", "Ruler"], "female",
+     "Byzantine empress and wife of Emperor Justinian I. She was influential in religious and political affairs, championed women's rights, and helped shape Byzantine law.",
+     "Theodora_(wife_of_Justinian_I)", []),
     
-    ("Hypatia", -360, -415, ["Greek", "Egyptian"], ["Philosopher", "Mathematician", "Astronomer"], "female",
-     "Hypatia",
-     "Neoplatonist philosopher, astronomer, and mathematician in Alexandria, Egypt. She was one of the last great scholars of the ancient Library of Alexandria and was killed by a Christian mob."),
+    ("Hypatia", 360, 415, ["Greek", "Egyptian"], ["Philosopher", "Mathematician", "Astronomer"], "female",
+     "One of the first female mathematicians and head of the Neoplatonic school in Alexandria. She taught philosophy and astronomy until her murder by a Christian mob, becoming a symbol of classical antiquity's end.",
+     "Hypatia", ["Hypatia of Alexandria"]),
+    
+    ("Tomoe Gozen", 1157, 1247, ["Japanese"], ["Samurai", "Warrior"], "female",
+     "One of the few female samurai warriors documented in Japanese history. She fought in the Genpei War and was renowned for her skill with sword, bow, and horsemanship.",
+     "Tomoe_Gozen", []),
     
     # ═══════════════════════════════════════════════════════════════════════
-    # ASIA - China, Japan, Mongolia, Southeast Asia
+    # ASIAN LEADERS AND THINKERS
     # ═══════════════════════════════════════════════════════════════════════
     
-    ("Laozi", -571, -471, ["Chinese"], ["Philosopher", "Writer"], "male",
-     "Laozi",
-     "Ancient Chinese philosopher and writer, traditionally regarded as the founder of Taoism and author of the Tao Te Ching. His teachings emphasize living in harmony with the Tao."),
+    ("Laozi", -601, -531, ["Chinese"], ["Philosopher", "Writer"], "male",
+     "Ancient Chinese philosopher traditionally credited as the founder of Taoism and author of the Tao Te Ching. His philosophy emphasizes living in harmony with the Tao (the Way).",
+     "Laozi", ["Lao Tzu", "Lao-Tze"]),
     
-    ("Sun Tzu", -544, -496, ["Chinese"], ["Military Strategist", "General", "Writer"], "male",
-     "Sun_Tzu",
-     "Ancient Chinese military strategist and author of The Art of War, an influential treatise on military strategy that has been applied to business and competitive endeavors worldwide."),
+    ("Sun Tzu", -544, -496, ["Chinese"], ["Military Strategist", "Writer", "General"], "male",
+     "Ancient Chinese military strategist and author of The Art of War, one of the most influential works on military strategy ever written. His principles are still studied in military academies and business schools worldwide.",
+     "Sun_Tzu", ["Sunzi", "Sun Wu"]),
     
     ("Qin Shi Huang", -259, -210, ["Chinese"], ["Emperor", "Ruler"], "male",
-     "Qin_Shi_Huang",
-     "First Emperor of unified China who ended the Warring States period. He standardized weights, measures, and writing, built the first Great Wall sections, and created the famous Terracotta Army."),
+     "First Emperor of a unified China who founded the Qin dynasty. He standardized weights, measures, and writing, built the first Great Wall sections, and was buried with the famous Terracotta Army.",
+     "Qin_Shi_Huang", ["Ying Zheng", "First Emperor"]),
     
-    ("Kublai Khan", 1215, 1294, ["Mongolian", "Chinese"], ["Emperor", "Khan", "Ruler"], "male",
-     "Kublai_Khan",
-     "Fifth Great Khan of the Mongol Empire and founder of the Yuan dynasty in China. He completed the Mongol conquest of China and established one of the largest contiguous empires in history."),
+    ("Kublai Khan", 1215, 1294, ["Mongolian", "Chinese"], ["Emperor", "Ruler", "Conqueror"], "male",
+     "Grandson of Genghis Khan who founded the Yuan dynasty and became the first non-Han emperor to conquer all of China. He expanded the Mongol Empire to its greatest extent and received Marco Polo at his court.",
+     "Kublai_Khan", []),
     
     ("Zheng He", 1371, 1433, ["Chinese"], ["Admiral", "Explorer", "Diplomat"], "male",
-     "Zheng_He",
-     "Chinese mariner and explorer who led seven massive naval expeditions throughout Southeast Asia, South Asia, and East Africa. His treasure fleet was the largest naval force the world had seen."),
+     "Chinese mariner and diplomat who led seven massive naval expeditions throughout Southeast Asia, South Asia, Western Asia, and East Africa. His treasure fleet was the largest in the world at the time.",
+     "Zheng_He", ["Cheng Ho"]),
     
     ("Tokugawa Ieyasu", 1543, 1616, ["Japanese"], ["Shogun", "Ruler", "Military Leader"], "male",
-     "Tokugawa_Ieyasu",
-     "Founder and first shogun of the Tokugawa shogunate that ruled Japan for over 250 years. He unified Japan after a century of civil war and established an era of peace known as Pax Tokugawa."),
-    
-    ("Oda Nobunaga", 1534, 1582, ["Japanese"], ["Daimyo", "Military Leader"], "male",
-     "Oda_Nobunaga",
-     "Powerful daimyo who initiated the unification of Japan during the late Sengoku period. Known for innovative military tactics and use of firearms, he laid the groundwork for the Tokugawa era."),
-    
-    ("Toyotomi Hideyoshi", 1537, 1598, ["Japanese"], ["Regent", "Military Leader"], "male",
-     "Toyotomi_Hideyoshi",
-     "Japanese samurai who rose from peasant origins to become the second 'Great Unifier' of Japan. He completed the unification begun by Oda Nobunaga and attempted invasions of Korea."),
+     "Founder and first shogun of the Tokugawa shogunate that ruled Japan for over 250 years. His victory at Sekigahara unified Japan and established an era of peace known as the Edo period.",
+     "Tokugawa_Ieyasu", []),
     
     ("Akbar the Great", 1542, 1605, ["Indian", "Mughal"], ["Emperor", "Ruler"], "male",
-     "Akbar",
-     "Third Mughal emperor who greatly expanded and consolidated the Mughal Empire in India. Known for his religious tolerance, administrative innovations, and patronage of arts and culture."),
+     "Third Mughal emperor who expanded and consolidated the Mughal Empire in India. Known for his religious tolerance, administrative genius, and patronage of arts and culture.",
+     "Akbar", ["Akbar I", "Jalaluddin Muhammad Akbar"]),
     
-    ("Siddhartha Gautama", -563, -483, ["Indian", "Nepalese"], ["Religious Leader", "Philosopher", "Teacher"], "male",
-     "Gautama_Buddha",
-     "Founder of Buddhism who attained enlightenment under the Bodhi tree and taught the path to Nirvana. His teachings spread across Asia and profoundly influenced world philosophy and religion."),
+    ("Siddhartha Gautama", -563, -483, ["Indian", "Nepalese"], ["Philosopher", "Religious Leader", "Teacher"], "male",
+     "The founder of Buddhism, known as the Buddha ('the awakened one'). Born a prince, he renounced worldly life to seek enlightenment and taught the path to liberation from suffering.",
+     "Gautama_Buddha", ["Buddha", "Shakyamuni"]),
+    
+    ("Chandragupta Maurya", -340, -298, ["Indian"], ["Emperor", "Ruler", "Founder"], "male",
+     "Founder of the Maurya Empire, one of the largest and most powerful empires in Indian history. With his advisor Chanakya, he overthrew the Nanda dynasty and repelled Greek invaders.",
+     "Chandragupta_Maurya", []),
+    
+    ("Emperor Meiji", 1852, 1912, ["Japanese"], ["Emperor", "Ruler"], "male",
+     "Emperor of Japan who presided over the Meiji Restoration, transforming Japan from an isolated feudal society into a modern industrial power in just a few decades.",
+     "Emperor_Meiji", ["Mutsuhito"]),
     
     # ═══════════════════════════════════════════════════════════════════════
-    # ISLAMIC WORLD - Middle East, North Africa, Central Asia
+    # ISLAMIC WORLD / MIDDLE EAST
     # ═══════════════════════════════════════════════════════════════════════
     
-    ("Muhammad", 570, 632, ["Arabian"], ["Prophet", "Religious Leader", "Political Leader"], "male",
-     "Muhammad",
-     "Founder of Islam, believed by Muslims to be the last prophet of God. He unified Arabia under a single religion and established the foundations of Islamic civilization."),
-    
-    ("Avicenna", 980, 1037, ["Persian"], ["Philosopher", "Physician", "Polymath"], "male",
-     "Avicenna",
-     "Persian polymath regarded as one of the most significant thinkers of the Islamic Golden Age. His Canon of Medicine was a standard medical text in Europe and the Islamic world for centuries."),
-    
-    ("Al-Khwarizmi", 780, 850, ["Persian"], ["Mathematician", "Astronomer", "Geographer"], "male",
-     "Muhammad_ibn_Musa_al-Khwarizmi",
-     "Persian mathematician whose works introduced Hindu-Arabic numerals and algebra to the Western world. The word 'algorithm' derives from the Latin form of his name."),
-    
-    ("Rumi", 1207, 1273, ["Persian"], ["Poet", "Sufi Mystic", "Scholar"], "male",
-     "Rumi",
-     "Persian poet and Sufi mystic whose poetry transcends cultural and linguistic borders. His works are among the most widely read poetry in the world, exploring themes of love and spirituality."),
+    ("Al-Khwarizmi", 780, 850, ["Persian", "Arab"], ["Mathematician", "Astronomer", "Geographer"], "male",
+     "Persian polymath whose work introduced Hindu-Arabic numerals and algebra to the Western world. The words 'algorithm' and 'algebra' derive from his name and book titles.",
+     "Muhammad_ibn_Musa_al-Khwarizmi", ["Muhammad ibn Musa al-Khwarizmi"]),
     
     ("Omar Khayyam", 1048, 1131, ["Persian"], ["Mathematician", "Astronomer", "Poet"], "male",
-     "Omar_Khayyam",
-     "Persian polymath known for his contributions to mathematics and astronomy, as well as his collection of poetry, the Rubaiyat. He reformed the Persian calendar to remarkable accuracy."),
+     "Persian polymath known for his contributions to mathematics (solving cubic equations) and astronomy (the Jalali calendar). In the West, he is best remembered for his poetry collection, the Rubaiyat.",
+     "Omar_Khayyam", []),
     
-    ("Ibn Khaldun", 1332, 1406, ["Tunisian", "Arab"], ["Historian", "Philosopher", "Sociologist"], "male",
-     "Ibn_Khaldun",
-     "Arab historiographer and historian, regarded as a founding father of sociology and economics. His Muqaddimah outlined theories of social cohesion and cycles of civilization."),
+    ("Rumi", 1207, 1273, ["Persian", "Turkish"], ["Poet", "Philosopher", "Mystic"], "male",
+     "13th-century Persian poet and Sufi mystic whose works on love and spirituality have transcended cultures. His poetry is among the most widely read in the world.",
+     "Rumi", ["Jalal ad-Din Muhammad Rumi", "Mevlana"]),
     
-    ("Harun al-Rashid", 763, 809, ["Arabian", "Iraqi"], ["Caliph", "Ruler"], "male",
-     "Harun_al-Rashid",
-     "Fifth Abbasid Caliph who presided over the Islamic Golden Age at its zenith. His court in Baghdad became a center of learning, arts, and culture, immortalized in One Thousand and One Nights."),
+    ("Avicenna", 980, 1037, ["Persian"], ["Philosopher", "Physician", "Scientist"], "male",
+     "Persian polymath regarded as one of the most significant physicians, astronomers, and writers of the Islamic Golden Age. His Canon of Medicine was a standard medical text in Europe for 500 years.",
+     "Avicenna", ["Ibn Sina"]),
+    
+    ("Averroes", 1126, 1198, ["Andalusian", "Arab"], ["Philosopher", "Physician", "Jurist"], "male",
+     "Andalusian Muslim philosopher who wrote extensive commentaries on Aristotle, reviving European interest in the philosopher. His work bridged Islamic and Christian philosophy.",
+     "Averroes", ["Ibn Rushd"]),
+    
+    ("Harun al-Rashid", 763, 809, ["Arab", "Persian"], ["Caliph", "Ruler"], "male",
+     "Fifth Abbasid Caliph who presided over the Islamic Golden Age. His court in Baghdad was a center of learning, arts, and culture, immortalized in One Thousand and One Nights.",
+     "Harun_al-Rashid", []),
     
     ("Suleiman the Magnificent", 1494, 1566, ["Turkish", "Ottoman"], ["Sultan", "Ruler"], "male",
-     "Suleiman_the_Magnificent",
-     "Longest-reigning Sultan of the Ottoman Empire, presiding over its golden age. He expanded the empire's borders, reformed laws, and patronized the arts and architecture."),
+     "Longest-reigning Sultan of the Ottoman Empire who presided over its Golden Age. Under his rule, the empire reached its greatest extent and flourished in arts, architecture, and law.",
+     "Suleiman_the_Magnificent", ["Suleiman I", "Kanuni Sultan Süleyman"]),
+    
+    ("Cyrus the Great", -600, -530, ["Persian"], ["Emperor", "Ruler", "Conqueror"], "male",
+     "Founder of the Achaemenid Persian Empire, the largest empire the world had yet seen. Known for his respect for the customs and religions of conquered peoples, exemplified in the Cyrus Cylinder.",
+     "Cyrus_the_Great", []),
     
     # ═══════════════════════════════════════════════════════════════════════
-    # AFRICA - Sub-Saharan Africa
+    # AFRICA
     # ═══════════════════════════════════════════════════════════════════════
     
     ("Mansa Musa", 1280, 1337, ["Malian"], ["Emperor", "Ruler"], "male",
-     "Mansa_Musa",
-     "Ruler of the Mali Empire and possibly the wealthiest person in history. His famous pilgrimage to Mecca distributed so much gold it caused inflation across the Mediterranean."),
+     "Ruler of the Mali Empire, possibly the wealthiest person in history. His pilgrimage to Mecca with tons of gold caused inflation in Egypt and put Mali on European maps.",
+     "Mansa_Musa", ["Musa I of Mali"]),
+    
+    ("Shaka Zulu", 1787, 1828, ["Zulu", "South African"], ["King", "Military Leader"], "male",
+     "Founder of the Zulu Kingdom who revolutionized warfare in southern Africa with new tactics and weapons. His military innovations united the Zulu people into a powerful nation.",
+     "Shaka", ["Shaka kaSenzangakhona"]),
     
     ("Sundiata Keita", 1217, 1255, ["Malian"], ["Emperor", "Founder", "Warrior"], "male",
-     "Sundiata_Keita",
-     "Founder of the Mali Empire and a legendary hero in West African oral tradition. His victory at the Battle of Kirina established Mali as a major power controlling trans-Saharan trade."),
-    
-    ("Shaka Zulu", 1787, 1828, ["South African", "Zulu"], ["King", "Military Leader"], "male",
-     "Shaka",
-     "Founder of the Zulu Kingdom, revolutionizing military tactics with innovations like the short stabbing spear and the 'horns of the buffalo' formation. His campaigns reshaped southern African politics."),
-    
-    ("Askia Muhammad I", 1443, 1538, ["Songhay"], ["Emperor", "Ruler"], "male",
-     "Askia_Mohammad_I",
-     "Emperor of the Songhai Empire who expanded it to its largest extent, making it the largest empire in African history. He established a system of Islamic schools and reformed administration."),
+     "Founder of the Mali Empire and a heroic figure in West African oral tradition. He defeated the Sosso king Sumanguru at the Battle of Kirina and established one of Africa's greatest empires.",
+     "Sundiata_Keita", []),
     
     ("Haile Selassie", 1892, 1975, ["Ethiopian"], ["Emperor", "Ruler"], "male",
-     "Haile_Selassie",
-     "Last Emperor of Ethiopia who modernized the country and became a symbol of African independence. He is revered as the messiah of the Rastafari movement."),
+     "Last Emperor of Ethiopia who modernized the country and became a symbol of African independence. He is revered as the returned Messiah in the Rastafari movement.",
+     "Haile_Selassie", ["Ras Tafari Makonnen"]),
+    
+    ("Queen Nzinga", 1583, 1663, ["Angolan"], ["Queen", "Warrior", "Diplomat"], "female",
+     "Queen of the Mbundu kingdoms who resisted Portuguese colonization for over 30 years through diplomacy and military strategy. She remains a symbol of African resistance.",
+     "Nzinga_of_Ndongo_and_Matamba", ["Ana de Sousa Nzinga Mbande"]),
+    
+    ("Ramesses II", -1303, -1213, ["Egyptian"], ["Pharaoh", "Ruler"], "male",
+     "Often regarded as ancient Egypt's most powerful pharaoh, ruling for 66 years. He built more monuments than any other pharaoh and led Egypt in the famous Battle of Kadesh against the Hittites.",
+     "Ramesses_II", ["Ramses the Great", "Ozymandias"]),
     
     # ═══════════════════════════════════════════════════════════════════════
-    # AMERICAS - Pre-Columbian and Colonial Era
+    # AMERICAS (Pre-Columbian and Colonial Era)
     # ═══════════════════════════════════════════════════════════════════════
     
-    ("Moctezuma II", 1466, 1520, ["Aztec", "Mexican"], ["Emperor", "Ruler"], "male",
-     "Moctezuma_II",
-     "Ninth ruler of the Aztec Empire at its peak, overseeing expansion and consolidation of power. He encountered Hernán Cortés and died during the Spanish conquest of Mexico."),
+    ("Montezuma II", 1466, 1520, ["Aztec", "Mexican"], ["Emperor", "Ruler"], "male",
+     "Ninth ruler of the Aztec Empire at its height, who received Hernán Cortés in Tenochtitlan. His reign ended with the Spanish conquest, during which he died under disputed circumstances.",
+     "Moctezuma_II", ["Moctezuma", "Motecuhzoma Xocoyotzin"]),
     
-    ("Pachacuti", 1418, 1471, ["Incan", "Peruvian"], ["Emperor", "Ruler", "Builder"], "male",
-     "Pachacuti",
-     "Ninth Sapa Inca who transformed the Inca state from a small kingdom into the vast Tawantinsuyu empire. He rebuilt Cusco and is credited with constructing Machu Picchu."),
+    ("Pachacuti", 1418, 1472, ["Incan", "Peruvian"], ["Emperor", "Ruler", "Founder"], "male",
+     "Ninth Sapa Inca who transformed the Kingdom of Cusco into the Inca Empire, the largest empire in pre-Columbian America. He is credited with building Machu Picchu and reorganizing Inca society.",
+     "Pachacuti", ["Pachacutec"]),
     
-    ("Atahualpa", 1502, 1533, ["Incan", "Peruvian"], ["Emperor", "Ruler"], "male",
-     "Atahualpa",
-     "Last Sapa Inca of the Inca Empire before Spanish conquest. Captured by Francisco Pizarro despite paying a massive ransom, he was executed, marking the end of Inca independence."),
+    ("Tecumseh", 1768, 1813, ["Shawnee", "American"], ["Chief", "Warrior", "Leader"], "male",
+     "Shawnee leader who sought to unite Native American tribes against American expansion. He formed a confederacy to resist settlement and fought alongside the British in the War of 1812.",
+     "Tecumseh", []),
     
-    ("Tecumseh", 1768, 1813, ["Shawnee", "American"], ["Chief", "Military Leader", "Activist"], "male",
-     "Tecumseh",
-     "Shawnee leader who attempted to unite Native American tribes into a confederacy to resist American expansion. He allied with the British during the War of 1812."),
+    ("Toussaint Louverture", 1743, 1803, ["Haitian"], ["General", "Revolutionary", "Leader"], "male",
+     "Leader of the Haitian Revolution, the only successful slave revolt in history that led to the founding of Haiti. He transformed the enslaved into a revolutionary army that defeated French, Spanish, and British forces.",
+     "Toussaint_Louverture", ["François-Dominique Toussaint Louverture"]),
     
-    ("Toussaint Louverture", 1743, 1803, ["Haitian"], ["Revolutionary Leader", "General"], "male",
-     "Toussaint_Louverture",
-     "Leader of the Haitian Revolution, the only successful slave revolt that led to the establishment of a free state. His military and political genius challenged French, Spanish, and British forces."),
+    ("Sitting Bull", 1831, 1890, ["Lakota", "American"], ["Chief", "Holy Man", "Leader"], "male",
+     "Hunkpapa Lakota leader who united Sioux tribes against U.S. government policies and led resistance at the Battle of Little Bighorn. He became a symbol of Native American resistance.",
+     "Sitting_Bull", ["Tatanka Iyotake"]),
     
-    ("Sitting Bull", 1831, 1890, ["Lakota Sioux", "American"], ["Chief", "Holy Man", "Warrior"], "male",
-     "Sitting_Bull",
-     "Hunkpapa Lakota leader who united Sioux tribes in resistance against US government policies. He led his people to victory at the Battle of Little Bighorn against General Custer."),
-    
-    ("Geronimo", 1829, 1909, ["Apache", "American"], ["Leader", "Warrior"], "male",
-     "Geronimo",
-     "Apache leader who led his people in resistance against US and Mexican military campaigns for decades. He became a symbol of Native American resistance."),
+    ("Simón Bolívar", 1783, 1830, ["Venezuelan"], ["General", "Revolutionary", "President"], "male",
+     "Military and political leader who led Venezuela, Colombia, Ecuador, Peru, and Bolivia to independence from Spain. Known as 'El Libertador,' he envisioned a united South America.",
+     "Simón_Bolívar", ["El Libertador"]),
     
     # ═══════════════════════════════════════════════════════════════════════
-    # SCIENTISTS, INVENTORS, AND THINKERS
+    # SCIENTISTS, THINKERS, AND INVENTORS
     # ═══════════════════════════════════════════════════════════════════════
-    
-    ("Archimedes", -287, -212, ["Greek"], ["Mathematician", "Physicist", "Engineer", "Inventor"], "male",
-     "Archimedes",
-     "Ancient Greek mathematician and inventor who discovered the principles of buoyancy and the lever. He made fundamental contributions to geometry and designed war machines to defend Syracuse."),
-    
-    ("Euclid", -325, -270, ["Greek"], ["Mathematician"], "male",
-     "Euclid",
-     "Ancient Greek mathematician known as the 'Father of Geometry.' His treatise Elements served as the main textbook for teaching mathematics for over 2,000 years."),
-    
-    ("Ptolemy", 100, 170, ["Greek", "Egyptian"], ["Astronomer", "Mathematician", "Geographer"], "male",
-     "Ptolemy",
-     "Greco-Egyptian astronomer and mathematician whose geocentric model of the universe dominated Western astronomy for over 1,400 years. His Geography also shaped medieval cartography."),
-    
-    ("Francis Bacon", 1561, 1626, ["English"], ["Philosopher", "Statesman", "Scientist"], "male",
-     "Francis_Bacon",
-     "English philosopher and statesman who developed the scientific method of inductive reasoning. He is considered the father of empiricism and influenced the scientific revolution."),
-    
-    ("René Descartes", 1596, 1650, ["French"], ["Philosopher", "Mathematician", "Scientist"], "male",
-     "Ren%C3%A9_Descartes",
-     "French philosopher and mathematician who founded modern Western philosophy and analytical geometry. His statement 'I think, therefore I am' became a fundamental element of Western philosophy."),
     
     ("Johannes Kepler", 1571, 1630, ["German"], ["Astronomer", "Mathematician"], "male",
-     "Johannes_Kepler",
-     "German astronomer who discovered the laws of planetary motion, establishing that planets orbit the Sun in ellipses. His work was fundamental to Newton's theory of gravitation."),
+     "German astronomer who discovered the laws of planetary motion, fundamentally changing our understanding of the solar system. His work laid the groundwork for Newton's theory of gravity.",
+     "Johannes_Kepler", []),
     
-    ("Robert Hooke", 1635, 1703, ["English"], ["Scientist", "Architect"], "male",
-     "Robert_Hooke",
-     "English scientist who coined the term 'cell' in biology after observing cork under a microscope. He made contributions to physics, astronomy, and helped rebuild London after the Great Fire."),
+    ("Archimedes", -287, -212, ["Greek"], ["Mathematician", "Physicist", "Engineer", "Inventor"], "male",
+     "Ancient Greek mathematician and inventor, considered one of the greatest scientists of antiquity. He discovered the principles of buoyancy and the lever, and invented machines of war.",
+     "Archimedes", ["Archimedes of Syracuse"]),
     
-    ("Antoine Lavoisier", 1743, 1794, ["French"], ["Chemist", "Biologist"], "male",
-     "Antoine_Lavoisier",
-     "French chemist known as the 'Father of Modern Chemistry.' He identified oxygen and hydrogen, established the law of conservation of mass, and was guillotined during the French Revolution."),
+    ("Euclid", -325, -265, ["Greek"], ["Mathematician"], "male",
+     "Ancient Greek mathematician often referred to as the 'Father of Geometry.' His Elements is one of the most influential works in mathematics history, used as a textbook for over 2,000 years.",
+     "Euclid", []),
     
-    ("Michael Faraday", 1791, 1867, ["British"], ["Scientist", "Physicist", "Chemist"], "male",
-     "Michael_Faraday",
-     "English scientist who made fundamental contributions to electromagnetism and electrochemistry. His discoveries of electromagnetic induction form the basis of electric motor technology."),
+    ("Pythagoras", -570, -495, ["Greek"], ["Mathematician", "Philosopher"], "male",
+     "Ancient Greek philosopher and mathematician famous for the Pythagorean theorem. He founded a philosophical and religious movement that influenced Plato and Western philosophy.",
+     "Pythagoras", []),
     
-    ("James Clerk Maxwell", 1831, 1879, ["Scottish", "British"], ["Physicist", "Mathematician"], "male",
-     "James_Clerk_Maxwell",
-     "Scottish physicist who formulated the classical theory of electromagnetic radiation. His equations unified electricity, magnetism, and light as manifestations of the same phenomenon."),
+    ("Hippocrates", -460, -370, ["Greek"], ["Physician"], "male",
+     "Ancient Greek physician considered the 'Father of Medicine.' He established medicine as a profession distinct from philosophy and religion, and the Hippocratic Oath bears his name.",
+     "Hippocrates", ["Hippocrates of Kos"]),
     
-    ("Louis Pasteur", 1822, 1895, ["French"], ["Chemist", "Microbiologist"], "male",
-     "Louis_Pasteur",
-     "French chemist and microbiologist who proved germ theory, invented pasteurization, and developed vaccines for rabies and anthrax. He is considered one of the founders of microbiology."),
-    
-    ("Gregor Mendel", 1822, 1884, ["Austrian"], ["Scientist", "Friar"], "male",
-     "Gregor_Mendel",
-     "Austrian friar and scientist who discovered the basic principles of heredity through experiments with pea plants. He is regarded as the 'Father of Genetics.'"),
-    
-    ("Max Planck", 1858, 1947, ["German"], ["Physicist"], "male",
-     "Max_Planck",
-     "German physicist who originated quantum theory, fundamentally changing understanding of atomic and subatomic processes. He won the Nobel Prize in Physics in 1918."),
-    
-    ("Niels Bohr", 1885, 1962, ["Danish"], ["Physicist"], "male",
-     "Niels_Bohr",
-     "Danish physicist who made foundational contributions to understanding atomic structure and quantum theory. He received the Nobel Prize in Physics in 1922 for his model of the atom."),
-    
-    ("Werner Heisenberg", 1901, 1976, ["German"], ["Physicist"], "male",
-     "Werner_Heisenberg",
-     "German physicist and pioneer of quantum mechanics who formulated the uncertainty principle. He won the Nobel Prize in Physics in 1932 for the creation of quantum mechanics."),
-    
-    # ═══════════════════════════════════════════════════════════════════════
-    # PHILOSOPHERS AND WRITERS
-    # ═══════════════════════════════════════════════════════════════════════
+    ("Plato", -428, -348, ["Greek"], ["Philosopher"], "male",
+     "Ancient Greek philosopher who founded the Academy in Athens, the first institution of higher learning in the Western world. His dialogues exploring justice, beauty, and equality remain fundamental to philosophy.",
+     "Plato", []),
     
     ("Socrates", -470, -399, ["Greek"], ["Philosopher"], "male",
-     "Socrates",
-     "Classical Greek philosopher credited as one of the founders of Western philosophy. Known for his Socratic method of questioning, he was sentenced to death for corrupting Athenian youth."),
+     "Classical Greek philosopher credited as one of the founders of Western philosophy. He developed the Socratic method of questioning and was executed for 'corrupting the youth' of Athens.",
+     "Socrates", []),
     
-    ("Plato", -428, -348, ["Greek"], ["Philosopher", "Writer"], "male",
-     "Plato",
-     "Athenian philosopher who founded the Academy and wrote philosophical dialogues exploring justice, beauty, and equality. His works, featuring Socrates, profoundly influenced Western thought."),
+    ("René Descartes", 1596, 1650, ["French"], ["Philosopher", "Mathematician"], "male",
+     "French philosopher and mathematician known as the 'Father of Modern Philosophy.' His statement 'I think, therefore I am' became a fundamental element of Western philosophy.",
+     "René_Descartes", []),
     
-    ("Immanuel Kant", 1724, 1804, ["German"], ["Philosopher"], "male",
-     "Immanuel_Kant",
-     "German philosopher whose Critique of Pure Reason is considered one of the most influential works in philosophy. He attempted to synthesize rationalism and empiricism."),
+    ("Benjamin Franklin", 1706, 1790, ["American"], ["Scientist", "Inventor", "Diplomat", "Statesman"], "male",
+     "American polymath and Founding Father who made major contributions to science (electricity experiments), invented bifocals and the lightning rod, and helped draft the Declaration of Independence.",
+     "Benjamin_Franklin", []),
     
-    ("John Locke", 1632, 1704, ["English"], ["Philosopher", "Physician"], "male",
-     "John_Locke",
-     "English philosopher whose ideas influenced the American and French Revolutions. His theories of mind and knowledge, and his social contract theory, shaped liberal political philosophy."),
+    ("James Watt", 1736, 1819, ["Scottish", "British"], ["Inventor", "Engineer"], "male",
+     "Scottish inventor whose improvements to the steam engine were fundamental to the Industrial Revolution. The watt, a unit of power, is named after him.",
+     "James_Watt", []),
     
-    ("Voltaire", 1694, 1778, ["French"], ["Writer", "Philosopher"], "male",
-     "Voltaire",
-     "French Enlightenment writer and philosopher known for his wit and criticism of Christianity. His advocacy of civil liberties influenced the American and French Revolutions."),
+    ("Michael Faraday", 1791, 1867, ["British"], ["Scientist", "Chemist", "Physicist"], "male",
+     "English scientist who contributed to the study of electromagnetism and electrochemistry. His discoveries of electromagnetic induction and electrolysis laid the groundwork for electric motors and generators.",
+     "Michael_Faraday", []),
     
-    ("Jean-Jacques Rousseau", 1712, 1778, ["French", "Swiss"], ["Philosopher", "Writer", "Composer"], "male",
-     "Jean-Jacques_Rousseau",
-     "Genevan philosopher whose political philosophy influenced the French Revolution and modern political thought. His The Social Contract argued that legitimacy comes from popular sovereignty."),
+    ("Louis Pasteur", 1822, 1895, ["French"], ["Chemist", "Microbiologist"], "male",
+     "French chemist and microbiologist renowned for his discoveries of vaccination, microbial fermentation, and pasteurization. His work saved countless lives and founded the science of microbiology.",
+     "Louis_Pasteur", []),
     
-    ("Friedrich Nietzsche", 1844, 1900, ["German"], ["Philosopher", "Writer"], "male",
-     "Friedrich_Nietzsche",
-     "German philosopher whose work challenged traditional morality and religion. His concepts including the 'will to power' and 'Übermensch' profoundly influenced 20th-century philosophy."),
+    ("Thomas Edison", 1847, 1931, ["American"], ["Inventor", "Businessman"], "male",
+     "American inventor who developed the phonograph, motion picture camera, and practical electric light bulb. He held over 1,000 patents and established the first industrial research laboratory.",
+     "Thomas_Edison", []),
+    
+    ("Max Planck", 1858, 1947, ["German"], ["Physicist"], "male",
+     "German physicist who originated quantum theory, revolutionizing our understanding of atomic and subatomic processes. He won the Nobel Prize in Physics in 1918.",
+     "Max_Planck", []),
+    
+    ("Niels Bohr", 1885, 1962, ["Danish"], ["Physicist"], "male",
+     "Danish physicist who made foundational contributions to understanding atomic structure and quantum theory. He won the Nobel Prize in Physics in 1922 for his model of the atom.",
+     "Niels_Bohr", []),
     
     # ═══════════════════════════════════════════════════════════════════════
-    # ARTISTS AND COMPOSERS
+    # EXPLORERS AND TRAVELERS
     # ═══════════════════════════════════════════════════════════════════════
     
-    ("Wolfgang Amadeus Mozart", 1756, 1791, ["Austrian"], ["Composer", "Musician"], "male",
-     "Wolfgang_Amadeus_Mozart",
-     "Prolific and influential composer of the Classical period who created over 600 works. A child prodigy, his operas, symphonies, and concertos remain central to the classical repertoire."),
+    ("Leif Erikson", 970, 1020, ["Norse", "Icelandic"], ["Explorer"], "male",
+     "Norse explorer believed to be the first European to land in continental North America, nearly 500 years before Columbus. He established a settlement at Vinland, likely in Newfoundland.",
+     "Leif_Erikson", []),
     
-    ("Johann Sebastian Bach", 1685, 1750, ["German"], ["Composer", "Musician"], "male",
-     "Johann_Sebastian_Bach",
-     "German composer and musician of the Baroque period, known for instrumental compositions and vocal music. His works represent the culmination of the Baroque style."),
+    ("Vasco da Gama", 1469, 1524, ["Portuguese"], ["Explorer", "Navigator"], "male",
+     "Portuguese explorer who was the first European to reach India by sea, linking Europe and Asia by ocean route. His voyages opened up trade routes that transformed global commerce.",
+     "Vasco_da_Gama", []),
     
-    ("Rembrandt", 1606, 1669, ["Dutch"], ["Painter", "Printmaker"], "male",
-     "Rembrandt",
-     "Dutch painter and printmaker considered one of the greatest visual artists in history. His mastery of light and shadow revolutionized portraiture and self-portraiture."),
+    ("Ferdinand Magellan", 1480, 1521, ["Portuguese"], ["Explorer", "Navigator"], "male",
+     "Portuguese explorer who organized the first expedition to circumnavigate the Earth. Though he died in the Philippines, his voyage proved the Earth was round and much larger than believed.",
+     "Ferdinand_Magellan", ["Fernão de Magalhães"]),
     
-    ("Claude Monet", 1840, 1926, ["French"], ["Painter"], "male",
-     "Claude_Monet",
-     "French painter and founder of Impressionism, whose innovative technique of capturing light and color transformed Western painting. His Water Lilies series is among the most recognized artworks."),
+    ("James Cook", 1728, 1779, ["British"], ["Explorer", "Navigator", "Captain"], "male",
+     "British explorer and navigator who made detailed maps of previously uncharted areas. He made the first European contact with Australia's eastern coast and the Hawaiian Islands.",
+     "James_Cook", []),
     
-    ("Pablo Picasso", 1881, 1973, ["Spanish"], ["Painter", "Sculptor"], "male",
-     "Pablo_Picasso",
-     "Spanish painter and sculptor who co-founded Cubism and made extraordinary contributions to Symbolism and Surrealism. His Guernica is one of the most powerful anti-war paintings in history."),
+    # ═══════════════════════════════════════════════════════════════════════
+    # RELIGIOUS AND CULTURAL LEADERS
+    # ═══════════════════════════════════════════════════════════════════════
+    
+    ("Moses", -1391, -1271, ["Hebrew"], ["Prophet", "Leader"], "male",
+     "Prophet and leader in Judaism who led the Israelites out of Egyptian slavery and received the Ten Commandments at Mount Sinai. He is central to Judaism, Christianity, and Islam.",
+     "Moses", []),
+    
+    ("Jesus Christ", -4, 33, ["Jewish"], ["Religious Leader", "Teacher"], "male",
+     "Central figure of Christianity, believed by Christians to be the Son of God and the awaited Messiah. His teachings of love, forgiveness, and salvation transformed world history.",
+     "Jesus", ["Jesus of Nazareth", "Christ"]),
+    
+    ("Muhammad", 570, 632, ["Arab"], ["Prophet", "Religious Leader", "Statesman"], "male",
+     "Founder of Islam, believed by Muslims to be the final prophet of God. He united the Arabian Peninsula and established a religious, social, and political framework that spread across the world.",
+     "Muhammad", ["Prophet Muhammad"]),
+    
+    ("Saint Augustine", 354, 430, ["Roman", "Berber"], ["Theologian", "Philosopher", "Bishop"], "male",
+     "Early Christian theologian and philosopher whose writings influenced the development of Western Christianity and philosophy. His Confessions is considered the first Western autobiography.",
+     "Augustine_of_Hippo", ["Augustine of Hippo"]),
+    
+    ("Dante Alighieri", 1265, 1321, ["Italian"], ["Poet", "Writer", "Philosopher"], "male",
+     "Italian poet best known for the Divine Comedy, considered the greatest literary work in Italian and a masterpiece of world literature. He is called the 'Father of the Italian language.'",
+     "Dante_Alighieri", []),
+    
+    # ═══════════════════════════════════════════════════════════════════════
+    # ADDITIONAL NOTABLE FIGURES
+    # ═══════════════════════════════════════════════════════════════════════
+    
+    ("Attila the Hun", 406, 453, ["Hunnic"], ["Ruler", "Conqueror", "Military Leader"], "male",
+     "Ruler of the Hunnic Empire who was one of the most feared enemies of the Western and Eastern Roman Empires. Called the 'Scourge of God,' he invaded the Balkans, Gaul, and Italy.",
+     "Attila", ["Attila the Hun"]),
+    
+    ("William the Conqueror", 1028, 1087, ["Norman", "French", "English"], ["King", "Duke", "Conqueror"], "male",
+     "Duke of Normandy who conquered England in 1066 and became its first Norman king. The Norman Conquest transformed English culture, language, and society.",
+     "William_the_Conqueror", ["William I of England"]),
+    
+    ("Hernán Cortés", 1485, 1547, ["Spanish"], ["Conquistador", "Explorer"], "male",
+     "Spanish conquistador who led the expedition that caused the fall of the Aztec Empire and brought large portions of Mexico under Spanish rule. His conquest dramatically changed the Americas.",
+     "Hernán_Cortés", ["Hernan Cortes"]),
+    
+    ("Peter the Great", 1672, 1725, ["Russian"], ["Tsar", "Emperor", "Ruler"], "male",
+     "Tsar and later Emperor of Russia who modernized and expanded Russia into a major European power. He founded St. Petersburg and reformed Russian government, military, and society.",
+     "Peter_the_Great", ["Peter I of Russia"]),
+    
+    ("Catherine the Great", 1729, 1796, ["Russian", "German"], ["Empress", "Ruler"], "female",
+     "Empress of Russia who expanded the empire, modernized its administration, and corresponded with Enlightenment philosophers. Under her rule, Russia became one of the great powers of Europe.",
+     "Catherine_the_Great", ["Catherine II of Russia"]),
+    
+    ("Otto von Bismarck", 1815, 1898, ["German", "Prussian"], ["Chancellor", "Statesman"], "male",
+     "Prussian statesman who unified Germany through diplomacy and war, becoming its first Chancellor. He dominated European affairs for decades and created the German welfare state.",
+     "Otto_von_Bismarck", []),
 ]
 
 # ────────────────────────────────────────────────────────────────────────────
-# EVENT LINKS - Map person names to event title keywords for linking
+# EVENT-PERSON LINKS
+# Format: (person_name_substr, event_title_substr, role)
 # ────────────────────────────────────────────────────────────────────────────
 
-EVENT_LINKS = {
-    "Hatshepsut": [("hatshepsut", "ruler")],
-    "Nefertiti": [("akhenaten", "participant"), ("amarna", "participant")],
-    "Wu Zetian": [("tang", "ruler")],
-    "Catherine the Great": [("russian enlightenment", "ruler"), ("partition of poland", "participant")],
-    "Harriet Tubman": [("underground railroad", "leader"), ("civil war", "participant")],
-    "Ada Lovelace": [("babbage", "collaborator")],
-    "Emmeline Pankhurst": [("suffrage", "leader"), ("women's rights", "leader")],
-    "Hypatia": [("alexandria", "scholar")],
+EVENT_PERSON_LINKS = [
+    # Women
+    ("Hatshepsut", "Egypt", "Pharaoh"),
+    ("Nefertiti", "Egypt", "Queen"),
+    ("Wu Zetian", "Tang", "Empress"),
+    ("Boudicca", "Roman", "Leader of rebellion"),
+    ("Hypatia", "Alexandria", "Scholar"),
+    ("Eleanor of Aquitaine", "Crusade", "Participant"),
+    ("Catherine the Great", "Russia", "Ruler"),
     
-    "Laozi": [("taoism", "founder"), ("warring states", "philosopher")],
-    "Sun Tzu": [("art of war", "author"), ("warring states", "strategist")],
-    "Qin Shi Huang": [("qin", "ruler"), ("terracotta", "commissioner"), ("great wall", "builder")],
-    "Kublai Khan": [("yuan", "founder"), ("mongol", "ruler"), ("marco polo", "host")],
-    "Zheng He": [("treasure fleet", "admiral"), ("ming voyages", "leader")],
-    "Tokugawa Ieyasu": [("tokugawa", "founder"), ("edo", "ruler"), ("sekigahara", "victor")],
-    "Oda Nobunaga": [("unification of japan", "initiator")],
-    "Akbar the Great": [("mughal", "ruler")],
-    "Siddhartha Gautama": [("buddhism", "founder"), ("enlightenment", "founder")],
+    # Asian figures
+    ("Laozi", "Daoism", "Founder"),
+    ("Laozi", "Dao De Jing", "Author"),
+    ("Sun Tzu", "Art of War", "Author"),
+    ("Qin Shi Huang", "Great Wall", "Builder"),
+    ("Qin Shi Huang", "Qin", "Founder"),
+    ("Qin Shi Huang", "Terracotta", "Commissoner"),
+    ("Siddhartha Gautama", "Buddhism", "Founder"),
+    ("Siddhartha Gautama", "Enlightenment", "Subject"),
+    ("Chandragupta Maurya", "Maurya", "Founder"),
+    ("Kublai Khan", "Yuan", "Founder"),
+    ("Kublai Khan", "Marco Polo", "Host"),
+    ("Zheng He", "Ming", "Admiral"),
+    ("Tokugawa Ieyasu", "Edo", "Founder"),
+    ("Akbar the Great", "Mughal", "Emperor"),
+    ("Emperor Meiji", "Meiji", "Leader"),
     
-    "Muhammad": [("islam", "founder"), ("medina", "leader"), ("mecca", "prophet")],
-    "Avicenna": [("golden age", "scholar"), ("medicine", "author")],
-    "Al-Khwarizmi": [("algebra", "founder"), ("golden age", "mathematician")],
-    "Rumi": [("sufi", "poet")],
-    "Omar Khayyam": [("persian", "poet"), ("calendar", "reformer")],
-    "Ibn Khaldun": [("muqaddimah", "author")],
-    "Harun al-Rashid": [("abbasid", "caliph"), ("golden age", "ruler")],
-    "Suleiman the Magnificent": [("ottoman", "sultan"), ("vienna", "besieger")],
+    # Middle Eastern figures
+    ("Cyrus the Great", "Cyrus", "Subject"),
+    ("Cyrus the Great", "Persian Empire", "Founder"),
+    ("Cyrus the Great", "Babylon", "Conqueror"),
+    ("Al-Khwarizmi", "House of Wisdom", "Scholar"),
+    ("Al-Khwarizmi", "Algebra", "Founder"),
+    ("Omar Khayyam", "Calendar", "Developer"),
+    ("Avicenna", "Medicine", "Author"),
+    ("Averroes", "Aristotle", "Commentator"),
+    ("Harun al-Rashid", "Baghdad", "Ruler"),
+    ("Harun al-Rashid", "Abbasid", "Caliph"),
+    ("Suleiman the Magnificent", "Ottoman", "Sultan"),
     
-    "Mansa Musa": [("mali", "ruler"), ("mecca pilgrimage", "pilgrim")],
-    "Sundiata Keita": [("mali empire", "founder")],
-    "Shaka Zulu": [("zulu", "founder")],
-    "Haile Selassie": [("ethiopia", "emperor"), ("league of nations", "speaker")],
+    # African figures
+    ("Mansa Musa", "Mansa Musa", "Subject"),
+    ("Mansa Musa", "Mali", "Ruler"),
+    ("Mansa Musa", "Timbuktu", "Patron"),
+    ("Sundiata Keita", "Mali Empire", "Founder"),
+    ("Sundiata Keita", "Sundiata", "Subject"),
+    ("Shaka Zulu", "Zulu", "Founder"),
+    ("Ramesses II", "Egypt", "Pharaoh"),
+    ("Ramesses II", "Kadesh", "Commander"),
     
-    "Moctezuma II": [("aztec", "ruler"), ("cortés", "encounter")],
-    "Pachacuti": [("inca", "ruler"), ("machu picchu", "builder")],
-    "Atahualpa": [("inca", "ruler"), ("pizarro", "captive")],
-    "Tecumseh": [("native american", "leader"), ("war of 1812", "ally")],
-    "Toussaint Louverture": [("haitian revolution", "leader")],
-    "Sitting Bull": [("little bighorn", "victor"), ("sioux", "leader")],
+    # American figures
+    ("Montezuma II", "Aztec", "Emperor"),
+    ("Montezuma II", "Tenochtitlan", "Ruler"),
+    ("Pachacuti", "Inca", "Emperor"),
+    ("Pachacuti", "Machu Picchu", "Builder"),
+    ("Tecumseh", "Native American", "Leader"),
+    ("Toussaint Louverture", "Haiti", "Leader"),
+    ("Sitting Bull", "Little Bighorn", "Leader"),
+    ("Simón Bolívar", "Independence", "Leader"),
     
-    "Archimedes": [("syracuse", "defender"), ("eureka", "discoverer")],
-    "Euclid": [("geometry", "founder"), ("elements", "author")],
-    "Ptolemy": [("geocentric", "author"), ("alexandria", "astronomer")],
-    "Francis Bacon": [("scientific method", "founder")],
-    "René Descartes": [("cartesian", "founder"), ("philosophy", "founder")],
-    "Johannes Kepler": [("planetary motion", "discoverer"), ("copernican", "supporter")],
-    "Antoine Lavoisier": [("oxygen", "discoverer"), ("chemistry", "founder"), ("french revolution", "victim")],
-    "Michael Faraday": [("electromagnetism", "discoverer")],
-    "James Clerk Maxwell": [("electromagnetic", "theorist")],
-    "Louis Pasteur": [("pasteurization", "inventor"), ("germ theory", "prover")],
-    "Gregor Mendel": [("genetics", "founder")],
-    "Max Planck": [("quantum", "founder")],
-    "Niels Bohr": [("atomic model", "developer"), ("quantum", "contributor")],
-    "Werner Heisenberg": [("uncertainty principle", "formulator"), ("quantum", "pioneer")],
+    # Scientists
+    ("Archimedes", "Syracuse", "Defender"),
+    ("Pythagoras", "Pythagoras", "Subject"),
+    ("Euclid", "Alexandria", "Scholar"),
+    ("Hippocrates", "Medicine", "Founder"),
+    ("Plato", "Academy", "Founder"),
+    ("Plato", "Socrates", "Student"),
+    ("Socrates", "Socrates", "Subject"),
+    ("Socrates", "Athens", "Citizen"),
+    ("René Descartes", "Philosophy", "Founder"),
+    ("Johannes Kepler", "Planetary", "Discoverer"),
+    ("Benjamin Franklin", "Independence", "Founding Father"),
+    ("James Watt", "Industrial", "Inventor"),
+    ("Michael Faraday", "Electromagnetic", "Discoverer"),
+    ("Louis Pasteur", "Pasteurization", "Inventor"),
+    ("Thomas Edison", "Electric", "Inventor"),
+    ("Max Planck", "Quantum", "Founder"),
+    ("Niels Bohr", "Atomic", "Theorist"),
     
-    "Socrates": [("athenian", "philosopher"), ("trial", "defendant")],
-    "Plato": [("academy", "founder"), ("philosophy", "founder")],
-    "Immanuel Kant": [("enlightenment", "philosopher")],
-    "John Locke": [("social contract", "theorist"), ("enlightenment", "philosopher")],
-    "Voltaire": [("enlightenment", "writer"), ("french", "philosopher")],
-    "Jean-Jacques Rousseau": [("social contract", "author"), ("enlightenment", "philosopher")],
-    "Friedrich Nietzsche": [("philosophy", "iconoclast")],
+    # Explorers
+    ("Leif Erikson", "Vinland", "Explorer"),
+    ("Leif Erikson", "Americas", "Explorer"),
+    ("Vasco da Gama", "India", "Explorer"),
+    ("Ferdinand Magellan", "Circumnavigation", "Leader"),
+    ("James Cook", "Australia", "Explorer"),
+    ("James Cook", "Hawaii", "Explorer"),
     
-    "Wolfgang Amadeus Mozart": [("classical music", "composer"), ("vienna", "composer")],
-    "Johann Sebastian Bach": [("baroque", "composer")],
-    "Rembrandt": [("dutch golden age", "painter")],
-    "Claude Monet": [("impressionism", "founder")],
-    "Pablo Picasso": [("cubism", "founder"), ("guernica", "painter")],
-}
+    # Religious figures
+    ("Moses", "Exodus", "Leader"),
+    ("Moses", "Commandments", "Receiver"),
+    ("Jesus Christ", "Christianity", "Founder"),
+    ("Muhammad", "Islam", "Founder"),
+    ("Muhammad", "Hijra", "Subject"),
+    ("Muhammad", "Mecca", "Conqueror"),
+    ("Saint Augustine", "Christianity", "Theologian"),
+    ("Dante Alighieri", "Divine Comedy", "Author"),
+    ("Rumi", "Sufi", "Poet"),
+    
+    # Conquerors and rulers
+    ("Attila the Hun", "Hun", "Leader"),
+    ("Attila the Hun", "Roman", "Enemy"),
+    ("William the Conqueror", "Norman", "Leader"),
+    ("William the Conqueror", "1066", "Conqueror"),
+    ("Hernán Cortés", "Aztec", "Conqueror"),
+    ("Hernán Cortés", "Tenochtitlan", "Conqueror"),
+    ("Peter the Great", "Russia", "Ruler"),
+    ("Peter the Great", "St. Petersburg", "Founder"),
+    ("Otto von Bismarck", "German", "Unifier"),
+    ("Otto von Bismarck", "Prussia", "Chancellor"),
+]
+
+
+async def get_existing_people(conn) -> set:
+    """Get names of all existing people in the database."""
+    rows = await conn.fetch("SELECT name FROM people")
+    return {row['name'] for row in rows}
+
+
+async def insert_person(conn, name, birth_year, death_year, nationalities, roles, gender, description, wikipedia_slug, aliases) -> Optional[str]:
+    """Insert a person and return their ID."""
+    try:
+        person_id = await conn.fetchval("""
+            INSERT INTO people (
+                name, birth_year, death_year, nationalities, roles, gender, 
+                description, wikipedia_slug, aliases
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING id
+        """, name, birth_year, death_year, nationalities, roles, gender,
+            description, wikipedia_slug, aliases if aliases else None)
+        return str(person_id)
+    except Exception as e:
+        print(f"  Error inserting {name}: {e}")
+        return None
+
+
+async def find_event_by_title_substr(conn, substr: str) -> Optional[str]:
+    """Find an event ID by title substring."""
+    result = await conn.fetchval(
+        "SELECT id FROM events WHERE title ILIKE $1 LIMIT 1",
+        f"%{substr}%"
+    )
+    return str(result) if result else None
+
+
+async def find_person_by_name_substr(conn, substr: str) -> Optional[str]:
+    """Find a person ID by name substring."""
+    result = await conn.fetchval(
+        "SELECT id FROM people WHERE name ILIKE $1 LIMIT 1",
+        f"%{substr}%"
+    )
+    return str(result) if result else None
+
+
+async def insert_event_person_link(conn, person_id: str, event_id: str, role: str) -> bool:
+    """Insert an event_people link."""
+    try:
+        await conn.execute("""
+            INSERT INTO event_people (event_id, person_id, role)
+            VALUES ($1::uuid, $2::uuid, $3)
+            ON CONFLICT (event_id, person_id, role) DO NOTHING
+        """, event_id, person_id, role)
+        return True
+    except Exception as e:
+        print(f"  Error inserting link: {e}")
+        return False
 
 
 async def main():
-    print("Connecting to database...")
+    print("=" * 60)
+    print("Chronicle Database - Adding Historical Figures")
+    print("=" * 60)
+    
     conn = await asyncpg.connect(DB_URL)
     
     try:
-        # Get existing people to avoid duplicates
-        existing = await conn.fetch("SELECT name FROM people")
-        existing_names = {row['name'].lower() for row in existing}
-        print(f"Found {len(existing_names)} existing people in database")
+        # Get existing people
+        existing = await get_existing_people(conn)
+        print(f"\nExisting figures: {len(existing)}")
         
-        # Filter out people already in DB
-        to_insert = [p for p in NEW_PEOPLE if p[0].lower() not in existing_names]
-        print(f"Will insert {len(to_insert)} new people (skipping {len(NEW_PEOPLE) - len(to_insert)} duplicates)")
+        # Insert new figures
+        print("\n--- Inserting New Figures ---")
+        inserted = 0
+        skipped = 0
+        person_ids = {}  # name -> id mapping
         
-        if not to_insert:
-            print("No new people to insert!")
-            return
-        
-        # Insert new people
-        inserted_count = 0
-        person_ids = {}  # Map name to UUID for event linking
-        
-        for person in to_insert:
-            name, birth_year, death_year, nationalities, roles, gender, wiki_slug, description = person
+        for (name, birth_year, death_year, nationalities, roles, gender, 
+             description, wikipedia_slug, aliases) in NEW_FIGURES:
             
-            person_id = uuid.uuid4()
-            person_ids[name] = person_id
+            if name in existing:
+                print(f"  Skip (exists): {name}")
+                # Still get their ID for linking
+                pid = await find_person_by_name_substr(conn, name)
+                if pid:
+                    person_ids[name] = pid
+                skipped += 1
+                continue
             
-            await conn.execute("""
-                INSERT INTO people (id, name, birth_year, death_year, nationalities, roles, gender, wikipedia_slug, description)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            """, person_id, name, birth_year, death_year, nationalities, roles, gender, wiki_slug, description)
+            pid = await insert_person(
+                conn, name, birth_year, death_year, nationalities, roles,
+                gender, description, wikipedia_slug, aliases
+            )
             
-            inserted_count += 1
-            if inserted_count % 10 == 0:
-                print(f"  Inserted {inserted_count} people...")
+            if pid:
+                person_ids[name] = pid
+                inserted += 1
+                print(f"  Added: {name} ({birth_year} - {death_year})")
+            else:
+                skipped += 1
         
-        print(f"✓ Inserted {inserted_count} new people")
+        print(f"\nFigures: {inserted} inserted, {skipped} skipped")
         
-        # Now link people to events
-        print("\nLinking people to events...")
+        # Create event_people links
+        print("\n--- Creating Event-Person Links ---")
         links_created = 0
+        links_skipped = 0
         
-        for name, keywords in EVENT_LINKS.items():
-            if name not in person_ids:
-                # Person might already exist, try to get their ID
-                row = await conn.fetchrow("SELECT id FROM people WHERE name = $1", name)
-                if row:
-                    person_ids[name] = row['id']
-                else:
-                    continue
+        for (person_substr, event_substr, role) in EVENT_PERSON_LINKS:
+            # Find person
+            person_id = None
+            for name, pid in person_ids.items():
+                if person_substr.lower() in name.lower():
+                    person_id = pid
+                    break
             
-            person_id = person_ids[name]
+            if not person_id:
+                person_id = await find_person_by_name_substr(conn, person_substr)
             
-            for keyword, role in keywords:
-                # Find events matching the keyword
-                events = await conn.fetch("""
-                    SELECT id, title FROM events 
-                    WHERE title ILIKE $1
-                    LIMIT 3
-                """, f"%{keyword}%")
-                
-                for event in events:
-                    # Check if link already exists
-                    existing_link = await conn.fetchrow("""
-                        SELECT 1 FROM event_people 
-                        WHERE event_id = $1 AND person_id = $2 AND role = $3
-                    """, event['id'], person_id, role)
-                    
-                    if not existing_link:
-                        try:
-                            await conn.execute("""
-                                INSERT INTO event_people (event_id, person_id, role)
-                                VALUES ($1, $2, $3)
-                            """, event['id'], person_id, role)
-                            links_created += 1
-                        except Exception as e:
-                            # Skip duplicates silently
-                            pass
+            if not person_id:
+                links_skipped += 1
+                continue
+            
+            # Find event
+            event_id = await find_event_by_title_substr(conn, event_substr)
+            if not event_id:
+                links_skipped += 1
+                continue
+            
+            # Create link
+            if await insert_event_person_link(conn, person_id, event_id, role):
+                links_created += 1
+            else:
+                links_skipped += 1
         
-        print(f"✓ Created {links_created} event-people links")
+        print(f"Event-Person links: {links_created} created, {links_skipped} skipped")
         
         # Final count
-        total = await conn.fetchval("SELECT COUNT(*) FROM people")
-        print(f"\n✓ Total people in database: {total}")
+        total_people = await conn.fetchval("SELECT COUNT(*) FROM people")
+        total_links = await conn.fetchval("SELECT COUNT(*) FROM event_people")
+        
+        print(f"\n--- Final Counts ---")
+        print(f"Total people in database: {total_people}")
+        print(f"Total event-person links: {total_links}")
+        
+        # Show some samples
+        print("\n--- Sample of Added Figures ---")
+        samples = await conn.fetch("""
+            SELECT name, birth_year, death_year, nationalities, roles
+            FROM people 
+            ORDER BY birth_year NULLS LAST
+            LIMIT 20
+        """)
+        for row in samples:
+            nat = ', '.join(row['nationalities']) if row['nationalities'] else 'Unknown'
+            roles = ', '.join(row['roles']) if row['roles'] else 'Unknown'
+            print(f"  {row['name']} ({row['birth_year']}-{row['death_year']}): {nat} | {roles}")
         
     finally:
         await conn.close()
+    
+    print("\n" + "=" * 60)
+    print("Done!")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
