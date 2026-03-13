@@ -2,33 +2,23 @@
  * permalink.ts — URL hash encoding/decoding for Chronicle shareable links.
  *
  * Owns: parsing and serializing viewport state to/from the URL hash fragment.
- *       Computing a ReactFlow viewport transform from a year range + zoom.
  *
  * Does NOT: read or write the DOM, manage React state, or trigger navigation.
  *
  * Hash format:
- *   #t={startYear},{endYear}&z={zoom}&e={eventSlug}&r={regionCodes}
+ *   #z={zoom}&cx={centerX}&cy={centerY}&e={eventSlug}
  *
- *   - t = visible year range, e.g. t=-500,1500
- *   - z = ReactFlow zoom level float, e.g. z=0.3
- *   - e = selected event slug, e.g. e=fall-of-rome
- *   - r = comma-separated region codes to hide, e.g. r=americas,asia
+ *   - z  = ReactFlow zoom level float, e.g. z=0.45
+ *   - cx = center X coordinate in canvas space, e.g. cx=1200
+ *   - cy = center Y coordinate in canvas space, e.g. cy=800
+ *   - e  = selected event slug (optional), e.g. e=world-war-ii
  *
  * All parameters are optional. Missing params → use app defaults.
  */
 
-import { CANVAS_CONSTANTS } from '../types';
-import type { Region } from '../types';
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
-
-/** Minimum allowed year value (deep prehistory guard). */
-const MIN_YEAR = -10_000;
-
-/** Maximum allowed year value (far future guard). */
-const MAX_YEAR = 3_000;
 
 /** Minimum ReactFlow zoom level. */
 const MIN_ZOOM = 0.01;
@@ -39,19 +29,15 @@ const MAX_ZOOM = 10;
 /** Number of decimal places to preserve when serializing zoom. */
 const ZOOM_DECIMAL_PLACES = 4;
 
+/** Number of decimal places to preserve when serializing center coordinates. */
+const COORD_DECIMAL_PLACES = 1;
+
 /** Regex that valid event slugs must match (alphanumeric, hyphens, underscores). */
 const SLUG_PATTERN = /^[\w-]+$/;
 
-/** Canonical set of valid region codes for hash validation. */
-const VALID_REGIONS = new Set<Region>([
-  'europe',
-  'americas',
-  'asia',
-  'middle_east_africa',
-  'global',
-]);
-
-const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
+/** Reasonable bounds for center coordinates to reject garbage values. */
+const MIN_COORD = -1_000_000;
+const MAX_COORD = 1_000_000;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -61,16 +47,14 @@ const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
  * Decoded permalink state. All fields are optional — missing means "use default".
  */
 export interface PermalinkState {
-  /** Start of the visible year range (left edge of viewport). */
-  startYear?: number;
-  /** End of the visible year range (right edge of viewport). */
-  endYear?: number;
   /** ReactFlow zoom level. */
   zoom?: number;
+  /** Center X coordinate in canvas space. */
+  centerX?: number;
+  /** Center Y coordinate in canvas space. */
+  centerY?: number;
   /** Slug of the currently selected/highlighted event. */
   eventSlug?: string;
-  /** Region codes whose swim-lane bands should be collapsed (hidden). */
-  hiddenRegions?: Region[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,10 +64,6 @@ export interface PermalinkState {
 /**
  * Clamp `value` between `min` and `max`.
  * Returns `undefined` if `value` is not a finite number.
- *
- * @param value - The raw number to validate and clamp.
- * @param min - Lower bound (inclusive).
- * @param max - Upper bound (inclusive).
  */
 function clampFinite(value: number, min: number, max: number): number | undefined {
   if (!Number.isFinite(value)) return undefined;
@@ -104,9 +84,8 @@ function clampFinite(value: number, min: number, max: number): number | undefine
  * @returns A partial state object containing only the valid, in-range params.
  *
  * @example
- * parseHash('#t=-500,1500&z=0.3&e=fall-of-rome&r=americas')
- * // → { startYear: -500, endYear: 1500, zoom: 0.3, eventSlug: 'fall-of-rome',
- * //     hiddenRegions: ['americas'] }
+ * parseHash('#z=0.45&cx=1200&cy=800&e=world-war-ii')
+ * // → { zoom: 0.45, centerX: 1200, centerY: 800, eventSlug: 'world-war-ii' }
  */
 export function parseHash(hash: string): PermalinkState {
   const raw = hash.startsWith('#') ? hash.slice(1) : hash;
@@ -115,26 +94,6 @@ export function parseHash(hash: string): PermalinkState {
   const params = new URLSearchParams(raw);
   const result: PermalinkState = {};
 
-  // ── t = startYear,endYear ─────────────────────────────────────────────────
-  const t = params.get('t');
-  if (t) {
-    const parts = t.split(',');
-    if (parts.length === 2) {
-      const start = parseInt(parts[0], 10);
-      const end = parseInt(parts[1], 10);
-      const clampedStart = clampFinite(start, MIN_YEAR, MAX_YEAR);
-      const clampedEnd = clampFinite(end, MIN_YEAR, MAX_YEAR);
-      if (
-        clampedStart !== undefined &&
-        clampedEnd !== undefined &&
-        clampedStart < clampedEnd
-      ) {
-        result.startYear = clampedStart;
-        result.endYear = clampedEnd;
-      }
-    }
-  }
-
   // ── z = zoom ──────────────────────────────────────────────────────────────
   const z = params.get('z');
   if (z !== null) {
@@ -142,21 +101,24 @@ export function parseHash(hash: string): PermalinkState {
     if (clamped !== undefined) result.zoom = clamped;
   }
 
+  // ── cx = center X ─────────────────────────────────────────────────────────
+  const cx = params.get('cx');
+  if (cx !== null) {
+    const clamped = clampFinite(parseFloat(cx), MIN_COORD, MAX_COORD);
+    if (clamped !== undefined) result.centerX = clamped;
+  }
+
+  // ── cy = center Y ─────────────────────────────────────────────────────────
+  const cy = params.get('cy');
+  if (cy !== null) {
+    const clamped = clampFinite(parseFloat(cy), MIN_COORD, MAX_COORD);
+    if (clamped !== undefined) result.centerY = clamped;
+  }
+
   // ── e = event slug ────────────────────────────────────────────────────────
   const e = params.get('e');
   if (e && SLUG_PATTERN.test(e)) {
     result.eventSlug = e;
-  }
-
-  // ── r = comma-separated hidden region codes ───────────────────────────────
-  const r = params.get('r');
-  if (r) {
-    const regions = r
-      .split(',')
-      .filter((code): code is Region => VALID_REGIONS.has(code as Region));
-    if (regions.length > 0) {
-      result.hiddenRegions = regions;
-    }
   }
 
   return result;
@@ -170,39 +132,30 @@ export function parseHash(hash: string): PermalinkState {
  * Serialize a {@link PermalinkState} into a URL hash fragment string
  * (without the leading `#`).
  *
- * Parameters with undefined values are omitted from the output.
- * An empty year range or zoom produces no `t`/`z` param.
- *
  * @param state - The permalink state to encode.
- * @returns A query-string-style fragment, e.g. `t=-500,1500&z=0.3000&e=fall-of-rome`.
+ * @returns A query-string-style fragment, e.g. `z=0.4500&cx=1200.0&cy=800.0&e=world-war-ii`.
  *          Returns an empty string when there is nothing to encode.
- *
- * @example
- * serializeHash({ startYear: -500, endYear: 1500, zoom: 0.3 })
- * // → 't=-500%2C1500&z=0.3000'
  */
 export function serializeHash(state: PermalinkState): string {
   const params = new URLSearchParams();
 
-  if (state.startYear !== undefined && state.endYear !== undefined) {
-    params.set('t', `${state.startYear},${state.endYear}`);
+  if (state.zoom !== undefined) {
+    params.set('z', state.zoom.toFixed(ZOOM_DECIMAL_PLACES));
   }
 
-  if (state.zoom !== undefined) {
-    // Fixed precision avoids floating-point noise in the URL
-    params.set('z', state.zoom.toFixed(ZOOM_DECIMAL_PLACES));
+  if (state.centerX !== undefined) {
+    params.set('cx', state.centerX.toFixed(COORD_DECIMAL_PLACES));
+  }
+
+  if (state.centerY !== undefined) {
+    params.set('cy', state.centerY.toFixed(COORD_DECIMAL_PLACES));
   }
 
   if (state.eventSlug) {
     params.set('e', state.eventSlug);
   }
 
-  if (state.hiddenRegions && state.hiddenRegions.length > 0) {
-    params.set('r', state.hiddenRegions.join(','));
-  }
-
-  // URLSearchParams encodes commas; replace %2C with , for readability
-  return params.toString().replace(/%2C/g, ',');
+  return params.toString();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -210,25 +163,45 @@ export function serializeHash(state: PermalinkState): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Compute the ReactFlow viewport transform `{ x, y, zoom }` that frames the
- * given year range at the given zoom level.
+ * Compute the ReactFlow viewport `{ x, y, zoom }` from canvas-space center
+ * coordinates, given the current screen dimensions.
  *
- * The x offset is derived so that `startYear` appears at the left edge of
- * the viewport (screen x = 0). The y offset defaults to 0 since vertical
- * position is not encoded in the hash.
+ * The center point (cx, cy) is the canvas coordinate that should appear at the
+ * center of the browser window.
  *
- * Inverse of the transform applied in `onMoveEnd` in Canvas.tsx:
- *   yearMin = (-rfX / zoom) / PPY + BASE_YEAR_MIN
- *   ⟹  rfX = -(yearMin - BASE_YEAR_MIN) * PPY * zoom
- *
- * @param startYear - The leftmost visible year (left edge of viewport).
- * @param zoom - The ReactFlow zoom level to apply.
+ * @param centerX - Canvas X coordinate at viewport center.
+ * @param centerY - Canvas Y coordinate at viewport center.
+ * @param zoom    - ReactFlow zoom level.
  * @returns A `{ x, y, zoom }` object suitable for `reactFlow.setViewport()`.
  */
-export function yearRangeToRfViewport(
-  startYear: number,
+export function centerToRfViewport(
+  centerX: number,
+  centerY: number,
   zoom: number,
 ): { x: number; y: number; zoom: number } {
-  const x = -(startYear - BASE_YEAR_MIN) * PIXELS_PER_YEAR * zoom;
-  return { x, y: 0, zoom };
+  const screenW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const screenH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+  return {
+    x: -(centerX * zoom) + screenW / 2,
+    y: -(centerY * zoom) + screenH / 2,
+    zoom,
+  };
+}
+
+/**
+ * Compute canvas-space center coordinates from a ReactFlow viewport,
+ * given the current screen dimensions.
+ *
+ * @param rfViewport - The ReactFlow viewport `{ x, y, zoom }`.
+ * @returns `{ centerX, centerY }` in canvas space.
+ */
+export function rfViewportToCenter(
+  rfViewport: { x: number; y: number; zoom: number },
+): { centerX: number; centerY: number } {
+  const screenW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const screenH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+  return {
+    centerX: (-rfViewport.x + screenW / 2) / rfViewport.zoom,
+    centerY: (-rfViewport.y + screenH / 2) / rfViewport.zoom,
+  };
 }

@@ -4,14 +4,11 @@
  * Tests cover:
  *   - parseHash: happy path, missing params, edge cases, invalid values
  *   - serializeHash: round-trip, empty state, partial state
- *   - yearRangeToRfViewport: viewport math
+ *   - centerToRfViewport / rfViewportToCenter: viewport math round-trip
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseHash, serializeHash, yearRangeToRfViewport } from './permalink';
-import { CANVAS_CONSTANTS } from '../types';
-
-const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
+import { parseHash, serializeHash, centerToRfViewport, rfViewportToCenter } from './permalink';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // parseHash
@@ -19,43 +16,25 @@ const { PIXELS_PER_YEAR, BASE_YEAR_MIN } = CANVAS_CONSTANTS;
 
 describe('parseHash', () => {
   it('parses a full hash with all params', () => {
-    const result = parseHash('#t=-500,1500&z=0.3&e=fall-of-rome&r=americas,asia');
+    const result = parseHash('#z=0.45&cx=1200&cy=800&e=world-war-ii');
     expect(result).toEqual({
-      startYear: -500,
-      endYear: 1500,
-      zoom: 0.3,
-      eventSlug: 'fall-of-rome',
-      hiddenRegions: ['americas', 'asia'],
+      zoom: 0.45,
+      centerX: 1200,
+      centerY: 800,
+      eventSlug: 'world-war-ii',
     });
   });
 
   it('works without the leading #', () => {
-    const result = parseHash('t=100,200&z=0.5');
-    expect(result.startYear).toBe(100);
-    expect(result.endYear).toBe(200);
+    const result = parseHash('z=0.5&cx=100&cy=200');
     expect(result.zoom).toBe(0.5);
+    expect(result.centerX).toBe(100);
+    expect(result.centerY).toBe(200);
   });
 
   it('returns empty object for empty hash', () => {
     expect(parseHash('')).toEqual({});
     expect(parseHash('#')).toEqual({});
-  });
-
-  it('omits startYear/endYear when t param is malformed', () => {
-    expect(parseHash('#t=notanumber')).toEqual({});
-    expect(parseHash('#t=100')).toEqual({}); // only one part
-    expect(parseHash('#t=abc,xyz')).toEqual({});
-  });
-
-  it('rejects startYear >= endYear', () => {
-    expect(parseHash('#t=500,500')).toEqual({});
-    expect(parseHash('#t=1000,500')).toEqual({});
-  });
-
-  it('clamps extreme year values to bounds', () => {
-    const result = parseHash('#t=-99999,99999&z=0.1');
-    expect(result.startYear).toBe(-10_000);
-    expect(result.endYear).toBe(3_000);
   });
 
   it('omits zoom when z is not a number', () => {
@@ -67,27 +46,29 @@ describe('parseHash', () => {
     expect(parseHash('#z=999').zoom).toBe(10);
   });
 
+  it('parses negative center coordinates', () => {
+    const result = parseHash('#cx=-500&cy=-300');
+    expect(result.centerX).toBe(-500);
+    expect(result.centerY).toBe(-300);
+  });
+
+  it('omits center coords when not a number', () => {
+    expect(parseHash('#cx=abc').centerX).toBeUndefined();
+    expect(parseHash('#cy=abc').centerY).toBeUndefined();
+  });
+
   it('omits eventSlug for slugs with invalid characters', () => {
     expect(parseHash('#e=has space').eventSlug).toBeUndefined();
     expect(parseHash('#e=has/slash').eventSlug).toBeUndefined();
-    // Valid slug
     expect(parseHash('#e=valid-slug_123').eventSlug).toBe('valid-slug_123');
   });
 
-  it('filters out invalid region codes from r param', () => {
-    const result = parseHash('#r=americas,invalid_region,asia');
-    expect(result.hiddenRegions).toEqual(['americas', 'asia']);
-  });
-
-  it('omits hiddenRegions when all region codes are invalid', () => {
-    expect(parseHash('#r=invalid').hiddenRegions).toBeUndefined();
-  });
-
-  it('handles all valid region codes', () => {
-    const result = parseHash('#r=europe,americas,asia,middle_east_africa,global');
-    expect(result.hiddenRegions).toEqual([
-      'europe', 'americas', 'asia', 'middle_east_africa', 'global',
-    ]);
+  it('handles partial params gracefully', () => {
+    const result = parseHash('#z=0.5&e=test-event');
+    expect(result.zoom).toBe(0.5);
+    expect(result.centerX).toBeUndefined();
+    expect(result.centerY).toBeUndefined();
+    expect(result.eventSlug).toBe('test-event');
   });
 });
 
@@ -98,25 +79,19 @@ describe('parseHash', () => {
 describe('serializeHash', () => {
   it('serializes a full state', () => {
     const fragment = serializeHash({
-      startYear: -500,
-      endYear: 1500,
-      zoom: 0.3,
-      eventSlug: 'fall-of-rome',
-      hiddenRegions: ['americas', 'asia'],
+      zoom: 0.45,
+      centerX: 1200,
+      centerY: 800,
+      eventSlug: 'world-war-ii',
     });
-    expect(fragment).toContain('t=-500,1500');
-    expect(fragment).toContain('z=0.3000');
-    expect(fragment).toContain('e=fall-of-rome');
-    expect(fragment).toContain('r=americas,asia');
+    expect(fragment).toContain('z=0.4500');
+    expect(fragment).toContain('cx=1200.0');
+    expect(fragment).toContain('cy=800.0');
+    expect(fragment).toContain('e=world-war-ii');
   });
 
   it('returns empty string for empty state', () => {
     expect(serializeHash({})).toBe('');
-  });
-
-  it('omits t when only one of startYear/endYear is provided', () => {
-    expect(serializeHash({ startYear: 100 })).not.toContain('t=');
-    expect(serializeHash({ endYear: 100 })).not.toContain('t=');
   });
 
   it('omits e when eventSlug is falsy', () => {
@@ -124,15 +99,10 @@ describe('serializeHash', () => {
     expect(serializeHash({ eventSlug: '' })).not.toContain('e=');
   });
 
-  it('omits r when hiddenRegions is empty', () => {
-    expect(serializeHash({ hiddenRegions: [] })).not.toContain('r=');
-  });
-
   it('round-trips through parse → serialize', () => {
-    const original = '#t=-500,1500&z=0.3000&e=fall-of-rome&r=americas,asia';
+    const original = '#z=0.4500&cx=1200.0&cy=800.0&e=fall-of-rome';
     const parsed = parseHash(original);
     const reserialized = serializeHash(parsed);
-    // Re-parse the reserialized to verify structural equality (order may differ)
     expect(parseHash(reserialized)).toEqual(parsed);
   });
 
@@ -140,55 +110,35 @@ describe('serializeHash', () => {
     expect(serializeHash({ zoom: 0.1 })).toContain('z=0.1000');
     expect(serializeHash({ zoom: 1 })).toContain('z=1.0000');
   });
-
-  it('uses readable commas (not %2C) in t and r', () => {
-    const fragment = serializeHash({
-      startYear: 0, endYear: 1000,
-      hiddenRegions: ['europe', 'americas'],
-    });
-    expect(fragment).not.toContain('%2C');
-    expect(fragment).toContain('t=0,1000');
-    expect(fragment).toContain('r=europe,americas');
-  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// yearRangeToRfViewport
+// centerToRfViewport / rfViewportToCenter
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('yearRangeToRfViewport', () => {
-  it('returns y=0 always', () => {
-    expect(yearRangeToRfViewport(0, 1).y).toBe(0);
-    expect(yearRangeToRfViewport(-500, 0.5).y).toBe(0);
+describe('viewport math', () => {
+  it('round-trips center → rfViewport → center', () => {
+    const centerX = 1200;
+    const centerY = 800;
+    const zoom = 0.45;
+
+    const rfVp = centerToRfViewport(centerX, centerY, zoom);
+    const recovered = rfViewportToCenter(rfVp);
+
+    expect(recovered.centerX).toBeCloseTo(centerX);
+    expect(recovered.centerY).toBeCloseTo(centerY);
   });
 
   it('preserves the zoom value', () => {
-    expect(yearRangeToRfViewport(0, 0.3).zoom).toBe(0.3);
-    expect(yearRangeToRfViewport(1000, 2).zoom).toBe(2);
+    const vp = centerToRfViewport(0, 0, 0.3);
+    expect(vp.zoom).toBe(0.3);
   });
 
-  it('computes correct x for BASE_YEAR_MIN start (x should be 0)', () => {
-    const { x } = yearRangeToRfViewport(BASE_YEAR_MIN, 1);
-    expect(x).toBeCloseTo(0);
-  });
-
-  it('computes correct x for a known year + zoom', () => {
-    const year = 0;
-    const zoom = 0.1;
-    const { x } = yearRangeToRfViewport(year, zoom);
-    // x = -(year - BASE_YEAR_MIN) * PPY * zoom
-    const expected = -(year - BASE_YEAR_MIN) * PIXELS_PER_YEAR * zoom;
-    expect(x).toBeCloseTo(expected);
-  });
-
-  it('is the inverse of the onMoveEnd year calculation', () => {
-    // If we start at year 500 with zoom 0.3, compute the RF x.
-    // Then verify that recovering yearMin from that x gives back 500.
-    const startYear = 500;
-    const zoom = 0.3;
-    const { x } = yearRangeToRfViewport(startYear, zoom);
-    // From Canvas onMoveEnd: yearMin = (-rfX / zoom) / PPY + BASE_YEAR_MIN
-    const recovered = (-x / zoom) / PIXELS_PER_YEAR + BASE_YEAR_MIN;
-    expect(recovered).toBeCloseTo(startYear);
+  it('computes correct RF viewport for center at origin', () => {
+    const vp = centerToRfViewport(0, 0, 1);
+    // At zoom=1, center (0,0) should place RF origin offset by half screen
+    expect(vp.x).toBeGreaterThan(0); // screenW/2
+    expect(vp.y).toBeGreaterThan(0); // screenH/2
+    expect(vp.zoom).toBe(1);
   });
 });

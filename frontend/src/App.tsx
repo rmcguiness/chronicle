@@ -24,6 +24,7 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import ShareButton from './components/ShareButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -57,8 +58,19 @@ function MainView() {
       {/* Category legend (top-left) */}
       <CategoryLegend />
 
-      {/* On This Day button (toolbar) */}
-      <OnThisDayButton />
+      {/* Top-right toolbar: On This Day + Share */}
+      <div style={{
+        position: 'fixed',
+        top: 12,
+        right: 12,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+      }}>
+        <OnThisDayButton />
+        <ShareButton />
+      </div>
 
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />

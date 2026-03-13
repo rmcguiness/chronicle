@@ -23,10 +23,6 @@ export default function OnThisDayButton() {
       title="On This Day"
       aria-label="Toggle On This Day panel"
       style={{
-        position: 'fixed',
-        top: 16,
-        right: 160,
-        zIndex: 30,
         display: 'flex',
         alignItems: 'center',
         gap: 6,

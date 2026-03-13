@@ -2,12 +2,14 @@
  * usePermalink.ts — React hook that syncs Chronicle's UI state with the URL hash.
  *
  * Owns:
- *   - Restoring viewport state, selected event, and region visibility from
- *     the URL hash on initial page load
- *   - Subscribing to Zustand store changes and writing the new hash (debounced)
- *     via `history.replaceState` (no new browser history entry on every pan)
+ *   - Restoring viewport state and selected event from the URL hash on
+ *     initial page load
+ *   - Subscribing to Zustand store changes and writing the new hash (debounced
+ *     800 ms) via `history.replaceState` (no new browser history entry on every pan)
  *   - Listening to `hashchange` events so the browser back/forward buttons
  *     correctly restore previous views
+ *
+ * Hash format: #z={zoom}&cx={centerX}&cy={centerY}&e={eventSlug}
  *
  * Does NOT:
  *   - Parse or serialize hash strings (see utils/permalink.ts)
@@ -17,14 +19,19 @@
 
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
-import { parseHash, serializeHash, yearRangeToRfViewport } from '../utils/permalink';
+import {
+  parseHash,
+  serializeHash,
+  centerToRfViewport,
+  rfViewportToCenter,
+} from '../utils/permalink';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Debounce delay (ms) between viewport/state changes and the hash write. */
-const HASH_UPDATE_DEBOUNCE_MS = 500;
+const HASH_UPDATE_DEBOUNCE_MS = 800;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Hook
@@ -33,31 +40,20 @@ const HASH_UPDATE_DEBOUNCE_MS = 500;
 /**
  * Synchronise the URL hash with the current Chronicle viewport state.
  *
- * Call this hook once, at the app level inside `TimelineView`, to activate
+ * Call this hook once, at the app level inside `MainView`, to activate
  * permalink support. It has no return value — side effects only.
  *
  * **Lifecycle:**
  * 1. On mount → reads `window.location.hash` and restores any encoded state.
- * 2. On store change → debounces 500 ms then calls `history.replaceState` to
+ * 2. On store change → debounces 800 ms then calls `history.replaceState` to
  *    update the hash without creating a browser history entry.
  * 3. On `hashchange` → restores state from the new hash (handles back/forward).
- *
- * @example
- * function MainView() {
- *   usePermalink();
- *   return <NetworkView />;
- * }
  */
 export function usePermalink(): void {
-  const viewport = useAppStore((s) => s.viewport);
-  const rfZoom = useAppStore((s) => s.rfZoom);
+  const rfViewport = useAppStore((s) => s.rfViewport);
   const selectedEventSlug = useAppStore((s) => s.selectedEventSlug);
-  const collapsedRegions = useAppStore((s) => s.collapsedRegions);
 
-  const setViewport = useAppStore((s) => s.setViewport);
-  const setRfZoom = useAppStore((s) => s.setRfZoom);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
-  const setCollapsedRegions = useAppStore((s) => s.setCollapsedRegions);
   const setPendingRfViewport = useAppStore((s) => s.setPendingRfViewport);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -70,44 +66,30 @@ export function usePermalink(): void {
   const restoreFromHash = useRef((hash: string): void => {
     const state = parseHash(hash);
 
-    // ── Viewport + ReactFlow transform ───────────────────────────────────────
+    // ── Viewport: restore center + zoom ───────────────────────────────────
     if (
-      state.startYear !== undefined &&
-      state.endYear !== undefined &&
+      state.centerX !== undefined &&
+      state.centerY !== undefined &&
       state.zoom !== undefined
     ) {
-      setViewport({
-        year_min: state.startYear,
-        year_max: state.endYear,
-        zoom: state.zoom,
-      });
-      setRfZoom(state.zoom);
-      // Signal NetworkView to apply the viewport once ReactFlow is ready
-      setPendingRfViewport(yearRangeToRfViewport(state.startYear, state.zoom));
+      const vp = centerToRfViewport(state.centerX, state.centerY, state.zoom);
+      setPendingRfViewport(vp);
     }
 
-    // ── Selected event ───────────────────────────────────────────────────────
+    // ── Selected event ───────────────────────────────────────────────────
     if (state.eventSlug) {
-      // setSelectedEvent also opens the detail panel (see store)
       setSelectedEvent(state.eventSlug);
-    }
-
-    // ── Hidden region bands ──────────────────────────────────────────────────
-    if (state.hiddenRegions) {
-      setCollapsedRegions(new Set(state.hiddenRegions));
     }
   });
 
-  // ── On mount: restore from the current hash ────────────────────────────────
-  // Empty deps: intentionally runs once on mount. restoreFromHash is a stable ref
-  // (a useRef wrapper), so it never needs to be in the dependency array.
+  // ── On mount: restore from the current hash ────────────────────────────
   useEffect(() => {
     if (window.location.hash) {
       restoreFromHash.current(window.location.hash);
     }
   }, []);
 
-  // ── Back/forward navigation: hashchange listener ───────────────────────────
+  // ── Back/forward navigation: hashchange listener ───────────────────────
   useEffect(() => {
     const handler = (): void => {
       restoreFromHash.current(window.location.hash);
@@ -116,34 +98,28 @@ export function usePermalink(): void {
     return () => window.removeEventListener('hashchange', handler);
   }, []);
 
-  // ── Debounced hash update on state changes ─────────────────────────────────
+  // ── Debounced hash update on state changes ─────────────────────────────
   useEffect(() => {
     clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
+      const { centerX, centerY } = rfViewportToCenter(rfViewport);
+
       const fragment = serializeHash({
-        startYear: viewport.year_min,
-        endYear: viewport.year_max,
-        zoom: rfZoom,
+        zoom: rfViewport.zoom,
+        centerX,
+        centerY,
         eventSlug: selectedEventSlug ?? undefined,
-        hiddenRegions: collapsedRegions.size > 0 ? [...collapsedRegions] : undefined,
       });
 
       const newHash = fragment ? `#${fragment}` : '';
       const currentHash = window.location.hash;
 
       if (newHash !== currentHash) {
-        // replaceState keeps the URL current without polluting browser history
         history.replaceState(null, '', newHash || window.location.pathname);
       }
     }, HASH_UPDATE_DEBOUNCE_MS);
 
     return () => clearTimeout(debounceRef.current);
-  }, [
-    viewport.year_min,
-    viewport.year_max,
-    rfZoom,
-    selectedEventSlug,
-    collapsedRegions,
-  ]);
+  }, [rfViewport, selectedEventSlug]);
 }

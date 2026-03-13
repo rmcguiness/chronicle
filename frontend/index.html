@@ -4,7 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chronicle — Immutable Historical Timeline</title>
+    <title>Chronicle — Interactive Historical Timeline</title>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Chronicle — Interactive Historical Timeline" />
+    <meta property="og:description" content="Explore 1500+ events across human history on an interactive canvas." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Chronicle — Interactive Historical Timeline" />
+    <meta name="twitter:description" content="Explore 1500+ events across human history on an interactive canvas." />
+    <meta name="twitter:image" content="/og-image.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -35,6 +48,11 @@
       ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
       ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
+      /* Toast animation */
+      @keyframes toast-fade-in {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
       /* MapLibre GL attribution */
       .maplibregl-ctrl-attrib { display: none !important; }
       .maplibregl-canvas { border-radius: 0 !important; }
