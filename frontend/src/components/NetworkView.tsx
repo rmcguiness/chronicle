@@ -757,9 +757,8 @@ function NetworkViewInner() {
         edgeTypes={EDGE_TYPES}
         minZoom={0.3}
         maxZoom={4}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
         fitView
-        fitViewOptions={{ padding: 0.15 }}
+        fitViewOptions={{ padding: 0.1 }}
         style={{ background: 'transparent' }}
         proOptions={{ hideAttribution: true }}
         elementsSelectable

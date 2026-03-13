@@ -147,16 +147,35 @@ function CausalityEdge({
     targetPosition: tgtPosition,
   });
 
-  // Compensate stroke width so it never falls below MIN_STROKE_WIDTH_PX on screen.
-  // ReactFlow applies the zoom transform to the SVG, so we divide by zoom.
-  const baseStrokeWidth = Math.max(1.5, strength * 4);
-  const strokeWidth = Math.max(baseStrokeWidth, MIN_STROKE_WIDTH_PX / zoom);
+  // Compensate stroke width so edges remain visible at low zoom levels.
+  // ReactFlow applies the zoom transform to the SVG, so we scale inversely.
+  const strokeWidth = Math.max(2, 1.5 / zoom);
 
   const isCauses = connectionType === 'causes';
   const isContext = connectionType === 'context';
 
+  // Zoom-scaled arrowhead so markers stay visible at low zoom.
+  const arrowMarkerId = `causality-arrow-${id}`;
+  const arrowSize = Math.max(8, 6 / zoom);
+
   return (
     <>
+      {/* Custom SVG marker that scales inversely with zoom */}
+      <defs>
+        <marker
+          id={arrowMarkerId}
+          markerWidth={arrowSize}
+          markerHeight={arrowSize}
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="strokeWidth"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 Z" fill={hovered ? '#ffffff' : color} />
+        </marker>
+      </defs>
+
       {/* Invisible wider hit area for hover */}
       <path
         d={edgePath}
@@ -185,7 +204,7 @@ function CausalityEdge({
       <BaseEdge
         id={id}
         path={edgePath}
-        markerEnd={markerEnd as string}
+        markerEnd={`url(#${arrowMarkerId})`}
         style={{
           stroke: hovered ? '#ffffff' : color,
           strokeWidth: hovered ? strokeWidth + 1 : strokeWidth,
