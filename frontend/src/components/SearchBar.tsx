@@ -246,8 +246,9 @@ export default function SearchBar() {
             borderRadius: '0 0 12px 12px',
             boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
             /* Cap height and enable scrolling when many search results are returned */
-            maxHeight: SEARCH_RESULTS_MAX_HEIGHT_PX,
+            maxHeight: '60vh',
             overflowY: 'auto',
+            overflowX: 'hidden',
           }}
         >
           {/* Semantic mode indicator */}
