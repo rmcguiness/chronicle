@@ -13,8 +13,9 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /api-docs      → Developer API documentation
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -26,6 +27,7 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import ApiDocsPage from './pages/ApiDocsPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -57,8 +59,38 @@ function MainView() {
       {/* Category legend (top-left) */}
       <CategoryLegend />
 
-      {/* On This Day button (toolbar) */}
-      <OnThisDayButton />
+      {/* Top-right toolbar */}
+      <div style={{
+        position: 'fixed',
+        top: 12,
+        right: 12,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+      }}>
+        <Link
+          to="/api-docs"
+          style={{
+            padding: '6px 12px',
+            borderRadius: 8,
+            backgroundColor: 'rgba(7,14,34,0.9)',
+            border: '1px solid rgba(96,165,250,0.3)',
+            color: '#e2e8f0',
+            fontSize: 12,
+            fontFamily: '"Inter","Segoe UI",sans-serif',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            backdropFilter: 'blur(12px)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {'{ }'} API
+        </Link>
+        <OnThisDayButton />
+      </div>
 
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
@@ -83,6 +115,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/api-docs" element={<ApiDocsPage />} />
       </Routes>
     </QueryClientProvider>
   );
