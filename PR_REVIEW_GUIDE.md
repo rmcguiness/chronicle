@@ -1,6 +1,30 @@
-# PR Review Guide — Chronicle (auto-generated 2026-03-08)
+# PR Review Guide — Chronicle (updated 2026-03-13)
 
-26 open PRs. This guide groups them by merge priority and flags likely conflicts.
+31 open PRs. This guide groups them by merge priority and flags likely conflicts.
+
+---
+
+## Quick wins — merge these first (no dependencies, low risk)
+
+These PRs are additive-only, conflict-free, and safe to merge anytime:
+
+| # | Title | Type |
+|---|-------|------|
+| **#81** | fix/viewport-scroll-edge-arrows | 3 UI bug fixes (fitView, search scroll, edge arrows) |
+| **#82** | feat/mobile-responsive-list | Mobile list view + bottom sheet (no desktop changes) |
+| **#83** | feat/social-sharing-permalink | Viewport hash + share button + og:meta |
+| **#84** | feat/api-docs-page | /api-docs developer docs (update after other PRs merge) |
+| **#85** | feat/today-in-history | New backend router + frontend page |
+
+```bash
+gh pr merge 81 --squash --delete-branch
+gh pr merge 82 --squash --delete-branch
+gh pr merge 83 --squash --delete-branch
+gh pr merge 84 --squash --delete-branch
+gh pr merge 85 --squash --delete-branch
+```
+
+> **Note:** #84 documents only endpoints on current main. After other PRs merge and add new endpoints, the API docs page should be updated.
 
 ---
 
@@ -38,6 +62,7 @@ These are independent of each other but may conflict on shared files (`App.tsx`,
 | **#53** | feat: historical figures (People) node type | People DB table, API routes, PersonNode, toggle in network view, avatar chips in detail panel |
 | **#64** | data: ancient history enrichment — 104 BCE events | Seed script adding 104 curated ancient events (idempotent) |
 | **#40** | docs: open-source launch prep | README, CONTRIBUTING, LICENSE, PR template |
+| **#84** | feat: API docs page | `/api-docs` developer documentation page (documents current main endpoints) |
 
 ### Panels & exploration features
 
@@ -48,6 +73,19 @@ These are independent of each other but may conflict on shared files (`App.tsx`,
 | **#43** | feat: related events panel (pgvector) | `GET /api/events/{slug}/similar` using cosine distance, panel in detail view |
 | **#61** | feat: follow-on events panel | Events in next 1-50 years, same-region filter, chaining navigation |
 | **#65** | feat: world context panel | Events within +-N years grouped by region, slide-in panel |
+
+### Bug fixes & polish
+
+| # | Title | What it adds |
+|---|-------|-------------|
+| **#81** | fix: viewport scroll + edge arrows | fitView consistency fix, search result scroll fix, edge arrow rendering fix |
+
+### Mobile & sharing
+
+| # | Title | What it adds |
+|---|-------|-------------|
+| **#82** | feat: mobile responsive list view | Mobile-optimized list view with bottom sheet detail panel, no desktop changes |
+| **#83** | feat: social sharing permalink | Viewport hash in URL, share button, og:meta tags for link previews |
 
 ### Toolbar & UI features
 
@@ -84,6 +122,10 @@ gh pr merge 44 --squash --delete-branch
 gh pr merge 45 --squash --delete-branch
 gh pr merge 46 --squash --delete-branch
 gh pr merge 47 --squash --delete-branch
+gh pr merge 81 --squash --delete-branch
+gh pr merge 82 --squash --delete-branch
+gh pr merge 83 --squash --delete-branch
+gh pr merge 84 --squash --delete-branch
 ```
 
 > **Conflict hotspots:**
@@ -106,12 +148,14 @@ These are lower-priority features that can wait.
 | **#54** | feat: era summary tooltip | Hover tooltip on canvas background showing decade/century stats |
 | **#62** | feat: timeline minimap | 200x48px minimap with draggable viewport rectangle |
 | **#63** | feat: this week in history banner | Slim amber banner showing 3 events matching today's date |
+| **#85** | feat: today in history page | New backend router + dedicated frontend page for today's historical events |
 
 ```bash
 gh pr merge 51 --squash --delete-branch
 gh pr merge 54 --squash --delete-branch
 gh pr merge 62 --squash --delete-branch
 gh pr merge 63 --squash --delete-branch
+gh pr merge 85 --squash --delete-branch
 ```
 
 ---
