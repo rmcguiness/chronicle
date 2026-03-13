@@ -24,6 +24,8 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import SurpriseMeButton from './components/SurpriseMeButton';
+import SplashCard from './components/SplashCard';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
@@ -57,8 +59,9 @@ function MainView() {
       {/* Category legend (top-left) */}
       <CategoryLegend />
 
-      {/* On This Day button (toolbar) */}
+      {/* On This Day button + Surprise Me (toolbar) */}
       <OnThisDayButton />
+      <SurpriseMeButton />
 
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
@@ -72,6 +75,9 @@ function MainView() {
 
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
+
+      {/* Featured event splash — shown once for first-time visitors */}
+      <SplashCard />
     </div>
   );
 }
