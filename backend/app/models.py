@@ -107,6 +107,7 @@ class Event(Base):
     review_status: Mapped[str] = mapped_column(Text, default="pending")
     wikidata_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     wikipedia_slug: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    article_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
     perspectives: Mapped[List["Perspective"]] = relationship(
