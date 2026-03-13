@@ -552,6 +552,44 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
   return data;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Today in History
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event returned by the Today in History endpoint. */
+export interface TodayEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  date_display: string | null;
+  is_bce: boolean;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+  description: string | null;
+}
+
+/** Response shape from GET /api/today. */
+export interface TodayResponse {
+  month: number;
+  day: number;
+  count: number;
+  events: TodayEvent[];
+  fallback: boolean;
+}
+
+/**
+ * Fetch events for the Today in History page.
+ */
+export async function fetchTodayInHistory(month?: number, day?: number): Promise<TodayResponse> {
+  const params = new URLSearchParams();
+  if (month !== undefined) params.set('month', String(month));
+  if (day !== undefined) params.set('day', String(day));
+  const { data } = await api.get<TodayResponse>('/api/today', { params });
+  return data;
+}
+
 /**
  * Fetch all causality links from the backend (or mock fallback).
  * Used by the Network view to render all edges in the force-directed graph.
