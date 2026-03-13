@@ -13,6 +13,7 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /people/:slug  → Historical figure detail page
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,7 +25,9 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import PersonDetailPanel from './components/PersonDetailPanel';
 import EventDetailPage from './pages/EventDetailPage';
+import PersonDetailPage from './pages/PersonDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -63,6 +66,9 @@ function MainView() {
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
+      {/* Person detail panel (slides in on person node click) */}
+      <PersonDetailPanel />
+
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
 
@@ -82,6 +88,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/people/:slug" element={<PersonDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>

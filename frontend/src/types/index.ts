@@ -180,6 +180,49 @@ export interface CanvasTransform {
   zoom: number;
 }
 
+// ─── Person / Historical Figures ────────────────────────────────────────────
+
+export interface PersonEventItem {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: EventCategory | null;
+  description: string | null;
+  role: string | null;
+  role_notes: string | null;
+}
+
+export interface ContemporaryItem {
+  id: string;
+  name: string;
+  slug: string;
+  birth_year: number | null;
+  death_year: number | null;
+  roles: string[] | null;
+  image_url: string | null;
+}
+
+export interface PersonDetail {
+  id: string;
+  name: string;
+  slug: string;
+  aliases: string[] | null;
+  birth_year: number | null;
+  birth_year_circa: boolean;
+  death_year: number | null;
+  death_year_circa: boolean;
+  nationalities: string[] | null;
+  roles: string[] | null;
+  gender: string | null;
+  description: string | null;
+  image_url: string | null;
+  wikipedia_slug: string | null;
+  wikidata_id: string | null;
+  events: PersonEventItem[];
+  contemporaries: ContemporaryItem[];
+}
+
 // ─── Region / swim-lane types ────────────────────────────────────────────────
 
 export type Region = 'europe' | 'americas' | 'asia' | 'middle_east_africa' | 'global';

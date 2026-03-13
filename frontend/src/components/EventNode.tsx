@@ -7,6 +7,17 @@ import type { HistoricalEvent } from "../types";
 import { CANVAS_CONSTANTS } from "../types";
 import { useAppStore } from "../store";
 
+/** Derive a URL slug from a display name (e.g. "Julius Caesar" → "julius-caesar"). */
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function EventNode({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as HistoricalEvent & { showLabel?: boolean };
   const [hovered, setHovered] = useState(false);
@@ -22,6 +33,7 @@ function EventNode({ data: rawData, selected }: NodeProps) {
   } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+  const setSelectedPerson = useAppStore((s) => s.setSelectedPerson);
 
   /** Minimum pixels from top before we flip the tooltip to render below. */
   const TOOLTIP_FLIP_THRESHOLD = 200;
@@ -92,7 +104,13 @@ function EventNode({ data: rawData, selected }: NodeProps) {
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setSelectedEvent(data.slug)}
+      onClick={() => {
+        if (data.category === "person") {
+          setSelectedPerson(slugify(data.title));
+        } else {
+          setSelectedEvent(data.slug);
+        }
+      }}
     >
       {/*
        * Floating edge handles — both centred on the node so that CausalityEdge

@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  PersonDetail,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -586,4 +587,16 @@ export async function fetchWikiData(
     summary: result.summary,
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Person detail
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function fetchPersonDetail(slug: string): Promise<PersonDetail> {
+  const available = await isBackendAvailable();
+  if (!available) throw new Error('Backend unavailable');
+
+  const { data } = await api.get<PersonDetail>(`/api/people/${slug}`);
+  return data;
 }

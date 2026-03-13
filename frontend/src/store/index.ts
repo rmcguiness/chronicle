@@ -225,6 +225,10 @@ interface AppState {
   /** Toggle or set the "On This Day" panel open state. */
   setOnThisDayOpen: (v: boolean) => void;
 
+  // Selected person (for person detail panel)
+  selectedPersonSlug: string | null;
+  setSelectedPerson: (slug: string | null) => void;
+
   /** The currently visible year range on the network canvas. Single source of truth for X mapping, node sizing, and the minimap. */
   timeViewport: { yearMin: number; yearMax: number };
   setTimeViewport: (v: { yearMin: number; yearMax: number }) => void;
@@ -237,7 +241,11 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   selectedEventSlug: null,
   setSelectedEvent: (slug) =>
-    set({ selectedEventSlug: slug, detailPanelOpen: slug !== null }),
+    set({
+      selectedEventSlug: slug,
+      detailPanelOpen: slug !== null,
+      ...(slug ? { selectedPersonSlug: null } : {}),
+    }),
 
   detailPanelOpen: false,
   setDetailPanelOpen: (detailPanelOpen) =>
@@ -331,6 +339,15 @@ export const useAppStore = create<AppState>((set) => ({
   // On This Day panel
   onThisDayOpen: false,
   setOnThisDayOpen: (onThisDayOpen) => set({ onThisDayOpen }),
+
+  // Selected person (for person detail panel)
+  selectedPersonSlug: null,
+  setSelectedPerson: (slug) =>
+    set({
+      selectedPersonSlug: slug,
+      // Close event panel when opening person panel
+      ...(slug ? { detailPanelOpen: false, selectedEventSlug: null } : {}),
+    }),
 
   // Time viewport — visible year range on the network canvas
   timeViewport: { yearMin: -800, yearMax: 1500 },
