@@ -14,6 +14,7 @@
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  */
+import { useState, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
@@ -24,9 +25,11 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import MobileListView from './components/MobileListView';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
+import { useIsMobile } from './hooks/useIsMobile';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -45,6 +48,16 @@ const queryClient = new QueryClient({
 function MainView() {
   // Activates hash ↔ store sync: read on mount, write on change, listen for hashchange
   usePermalink();
+
+  const isMobile = useIsMobile();
+  const [forceDesktop, setForceDesktop] = useState(false);
+
+  const handleSwitchToDesktop = useCallback(() => setForceDesktop(true), []);
+
+  // Show mobile list view on narrow screens unless user opted for desktop
+  if (isMobile && !forceDesktop) {
+    return <MobileListView onSwitchToDesktop={handleSwitchToDesktop} />;
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
