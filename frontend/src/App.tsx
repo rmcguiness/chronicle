@@ -13,8 +13,9 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /influence     → Historical influence leaderboard + timeline
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -25,6 +26,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import InfluencePage from './pages/InfluencePage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -60,6 +62,33 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Influence nav link (toolbar) */}
+      <Link
+        to="/influence"
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 310,
+          zIndex: 30,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '8px 14px',
+          borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(15,17,23,0.85)',
+          backdropFilter: 'blur(8px)',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 13,
+          fontWeight: 500,
+          fontFamily: "'Inter', sans-serif",
+          textDecoration: 'none',
+          transition: 'all 150ms ease',
+        }}
+      >
+        Influence
+      </Link>
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -82,6 +111,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/influence" element={<InfluencePage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>

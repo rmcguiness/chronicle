@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  InfluenceData,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -586,4 +587,12 @@ export async function fetchWikiData(
     summary: result.summary,
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
+}
+
+/**
+ * Fetch historical influence rankings — top events and people by causal reach.
+ */
+export async function fetchInfluence(): Promise<InfluenceData> {
+  const { data } = await api.get<InfluenceData>('/api/influence');
+  return data;
 }

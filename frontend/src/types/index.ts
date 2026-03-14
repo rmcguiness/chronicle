@@ -174,6 +174,35 @@ export interface SearchResult {
   lng: number;
 }
 
+// ─── Influence types ─────────────────────────────────────────────────────────
+
+export interface InfluentialEvent {
+  event_slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  region: string | null;
+  direct_count: number;
+  ripple_count: number;
+  people_count: number;
+  influence_score: number;
+}
+
+export interface InfluentialPerson {
+  person_id: string;
+  name: string;
+  birth_year: number | null;
+  death_year: number | null;
+  total_ripple: number;
+  top_event_title: string | null;
+  top_event_slug: string | null;
+}
+
+export interface InfluenceData {
+  events: InfluentialEvent[];
+  people: InfluentialPerson[];
+}
+
 export interface CanvasTransform {
   x: number;
   y: number;
