@@ -517,6 +517,129 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Compare / causal-path
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single step in a causal path between two events. */
+export interface CausalPathStep {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+}
+
+/** Response from GET /api/events/{slug}/causal-path?target={slug}. */
+export interface CausalPathResponse {
+  found: boolean;
+  steps: CausalPathStep[];
+  length: number;
+}
+
+/** A person linked to both compared events. */
+export interface SharedPersonItem {
+  id: string;
+  name: string;
+  roles_a: string[];
+  roles_b: string[];
+  description: string | null;
+  image_url: string | null;
+}
+
+/** An event near another event in time. */
+export interface NearbyEventItem {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+}
+
+/**
+ * Find the shortest causal chain between two events.
+ * @param sourceSlug - Starting event slug
+ * @param targetSlug - Target event slug
+ */
+export async function fetchCausalPath(
+  sourceSlug: string,
+  targetSlug: string,
+): Promise<CausalPathResponse> {
+  const available = await isBackendAvailable();
+  if (!available) return { found: false, steps: [], length: 0 };
+
+  try {
+    const { data } = await api.get<CausalPathResponse>(
+      `/api/events/${sourceSlug}/causal-path`,
+      { params: { target: targetSlug }, timeout: 10000 },
+    );
+    return data;
+  } catch {
+    return { found: false, steps: [], length: 0 };
+  }
+}
+
+/**
+ * Get two random high-importance events for "Surprise me".
+ * @returns Object with slugs `a` and `b`
+ */
+export async function fetchRandomPair(): Promise<{ a: string; b: string } | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<{ a: string; b: string }>('/api/compare/random-pair');
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Find people linked to both events.
+ * @param slugA - Event A slug
+ * @param slugB - Event B slug
+ */
+export async function fetchSharedPeople(
+  slugA: string,
+  slugB: string,
+): Promise<SharedPersonItem[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+
+  try {
+    const { data } = await api.get<{ people: SharedPersonItem[] }>(
+      '/api/compare/shared-people',
+      { params: { a: slugA, b: slugB } },
+    );
+    return data.people ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch events within N years of a given event.
+ * @param slug - Event slug
+ * @param years - Year range (default 50)
+ * @param limit - Max results (default 3)
+ */
+export async function fetchNearbyEvents(
+  slug: string,
+  years = 50,
+  limit = 3,
+): Promise<NearbyEventItem[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+
+  try {
+    const { data } = await api.get<{ events: NearbyEventItem[] }>(
+      '/api/compare/nearby',
+      { params: { slug, years, limit } },
+    );
+    return data.events ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

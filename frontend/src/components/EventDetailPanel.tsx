@@ -9,6 +9,7 @@
  * store state shape, or canvas rendering.
  */
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
 import type { ArticleResponse } from '../api/client';
@@ -507,6 +508,7 @@ function injectStyles(): void {
  */
 export default function EventDetailPanel() {
   injectStyles();
+  const navigate = useNavigate();
 
   const selectedEventSlug = useAppStore((s) => s.selectedEventSlug);
   const detailPanelOpen = useAppStore((s) => s.detailPanelOpen);
@@ -616,25 +618,48 @@ export default function EventDetailPanel() {
             )}
           </div>
 
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            aria-label="Close detail panel"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: `1px solid ${BORDER_COLOR}`,
-              borderRadius: 8,
-              color: '#94a3b8',
-              cursor: 'pointer',
-              padding: '6px 10px',
-              fontSize: 18,
-              lineHeight: 1,
-              flexShrink: 0,
-              transition: 'all 0.15s',
-            }}
-          >
-            ×
-          </button>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            {/* Compare button */}
+            {event && (
+              <button
+                onClick={() => navigate(`/compare?a=${event.slug}`)}
+                aria-label="Compare with another event"
+                style={{
+                  background: 'rgba(59,130,246,0.15)',
+                  border: `1px solid rgba(59,130,246,0.3)`,
+                  borderRadius: 8,
+                  color: '#93c5fd',
+                  cursor: 'pointer',
+                  padding: '6px 10px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  lineHeight: 1,
+                  transition: 'all 0.15s',
+                }}
+              >
+                Compare
+              </button>
+            )}
+            {/* Close button */}
+            <button
+              onClick={handleClose}
+              aria-label="Close detail panel"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid ${BORDER_COLOR}`,
+                borderRadius: 8,
+                color: '#94a3b8',
+                cursor: 'pointer',
+                padding: '6px 10px',
+                fontSize: 18,
+                lineHeight: 1,
+                flexShrink: 0,
+                transition: 'all 0.15s',
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
       </div>
 
