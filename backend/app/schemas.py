@@ -217,3 +217,53 @@ class WikiSummaryOut(BaseModel):
     thumbnail_height: Optional[int] = None
     # ISO 8601 timestamp of when the cache was last populated
     fetched_at: Optional[datetime] = None
+
+
+# ────────────────────────────────────────────
+# Custom Timelines
+# ────────────────────────────────────────────
+class TimelineEventItem(BaseModel):
+    """Lightweight event for timeline display."""
+    id: UUID
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    is_bce: bool = False
+    category: Optional[str] = None
+    importance_score: float = 0.5
+    geo_modern: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    short_description: Optional[str] = None
+
+
+class TimelineListItem(BaseModel):
+    """Summary item for the timelines gallery."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    description: Optional[str] = None
+    event_count: int
+    event_preview: List[str] = []
+    share_token: str
+    created_at: datetime
+
+
+class TimelineDetailOut(BaseModel):
+    """Full timeline with expanded events."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    description: Optional[str] = None
+    share_token: str
+    created_at: datetime
+    events: List[TimelineEventItem] = []
+
+
+class TimelineCreateRequest(BaseModel):
+    """Request body for POST /api/timelines."""
+    title: str
+    description: Optional[str] = None
+    event_slugs: List[str]

@@ -495,6 +495,31 @@ class WikipediaCache(Base):
 
 
 # ────────────────────────────────────────────
+# LESSONS (teaching/classroom mode)
+# ────────────────────────────────────────────
+class Lesson(Base):
+    __tablename__ = "lessons"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    subject: Mapped[str] = mapped_column(Text, nullable=False)
+    grade_level: Mapped[str] = mapped_column(Text, nullable=False)
+    event_slugs: Mapped[List[str]] = mapped_column(ARRAY(Text), nullable=False)
+    guiding_questions: Mapped[List[str]] = mapped_column(ARRAY(Text), nullable=False)
+    learning_objectives: Mapped[List[str]] = mapped_column(ARRAY(Text), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("idx_lessons_grade_level", "grade_level"),
+        Index("idx_lessons_subject", "subject"),
+    )
+
+
+# ────────────────────────────────────────────
 # CANVAS TILE CACHE
 # ────────────────────────────────────────────
 class CanvasTile(Base):
@@ -516,4 +541,28 @@ class CanvasTile(Base):
 
     __table_args__ = (
         Index("idx_canvas_tiles_zoom_time", "zoom_level", "time_start", "time_end"),
+    )
+
+
+# ────────────────────────────────────────────
+# CUSTOM TIMELINES (shareable collections)
+# ────────────────────────────────────────────
+class CustomTimeline(Base):
+    __tablename__ = "custom_timelines"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    event_slugs: Mapped[List[str]] = mapped_column(ARRAY(Text), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    is_public: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    share_token: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+
+    __table_args__ = (
+        Index("idx_custom_timelines_share_token", "share_token"),
+        Index("idx_custom_timelines_public", "is_public", "created_at"),
     )

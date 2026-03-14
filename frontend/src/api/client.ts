@@ -587,3 +587,115 @@ export async function fetchWikiData(
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lessons (Teaching Mode)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface LessonListItem {
+  id: string;
+  title: string;
+  subject: string;
+  grade_level: string;
+  event_count: number;
+  created_at: string;
+}
+
+export interface LessonEventItem {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  date_display: string | null;
+  category: string | null;
+  geo_modern: string | null;
+  importance_score: number;
+  summary: string | null;
+}
+
+export interface LessonDetail {
+  id: string;
+  title: string;
+  subject: string;
+  grade_level: string;
+  learning_objectives: string[];
+  guiding_questions: string[];
+  events: LessonEventItem[];
+  created_at: string;
+}
+
+export async function fetchLessons(): Promise<LessonListItem[]> {
+  const { data } = await api.get<LessonListItem[]>('/api/lessons');
+  return data;
+}
+
+export async function fetchLesson(id: string): Promise<LessonDetail> {
+  const { data } = await api.get<LessonDetail>(`/api/lessons/${id}`);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom Timelines
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A timeline event in the expanded detail response. */
+export interface TimelineEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  category: string | null;
+  importance_score: number;
+  geo_modern: string | null;
+  lat: number | null;
+  lng: number | null;
+  short_description: string | null;
+}
+
+/** Summary item for the timelines gallery. */
+export interface TimelineListItem {
+  id: string;
+  title: string;
+  description: string | null;
+  event_count: number;
+  event_preview: string[];
+  share_token: string;
+  created_at: string;
+}
+
+/** Full timeline with expanded events. */
+export interface TimelineDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  share_token: string;
+  created_at: string;
+  events: TimelineEvent[];
+}
+
+/** Fetch all public timelines for the gallery. */
+export async function fetchTimelines(): Promise<TimelineListItem[]> {
+  const { data } = await api.get<TimelineListItem[]>('/api/timelines');
+  return data;
+}
+
+/** Fetch a single timeline by share token. */
+export async function fetchTimelineByToken(shareToken: string): Promise<TimelineDetail> {
+  const { data } = await api.get<TimelineDetail>(`/api/timelines/${shareToken}`);
+  return data;
+}
+
+/** Create a new timeline and return it. */
+export async function createTimeline(
+  title: string,
+  description: string | null,
+  eventSlugs: string[],
+): Promise<TimelineDetail> {
+  const { data } = await api.post<TimelineDetail>('/api/timelines', {
+    title,
+    description,
+    event_slugs: eventSlugs,
+  });
+  return data;
+}
