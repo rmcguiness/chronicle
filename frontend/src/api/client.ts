@@ -517,6 +517,41 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Game — "Guess the Year" endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Event data for the game (no year revealed). */
+export interface GameEvent {
+  slug: string;
+  title: string;
+  category: string | null;
+  importance_score: number;
+}
+
+/** Reveal data after a guess. */
+export interface GameReveal {
+  slug: string;
+  title: string;
+  year_approx: number;
+  category: string | null;
+  importance_score: number;
+  article_summary: string | null;
+  region: string | null;
+}
+
+/** Fetch a random game event by difficulty. */
+export async function fetchGameEvent(difficulty = 'medium'): Promise<GameEvent> {
+  const { data } = await api.get<GameEvent>('/api/game/event', { params: { difficulty } });
+  return data;
+}
+
+/** Reveal the answer for a game event. */
+export async function fetchGameReveal(slug: string): Promise<GameReveal> {
+  const { data } = await api.get<GameReveal>(`/api/game/reveal/${encodeURIComponent(slug)}`);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
