@@ -587,3 +587,25 @@ export async function fetchWikiData(
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stats — knowledge graph analytics
+// ─────────────────────────────────────────────────────────────────────────────
+
+import type { FullStats } from '../types/stats';
+
+/**
+ * Fetch full Chronicle knowledge graph statistics.
+ * Returns null if the backend is unavailable.
+ */
+export async function fetchFullStats(): Promise<FullStats | null> {
+  const available = await isBackendAvailable();
+  if (!available) return null;
+
+  try {
+    const { data } = await api.get<FullStats>('/api/stats/full', { timeout: 15000 });
+    return data;
+  } catch {
+    return null;
+  }
+}
