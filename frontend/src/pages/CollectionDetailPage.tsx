@@ -139,7 +139,6 @@ function TimelineEvent({ event, themeColor }: { event: CollectionEventItem; them
 
 export default function CollectionDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
 
   const { data: collection, isLoading, error } = useQuery({
     queryKey: ['collection', slug],

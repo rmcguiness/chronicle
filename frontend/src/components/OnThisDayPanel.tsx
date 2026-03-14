@@ -125,9 +125,9 @@ function EventCard({ event, onSelect }: EventCardProps) {
       )}
 
       {/* Short description */}
-      {event.short_description && (
+      {event.article_summary && (
         <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>
-          {event.short_description}
+          {event.article_summary?.slice(0, 150)}
         </span>
       )}
     </button>

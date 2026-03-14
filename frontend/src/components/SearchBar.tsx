@@ -228,6 +228,41 @@ export default function SearchBar() {
         🧠
       </Link>
 
+      {/* On This Day link */}
+      <Link
+        to="/on-this-day"
+        style={{
+          position: 'absolute',
+          right: -96,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          backgroundColor: 'rgba(7, 14, 34, 0.95)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 8,
+          padding: '6px 10px',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 18,
+          textDecoration: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          transition: 'color 0.15s, border-color 0.15s',
+        }}
+        title="On This Day"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = 'rgba(129,140,248,1)';
+          e.currentTarget.style.borderColor = 'rgba(129,140,248,0.5)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+        }}
+      >
+        📅
+      </Link>
+
       {/* Input + Mode Toggle */}
       <div
         style={{

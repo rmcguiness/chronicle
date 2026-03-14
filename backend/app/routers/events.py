@@ -42,6 +42,13 @@ router = APIRouter(prefix="/api/events", tags=["events"])
 # On This Day — events matching a given month/day across all years
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Maximum events returned for On This Day queries
+_ON_THIS_DAY_LIMIT = 30
+# How many days to look around for "nearby" events when few match
+_NEARBY_DAY_RANGE = 3
+# Minimum events before we show the "nearby" section
+_NEARBY_THRESHOLD = 5
+
 
 class OnThisDayEventItem(BaseModel):
     """A single event item returned by the On This Day endpoint."""
@@ -54,7 +61,9 @@ class OnThisDayEventItem(BaseModel):
     category: str | None
     importance_score: float
     region: str | None
-    short_description: str | None
+    description: str | None
+    article_summary: str | None
+    geo_modern: str | None
 
 
 class OnThisDayResponse(BaseModel):
@@ -63,6 +72,56 @@ class OnThisDayResponse(BaseModel):
     month: int
     day: int
     events: list[OnThisDayEventItem]
+    nearby_events: list[OnThisDayEventItem]
+
+
+def _build_on_this_day_query(m: int, d: int, limit: int = _ON_THIS_DAY_LIMIT):
+    """Build a SELECT for events matching a given month/day using date_earliest.
+
+    Excludes placeholder dates (Jan 1) for BCE events since those are approximations.
+    """
+    from sqlalchemy import Date, cast as sa_cast
+    date_col = sa_cast(Event._date_earliest, Date)
+    return (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.date_earliest,
+            Event.event_category,
+            Event.importance_score,
+            Event.geo_modern,
+            Event.article_summary,
+        )
+        .where(
+            Event._date_earliest.isnot(None),
+            Event.review_status == "approved",
+            extract("month", date_col) == m,
+            extract("day", date_col) == d,
+            # Exclude BCE placeholder dates (all set to Jan 1)
+            or_(Event.is_bce == False, (m != 1) | (d != 1)),  # noqa: E712
+        )
+        .order_by(Event.importance_score.desc())
+        .limit(limit)
+    )
+
+
+def _row_to_item(row) -> OnThisDayEventItem:
+    """Convert a DB row to an OnThisDayEventItem."""
+    return OnThisDayEventItem(
+        id=row.id,
+        slug=row.slug,
+        title=row.title,
+        year_approx=row.year_approx,
+        date_display=row.date_earliest,
+        category=row.event_category,
+        importance_score=row.importance_score,
+        region=row.geo_modern,
+        description=None,
+        article_summary=row.article_summary,
+        geo_modern=row.geo_modern,
+    )
 
 
 @router.get("/on-this-day", response_model=OnThisDayResponse)
@@ -71,56 +130,54 @@ async def on_this_day(
     day: int | None = Query(default=None, ge=1, le=31, description="Day (1-31), defaults to today"),
     db: AsyncSession = Depends(get_db),
 ) -> OnThisDayResponse:
-    """Return up to 20 events that occurred on this month/day across all years.
+    """Return up to 30 events that occurred on this month/day across all years.
 
-    Matches events whose ``date_exact`` column has the same month and day,
-    sorted by ``importance_score`` descending.
+    Uses ``date_earliest`` to match month and day, sorted by importance_score DESC.
+    When fewer than 5 events match, includes nearby events (±3 days).
     """
     now = datetime.now(tz=timezone.utc)
     m = month or now.month
     d = day or now.day
 
-    date_col = func.cast(Event._date_exact, func.DATE)
-
-    stmt = (
-        select(
-            Event.id,
-            Event.slug,
-            Event.title,
-            Event.year_approx,
-            Event.date_exact,
-            Event.event_category,
-            Event.importance_score,
-            Event.geo_modern,
-        )
-        .where(
-            Event._date_exact.isnot(None),
-            extract("month", date_col) == m,
-            extract("day", date_col) == d,
-        )
-        .order_by(Event.importance_score.desc())
-        .limit(20)
-    )
-
+    stmt = _build_on_this_day_query(m, d)
     result = await db.execute(stmt)
     rows = result.fetchall()
+    events_out = [_row_to_item(row) for row in rows]
 
-    events_out = [
-        OnThisDayEventItem(
-            id=row.id,
-            slug=row.slug,
-            title=row.title,
-            year_approx=row.year_approx,
-            date_display=row.date_exact,
-            category=row.event_category,
-            importance_score=row.importance_score,
-            region=row.geo_modern,
-            short_description=None,
-        )
-        for row in rows
-    ]
+    # Fetch nearby events if too few match
+    nearby_out: list[OnThisDayEventItem] = []
+    if len(events_out) < _NEARBY_THRESHOLD:
+        matched_ids = {e.id for e in events_out}
+        from calendar import monthrange
+        all_nearby = []
+        for offset in range(-_NEARBY_DAY_RANGE, _NEARBY_DAY_RANGE + 1):
+            if offset == 0:
+                continue
+            # Simple day offset — handle month boundaries
+            import calendar
+            _, max_day = calendar.monthrange(2000, m)  # Use leap year for Feb
+            nd = d + offset
+            nm = m
+            if nd < 1:
+                nm = m - 1 if m > 1 else 12
+                _, prev_max = calendar.monthrange(2000, nm)
+                nd = prev_max + nd
+            elif nd > max_day:
+                nm = m + 1 if m < 12 else 1
+                nd = nd - max_day
 
-    return OnThisDayResponse(month=m, day=d, events=events_out)
+            nearby_stmt = _build_on_this_day_query(nm, nd, limit=5)
+            nearby_result = await db.execute(nearby_stmt)
+            for row in nearby_result.fetchall():
+                if row.id not in matched_ids:
+                    all_nearby.append(_row_to_item(row))
+                    matched_ids.add(row.id)
+
+        # Sort by importance and limit
+        all_nearby.sort(key=lambda e: e.importance_score, reverse=True)
+        nearby_out = all_nearby[:15]
+
+    return OnThisDayResponse(month=m, day=d, events=events_out, nearby_events=nearby_out)
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:

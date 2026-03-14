@@ -24,7 +24,9 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import OnThisDayTeaser from './components/OnThisDayTeaser';
 import EventDetailPage from './pages/EventDetailPage';
+import OnThisDayPage from './pages/OnThisDayPage';
 import AdminPage from './pages/AdminPage';
 import QuizPage from './pages/QuizPage';
 import PeoplePage from './pages/PeoplePage';
@@ -64,6 +66,9 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* On This Day teaser banner (dismissible) */}
+      <OnThisDayTeaser />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -89,6 +94,7 @@ export default function App() {
         <Route path="/people" element={<PeoplePage />} />
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/collections/:slug" element={<CollectionDetailPage />} />
+        <Route path="/on-this-day" element={<OnThisDayPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/quiz" element={<QuizPage />} />
       </Routes>

@@ -594,7 +594,9 @@ export interface OnThisDayEvent {
   category: string | null;
   importance_score: number;
   region: string | null;
-  short_description: string | null;
+  description: string | null;
+  article_summary: string | null;
+  geo_modern: string | null;
 }
 
 /** Response shape from GET /api/events/on-this-day. */
@@ -602,6 +604,7 @@ export interface OnThisDayResponse {
   month: number;
   day: number;
   events: OnThisDayEvent[];
+  nearby_events: OnThisDayEvent[];
 }
 
 /**
