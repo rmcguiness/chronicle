@@ -571,6 +571,57 @@ export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
   return MOCK_LINKS;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Featured editorial content
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface FeaturedEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+  summary: string | null;
+  causality_count: number;
+}
+
+export interface FeaturedPerson {
+  id: string;
+  name: string;
+  birth_year: number | null;
+  death_year: number | null;
+  roles: string[];
+  description: string | null;
+  event_count: number;
+  wikipedia_slug: string | null;
+}
+
+export interface FeaturedEra {
+  name: string;
+  year_start: number;
+  year_end: number;
+  description: string;
+  color: string;
+  top_events: FeaturedEvent[];
+}
+
+export interface FeaturedResponse {
+  event_of_the_week: FeaturedEvent | null;
+  person_spotlight: FeaturedPerson | null;
+  featured_era: FeaturedEra | null;
+  hidden_gem: FeaturedEvent | null;
+  did_you_know: string[];
+  trending: FeaturedEvent[];
+}
+
+export async function fetchFeatured(seed?: number): Promise<FeaturedResponse> {
+  const params = seed !== undefined ? { seed } : {};
+  const { data } = await api.get('/api/featured', { params });
+  return data as FeaturedResponse;
+}
+
 /**
  * Fetch Wikipedia data for an event, returning a WikiData | WikiDataNotFound
  * discriminated union compatible with EventDetailPage.
