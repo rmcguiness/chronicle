@@ -517,6 +517,41 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Daily Challenge
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Response from GET /api/daily — today's challenge (no year). */
+export interface DailyChallengeResponse {
+  slug: string;
+  title: string;
+  category: string | null;
+  region: string | null;
+  importance_score: number;
+  day_number: number;
+}
+
+/** Response from GET /api/daily/reveal — answer with year. */
+export interface DailyRevealResponse {
+  slug: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  article_summary: string | null;
+  geo_modern: string | null;
+}
+
+/** Fetch today's daily challenge event (no year included). */
+export async function fetchDailyChallenge(): Promise<DailyChallengeResponse> {
+  const { data } = await api.get<DailyChallengeResponse>('/api/daily');
+  return data;
+}
+
+/** Reveal the answer for today's daily challenge. */
+export async function fetchDailyReveal(): Promise<DailyRevealResponse> {
+  const { data } = await api.get<DailyRevealResponse>('/api/daily/reveal');
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
