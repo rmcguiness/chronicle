@@ -517,6 +517,73 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Decades
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A top event summary within a decade overview. */
+export interface TopEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number;
+  category: string | null;
+  importance_score: number;
+}
+
+/** Summary of a single decade from GET /api/decades. */
+export interface DecadeSummary {
+  decade: number;
+  label: string;
+  event_count: number;
+  top_events: TopEvent[];
+  avg_importance: number;
+  regions: string[];
+}
+
+/** Response from GET /api/decades. */
+export interface DecadesResponse {
+  decades: DecadeSummary[];
+}
+
+/** A single event within a decade detail view. */
+export interface DecadeEventItem {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number;
+  category: string | null;
+  importance_score: number;
+  region: string | null;
+  tags: string[];
+}
+
+/** Response from GET /api/decades/:decade. */
+export interface DecadeDetailResponse {
+  decade: number;
+  label: string;
+  events: DecadeEventItem[];
+}
+
+/**
+ * Fetch all decades with summary stats.
+ * @returns Array of decade summaries sorted by decade ASC
+ */
+export async function fetchDecades(): Promise<DecadesResponse> {
+  const { data } = await api.get<DecadesResponse>('/api/decades');
+  return data;
+}
+
+/**
+ * Fetch all events for a specific decade.
+ * @param decade - Decade start year (e.g. 1960, -440)
+ * @returns Decade detail with all events sorted by importance
+ */
+export async function fetchDecadeDetail(decade: number): Promise<DecadeDetailResponse> {
+  const { data } = await api.get<DecadeDetailResponse>(`/api/decades/${decade}`);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

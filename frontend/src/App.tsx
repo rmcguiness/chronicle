@@ -14,7 +14,7 @@
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -25,6 +25,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import DecadesPage from './pages/DecadesPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -60,6 +61,14 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Decades nav link */}
+      <Link
+        to="/decades"
+        className="fixed top-4 right-4 z-50 px-4 py-2 text-sm font-medium rounded-lg bg-slate-800/90 text-slate-200 hover:bg-indigo-600 hover:text-white transition-colors border border-slate-600/50 backdrop-blur"
+      >
+        Decades
+      </Link>
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -82,6 +91,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/decades" element={<DecadesPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
