@@ -32,6 +32,7 @@ import QuizPage from './pages/QuizPage';
 import PeoplePage from './pages/PeoplePage';
 import CollectionsPage from './pages/CollectionsPage';
 import CollectionDetailPage from './pages/CollectionDetailPage';
+import MapPage from './pages/MapPage';
 import NarrativePage from './pages/NarrativePage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -96,6 +97,7 @@ export default function App() {
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/collections/:slug" element={<CollectionDetailPage />} />
         <Route path="/narrative/:slug" element={<NarrativePage />} />
+        <Route path="/map" element={<MapPage />} />
         <Route path="/on-this-day" element={<OnThisDayPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/quiz" element={<QuizPage />} />

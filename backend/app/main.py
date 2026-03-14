@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.database import AsyncSessionLocal
-from app.routers import canvas, causality, collections, events, people, quiz, search
+from app.routers import canvas, causality, collections, events, map, people, quiz, search
 from app.routers.submit import submit_router, admin_router
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -62,6 +62,7 @@ app.include_router(canvas.router)
 app.include_router(causality.router)
 app.include_router(collections.router)
 app.include_router(events.router)
+app.include_router(map.router)
 app.include_router(quiz.router)
 app.include_router(search.router)
 app.include_router(people.router)
