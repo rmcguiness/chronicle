@@ -571,6 +571,101 @@ export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
   return MOCK_LINKS;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Event page — additional data fetchers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A person linked to an event via event_people. */
+export interface EventPerson {
+  id: string;
+  name: string;
+  birth_year: number | null;
+  death_year: number | null;
+  description: string | null;
+  wikipedia_slug: string | null;
+  image_url: string | null;
+  role: string;
+  role_notes: string | null;
+}
+
+/** A contemporary event for the historical context section. */
+export interface ContextEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  geo_modern: string | null;
+  category: string | null;
+  importance_score: number;
+}
+
+/** Neighboring event for prev/next navigation. */
+export interface NeighborEvent {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+}
+
+/** Previous/next navigation response. */
+export interface EventNeighbors {
+  previous: NeighborEvent | null;
+  next: NeighborEvent | null;
+}
+
+/**
+ * Fetch people linked to an event.
+ * @param slug - Event slug
+ * @returns Array of people with their roles
+ */
+export async function fetchEventPeople(slug: string): Promise<EventPerson[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+  try {
+    const { data } = await api.get(`/api/events/${slug}/people`);
+    return (data.people ?? []) as EventPerson[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch historical context — contemporary events from other regions.
+ * @param slug - Event slug
+ * @param radius - Year radius (default 10)
+ * @param limit - Max events to return (default 6)
+ */
+export async function fetchHistoricalContext(
+  slug: string,
+  radius = 10,
+  limit = 6,
+): Promise<ContextEvent[]> {
+  const available = await isBackendAvailable();
+  if (!available) return [];
+  try {
+    const { data } = await api.get(`/api/events/${slug}/context`, {
+      params: { radius, limit },
+    });
+    return (data.events ?? []) as ContextEvent[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch neighboring events (prev/next by year in same region).
+ * @param slug - Event slug
+ */
+export async function fetchEventNeighbors(slug: string): Promise<EventNeighbors> {
+  const available = await isBackendAvailable();
+  if (!available) return { previous: null, next: null };
+  try {
+    const { data } = await api.get(`/api/events/${slug}/neighbors`);
+    return data as EventNeighbors;
+  } catch {
+    return { previous: null, next: null };
+  }
+}
+
 /**
  * Fetch Wikipedia data for an event, returning a WikiData | WikiDataNotFound
  * discriminated union compatible with EventDetailPage.

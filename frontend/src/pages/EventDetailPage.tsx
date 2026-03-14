@@ -1,45 +1,60 @@
 /**
- * EventDetailPage — full-page view for a single historical event.
+ * EventDetailPage — full standalone event detail page.
  *
  * Route: /event/:slug
  *
- * Sections rendered:
- *  1. Hero — title, date (BCE-aware), region badge, importance score
- *  2. Wikipedia summary — fetched from GET /api/events/{slug}/wiki
- *  3. Perspectives — per-viewpoint narrative cards
- *  4. Mini-timeline — causality chain (causes → this event → effects)
- *  5. Back-to-timeline navigation
+ * Sections:
+ *  1. EventHero — title, year, badges, importance stars, breadcrumb, share
+ *  2. EventNarrative — full article_summary / Wikipedia content
+ *  3. EventMetadata sidebar — date, region, category, coordinates, Wikipedia link
+ *  4. CausalChain — incoming/outgoing causality links
+ *  5. HistoricalContext — contemporary events from other regions
+ *  6. PeopleInvolved — historical figures via event_people
+ *  7. RelatedEvents — from connected_events (tag/category match)
+ *  8. EraContext — collapsed accordion with era description
+ *  9. NavigationFooter — prev/next event, random event
  *
- * Does NOT own: routing setup (see App.tsx), global store, canvas/map state.
+ * Does NOT own: routing setup (App.tsx), global store, canvas/map state.
  */
 
-import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
-import { fetchEventDetail, fetchWikiData } from '../api/client';
+import {
+  fetchEventDetail,
+  fetchWikiData,
+  fetchEventPeople,
+  fetchHistoricalContext,
+  fetchEventNeighbors,
+  searchEvents,
+} from '../api/client';
+import type { EventPerson, ContextEvent, EventNeighbors } from '../api/client';
 import {
   CATEGORY_COLORS,
   CATEGORY_ICONS,
   CATEGORY_LABELS,
   PERSPECTIVE_COLORS,
   PERSPECTIVE_LABELS,
+  CONNECTION_COLORS,
   evidenceColor,
   evidenceLabel,
 } from '../utils/categories';
-import type { Perspective, ConnectedEvent } from '../types';
-import type { WikiData } from '../types';
+import type { EventDetail, Perspective, ConnectedEvent, WikiData, EventCategory } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Maximum characters shown in a perspective narrative before truncation. */
+/** Maximum chars shown in a perspective narrative before truncation. */
 const NARRATIVE_TRUNCATE_LENGTH = 300;
 
 /** Stagger delay (seconds) between perspective card animations. */
 const CARD_STAGGER_DELAY = 0.07;
+
+/** Max importance stars to render. */
+const MAX_STARS = 5;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -47,77 +62,142 @@ const CARD_STAGGER_DELAY = 0.07;
 
 /**
  * Format a year for display, handling BCE flag.
- *
- * @param year - Approximate year (positive integer).
+ * @param year - Approximate year.
  * @param isBce - Whether the year is Before Common Era.
- * @returns Human-readable year string e.g. "1914" or "44 BCE".
  */
 function formatYear(year: number | undefined | null, isBce: boolean | undefined): string {
   if (year == null) return 'Unknown date';
-  return isBce ? `${year} BCE` : String(year);
+  return isBce ? `${year} BCE` : `${year} CE`;
 }
 
 /**
- * Format an importance score (0–1) as a percentage string.
- *
- * @param score - Importance score between 0 and 1.
- * @returns Percentage string e.g. "95%".
+ * Render importance score as filled/empty stars.
+ * @param score - 0 to 1 importance value
  */
-function formatImportance(score: number): string {
-  return `${Math.round(score * 100)}%`;
+function ImportanceStars({ score }: { score: number }) {
+  const filled = Math.round(score * MAX_STARS);
+  return (
+    <span style={{ fontSize: 16, letterSpacing: 2 }}>
+      {Array.from({ length: MAX_STARS }, (_, i) => (
+        <span key={i} style={{ color: i < filled ? '#f59e0b' : '#334155' }}>
+          ★
+        </span>
+      ))}
+    </span>
+  );
 }
 
 /**
- * Map a connected event's direction+type to a short arrow label.
- *
- * @param direction - 'cause' or 'effect'.
- * @param connectionType - The causality link type string.
- * @returns Short label with arrow indicator.
+ * Copy current URL to clipboard and show brief feedback.
  */
-function connectionLabel(direction: ConnectedEvent['direction'], connectionType: string): string {
-  const arrow = direction === 'cause' ? '←' : '→';
-  const typeLabel =
-    connectionType === 'causes' ? 'Caused by'
-    : connectionType === 'enables' ? 'Enabled by'
-    : connectionType === 'leads_to' ? 'Leads to'
-    : 'Context';
-  return direction === 'cause'
-    ? `${arrow} ${typeLabel.replace('Caused by', 'Caused this').replace('Enabled by', 'Enabled this')}`
-    : `${arrow} ${typeLabel}`;
+function useShareButton(): [boolean, () => void] {
+  const [copied, setCopied] = useState(false);
+  const handleShare = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, []);
+  return [copied, handleShare];
+}
+
+/**
+ * Derive a simple era label from a year.
+ */
+function deriveEra(year: number | null | undefined, isBce: boolean | undefined): string {
+  if (year == null) return 'Unknown Era';
+  if (isBce) {
+    if (year > 3000) return 'Prehistoric';
+    if (year > 500) return 'Ancient World';
+    return 'Classical Antiquity';
+  }
+  if (year < 500) return 'Late Antiquity';
+  if (year < 1500) return 'Medieval Period';
+  if (year < 1800) return 'Early Modern Period';
+  if (year < 1900) return 'Age of Revolution';
+  if (year < 2000) return '20th Century';
+  return 'Contemporary';
+}
+
+/**
+ * Get a brief era description for the collapsed accordion.
+ */
+function eraDescription(era: string): string {
+  const descriptions: Record<string, string> = {
+    'Prehistoric': 'The period before written records, spanning from the earliest human ancestors through the development of agriculture and the first settlements.',
+    'Ancient World': 'The era of early civilizations including Mesopotamia, Egypt, the Indus Valley, and early China, marked by the invention of writing and monumental architecture.',
+    'Classical Antiquity': 'The age of Greece and Rome, featuring the birth of democracy, philosophy, and the expansion of vast empires across the Mediterranean world.',
+    'Late Antiquity': 'The transitional period from Classical Antiquity to the Middle Ages, witnessing the fall of Rome and the rise of new religious and political structures.',
+    'Medieval Period': 'The Middle Ages, spanning from the fall of Rome to the Renaissance, characterized by feudalism, the Crusades, and the spread of major world religions.',
+    'Early Modern Period': 'An era of exploration, reformation, and scientific revolution that reshaped global trade routes and challenged established institutions.',
+    'Age of Revolution': 'A transformative century of political, industrial, and social revolutions that remade the modern world and its nation-states.',
+    '20th Century': 'A century of world wars, decolonization, technological breakthroughs, and the rise of global interconnection.',
+    'Contemporary': 'The current era defined by digital technology, globalization, climate change, and rapidly evolving geopolitics.',
+  };
+  return descriptions[era] ?? 'A period of significant historical events and transformations.';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sub-components
+// og:meta tags — set document head for social sharing
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Hero section ──────────────────────────────────────────────────────────────
+/**
+ * Set Open Graph meta tags in the document head for social sharing.
+ * @param event - The event detail data.
+ * @param slug - Event slug for URL construction.
+ */
+function useOgMeta(event: EventDetail | undefined, slug: string | undefined) {
+  useEffect(() => {
+    if (!event || !slug) return;
 
-interface HeroSectionProps {
-  title: string;
-  year: number | null | undefined;
-  isBce: boolean | undefined;
-  region: string | undefined;
-  category: string | undefined;
-  importanceScore: number;
+    const description = (event.perspectives?.[0]?.narrative ?? event.title).slice(0, 160);
+    const tags: Record<string, string> = {
+      'og:title': `${event.title} — Chronicle`,
+      'og:description': description,
+      'og:url': `https://chronicle.app/event/${slug}`,
+      'og:type': 'article',
+    };
+
+    // Also set document title
+    document.title = `${event.title} — Chronicle`;
+
+    const created: HTMLMetaElement[] = [];
+    for (const [property, content] of Object.entries(tags)) {
+      let el = document.querySelector<HTMLMetaElement>(`meta[property="${property}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('property', property);
+        document.head.appendChild(el);
+        created.push(el);
+      }
+      el.setAttribute('content', content);
+    }
+
+    return () => {
+      document.title = 'Chronicle — Immutable Historical Timeline';
+      created.forEach((el) => el.remove());
+    };
+  }, [event, slug]);
 }
 
-/**
- * Full-width hero section displaying the event's primary metadata.
- *
- * @param props.title - Event title.
- * @param props.year - Approximate year (may be null).
- * @param props.isBce - Whether the year is Before Common Era.
- * @param props.region - Modern geographic region label.
- * @param props.category - Event category key (war, political, etc.).
- * @param props.importanceScore - Importance score 0–1.
- */
-function HeroSection({ title, year, isBce, region, category, importanceScore }: HeroSectionProps) {
-  const catKey = (category ?? 'political') as keyof typeof CATEGORY_COLORS;
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: EventHero
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface EventHeroProps {
+  event: EventDetail;
+  slug: string;
+}
+
+/** Full-width hero with title, year, badges, importance, breadcrumb, share. */
+function EventHero({ event, slug }: EventHeroProps) {
+  const catKey = (event.category ?? 'political') as EventCategory;
   const color = CATEGORY_COLORS[catKey] ?? '#6b7280';
   const icon = CATEGORY_ICONS[catKey] ?? '📌';
-  const catLabel = CATEGORY_LABELS[catKey] ?? category ?? '';
-  const impColor = evidenceColor(importanceScore);
-  const impPct = formatImportance(importanceScore);
+  const catLabel = CATEGORY_LABELS[catKey] ?? event.category ?? '';
+  const era = deriveEra(event.year_approx, event.is_bce);
+  const region = event.geo_modern ?? event.geo_era_label ?? 'Unknown';
+  const [copied, handleShare] = useShareButton();
 
   return (
     <div
@@ -127,29 +207,29 @@ function HeroSection({ title, year, isBce, region, category, importanceScore }: 
         background: `linear-gradient(135deg, rgba(7,14,34,0.98) 0%, ${color}14 100%)`,
       }}
     >
-      {/* Back link */}
-      <Link
-        to="/"
+      {/* Breadcrumb */}
+      <nav
         style={{
-          display: 'inline-flex',
+          display: 'flex',
           alignItems: 'center',
           gap: 6,
-          fontSize: 13,
+          fontSize: 12,
           color: '#64748b',
-          textDecoration: 'none',
-          marginBottom: 24,
-          padding: '6px 12px',
-          borderRadius: 6,
-          border: '1px solid rgba(255,255,255,0.08)',
-          backgroundColor: 'rgba(255,255,255,0.04)',
-          transition: 'color 0.15s',
+          marginBottom: 20,
+          flexWrap: 'wrap',
         }}
       >
-        ← Back to Timeline
-      </Link>
+        <Link to="/" style={{ color: '#60a5fa', textDecoration: 'none' }}>Home</Link>
+        <span style={{ color: '#475569' }}>›</span>
+        <span>{region}</span>
+        <span style={{ color: '#475569' }}>›</span>
+        <span>{era}</span>
+        <span style={{ color: '#475569' }}>›</span>
+        <span style={{ color: '#94a3b8' }}>{event.title}</span>
+      </nav>
 
-      {/* Category badge + icon */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+      {/* Category + Era + Region badges */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <span
           style={{
             width: 44,
@@ -167,252 +247,923 @@ function HeroSection({ title, year, isBce, region, category, importanceScore }: 
         >
           {icon}
         </span>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            padding: '4px 10px',
-            borderRadius: 6,
-            backgroundColor: `${color}22`,
-            color,
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-          }}
-        >
-          {catLabel}
-        </span>
+        <Badge label={catLabel} color={color} />
+        <Badge label={era} color="#6366f1" />
+        <Badge label={region} color="#14b8a6" />
       </div>
 
       {/* Title */}
       <h1
         style={{
-          fontSize: 'clamp(22px, 4vw, 36px)',
+          fontSize: 'clamp(24px, 4vw, 40px)',
           fontWeight: 800,
           color: '#f1f5f9',
-          lineHeight: 1.2,
-          marginBottom: 14,
+          lineHeight: 1.15,
+          marginBottom: 12,
         }}
       >
-        {title}
+        {event.title}
       </h1>
 
-      {/* Metadata row */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-        {/* Date */}
-        <MetaBadge icon="📅" label={formatYear(year, isBce)} color="#94a3b8" />
+      {/* Year display */}
+      <div
+        style={{
+          fontSize: 'clamp(18px, 3vw, 28px)',
+          fontWeight: 300,
+          color: '#94a3b8',
+          letterSpacing: '0.02em',
+          marginBottom: 16,
+          fontFamily: 'monospace',
+        }}
+      >
+        {formatYear(event.year_approx, event.is_bce)}
+      </div>
 
-        {/* Region */}
-        {region && <MetaBadge icon="📍" label={region} color="#94a3b8" />}
+      {/* Importance stars */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <ImportanceStars score={event.importance_score} />
+        <span style={{ fontSize: 12, color: '#64748b' }}>
+          Importance: {Math.round(event.importance_score * 10)}/10
+        </span>
+      </div>
 
-        {/* Importance score */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <MetaBadge icon="⭐" label={`Importance ${impPct}`} color={impColor} />
-          {/* Mini bar */}
-          <div
-            style={{
-              width: 80,
-              height: 5,
-              borderRadius: 3,
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              overflow: 'hidden',
-            }}
-          >
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${importanceScore * 100}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-              style={{ height: '100%', backgroundColor: impColor, borderRadius: 3 }}
-            />
-          </div>
-        </div>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <Link
+          to={`/?event=${slug}`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#60a5fa',
+            textDecoration: 'none',
+            padding: '8px 16px',
+            borderRadius: 8,
+            border: '1px solid rgba(96,165,250,0.3)',
+            backgroundColor: 'rgba(96,165,250,0.08)',
+            transition: 'background 0.15s',
+          }}
+        >
+          🗺️ View on Timeline
+        </Link>
+        <button
+          onClick={handleShare}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            color: copied ? '#22c55e' : '#94a3b8',
+            padding: '8px 16px',
+            borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.12)',
+            backgroundColor: 'rgba(255,255,255,0.04)',
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          {copied ? '✓ Copied!' : '🔗 Share'}
+        </button>
       </div>
     </div>
   );
 }
 
-interface MetaBadgeProps {
-  icon: string;
-  label: string;
-  color: string;
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: EventNarrative + EventMetadata (main content area)
+// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Small inline badge showing an icon + label used in the hero metadata row.
- */
-function MetaBadge({ icon, label, color }: MetaBadgeProps) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 5,
-        fontSize: 13,
-        color,
-        padding: '4px 10px',
-        borderRadius: 6,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.08)',
-      }}
-    >
-      {icon} {label}
-    </span>
-  );
-}
-
-// ── Wikipedia section ─────────────────────────────────────────────────────────
-
-interface WikiSectionProps {
+interface ContentAreaProps {
+  event: EventDetail;
   slug: string;
 }
 
-/**
- * Wikipedia summary block.
- * Fetches `/api/events/{slug}/wiki` and renders summary + thumbnail,
- * or shows a graceful fallback when no Wikipedia article is found.
- *
- * @param props.slug - Event slug used as the API key.
- */
-function WikiSection({ slug }: WikiSectionProps) {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['wiki', slug],
-    queryFn: () => fetchWikiData(slug),
-    staleTime: 10 * 60 * 1000, // Wikipedia data changes rarely
-  });
-
+/** Two-column layout: narrative + sidebar metadata. */
+function ContentArea({ event, slug }: ContentAreaProps) {
   return (
-    <SectionWrapper title="Wikipedia" icon="📖">
-      {isLoading && (
-        <div style={{ color: '#64748b', fontSize: 13, padding: '8px 0' }}>
-          Fetching Wikipedia summary…
-        </div>
-      )}
-
-      {isError && (
-        <FallbackNotice message="Could not fetch Wikipedia data." />
-      )}
-
-      {data && !data.found && (
-        <FallbackNotice message="No Wikipedia article found for this event." />
-      )}
-
-      {data && data.found && (
-        <WikiContent wiki={data} />
-      )}
-    </SectionWrapper>
+    <div className="edp-content-grid">
+      <EventNarrative slug={slug} event={event} />
+      <EventMetadata event={event} />
+    </div>
   );
 }
 
-interface WikiContentProps {
-  wiki: WikiData;
-}
+/** Main narrative content — Wikipedia article summary. */
+function EventNarrative({ slug, event }: { slug: string; event: EventDetail }) {
+  const { data: wiki, isLoading } = useQuery({
+    queryKey: ['wiki', slug],
+    queryFn: () => fetchWikiData(slug),
+    staleTime: 10 * 60 * 1000,
+  });
 
-/** Renders the actual Wikipedia article content when found. */
-function WikiContent({ wiki }: WikiContentProps) {
   return (
-    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-      {/* Thumbnail */}
-      {wiki.thumbnail && (
-        <img
-          src={wiki.thumbnail}
-          alt={wiki.title}
-          style={{
-            width: 140,
-            height: 100,
-            objectFit: 'cover',
-            borderRadius: 8,
-            flexShrink: 0,
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        />
+    <div>
+      <h2 style={sectionHeadingStyle}>
+        <span>📖</span> Overview
+      </h2>
+
+      {isLoading && (
+        <div style={{ color: '#64748b', fontSize: 13, padding: '8px 0' }}>
+          Fetching article summary…
+        </div>
       )}
 
-      {/* Text content */}
-      <div style={{ flex: 1 }}>
-        <p
+      {wiki && wiki.found && (
+        <>
+          {/* Thumbnail */}
+          {'thumbnail' in wiki && wiki.thumbnail && (
+            <img
+              src={wiki.thumbnail}
+              alt={event.title}
+              style={{
+                float: 'right',
+                width: 180,
+                marginLeft: 20,
+                marginBottom: 12,
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            />
+          )}
+
+          {/* Full summary text */}
+          <p style={{ fontSize: 15, color: '#cbd5e1', lineHeight: 1.8, margin: '0 0 16px' }}>
+            {wiki.summary}
+          </p>
+
+          {/* Wikipedia attribution */}
+          <a
+            href={wiki.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              marginTop: 8,
+              fontSize: 13,
+              color: '#60a5fa',
+              textDecoration: 'none',
+              padding: '6px 14px',
+              borderRadius: 6,
+              border: '1px solid rgba(96,165,250,0.3)',
+              backgroundColor: 'rgba(96,165,250,0.08)',
+            }}
+          >
+            📚 Source: Wikipedia — {wiki.title}
+          </a>
+        </>
+      )}
+
+      {wiki && !wiki.found && (
+        <div
           style={{
-            fontSize: 14,
-            color: '#cbd5e1',
-            lineHeight: 1.7,
-            margin: 0,
+            padding: '16px 20px',
+            borderRadius: 10,
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: '#64748b',
+            fontSize: 13,
+            fontStyle: 'italic',
           }}
         >
-          {wiki.summary}
-        </p>
-        <a
-          href={wiki.url}
-          target="_blank"
-          rel="noopener noreferrer"
+          No article summary available yet. Content for this event is being expanded.
+        </div>
+      )}
+
+      {/* Perspectives section, inline */}
+      {event.perspectives.length > 0 && (
+        <div style={{ marginTop: 32 }}>
+          <h3 style={sectionHeadingStyle}>
+            <span>🌐</span> Perspectives ({event.perspectives.length})
+          </h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: 14,
+            }}
+          >
+            {event.perspectives.map((p, i) => (
+              <PerspectiveCard key={p.id} perspective={p} index={i} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Right-column metadata sidebar. */
+function EventMetadata({ event }: { event: EventDetail }) {
+  const catKey = (event.category ?? 'political') as EventCategory;
+  const color = CATEGORY_COLORS[catKey] ?? '#6b7280';
+  const era = deriveEra(event.year_approx, event.is_bce);
+
+  return (
+    <aside
+      style={{
+        padding: '20px',
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        alignSelf: 'start',
+        position: 'sticky',
+        top: 20,
+      }}
+    >
+      <h3
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#475569',
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          marginBottom: 16,
+        }}
+      >
+        Event Details
+      </h3>
+
+      <MetaRow label="Date" value={formatYear(event.year_approx, event.is_bce)} />
+      {event.date_circa && (
+        <div style={{ fontSize: 11, color: '#64748b', marginTop: -8, marginBottom: 12 }}>
+          (approximate date)
+        </div>
+      )}
+      <MetaRow label="Region" value={event.geo_modern ?? 'Unknown'} />
+      <MetaRow label="Category">
+        <Badge label={CATEGORY_LABELS[catKey] ?? event.category ?? ''} color={color} />
+      </MetaRow>
+      <MetaRow label="Era" value={era} />
+      <MetaRow label="Importance">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>
+            {Math.round(event.importance_score * 10)}/10
+          </span>
+          <ImportanceStars score={event.importance_score} />
+        </div>
+      </MetaRow>
+
+      {event.lat != null && event.lng != null && (
+        <MetaRow label="Location" value={`${event.lat.toFixed(2)}°, ${event.lng.toFixed(2)}°`}>
+          {event.geo_modern && (
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+              📍 {event.geo_modern}
+            </div>
+          )}
+        </MetaRow>
+      )}
+
+      {event.wikipedia_slug && (
+        <div style={{ marginTop: 12 }}>
+          <a
+            href={`https://en.wikipedia.org/wiki/${event.wikipedia_slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 12,
+              color: '#60a5fa',
+              textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: 6,
+              border: '1px solid rgba(96,165,250,0.3)',
+              backgroundColor: 'rgba(96,165,250,0.08)',
+              width: '100%',
+              justifyContent: 'center',
+            }}
+          >
+            🔗 Wikipedia
+          </a>
+        </div>
+      )}
+
+      {event.tags && event.tags.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Tags
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {event.tags.map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  fontSize: 10,
+                  padding: '2px 8px',
+                  borderRadius: 4,
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  color: '#94a3b8',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </aside>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: CausalChain
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface CausalChainProps {
+  event: EventDetail;
+}
+
+/** Causality links — "What caused this?" and "What happened next?" */
+function CausalChain({ event }: CausalChainProps) {
+  const connected = event.connected_events ?? [];
+  if (connected.length === 0) return null;
+
+  const causes = connected.filter((e) => e.direction === 'cause').slice(0, 5);
+  const effects = connected.filter((e) => e.direction === 'effect').slice(0, 5);
+
+  return (
+    <SectionWrapper title="Causality Chain" icon="⛓️">
+      <div className="edp-causal-grid">
+        {/* Causes */}
+        <div>
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 }}>
+            ← What caused this?
+          </h4>
+          {causes.length === 0 ? (
+            <FallbackNotice message="No known causes recorded." />
+          ) : (
+            causes.map((ce) => <CausalEventCard key={ce.id} event={ce} />)
+          )}
+        </div>
+
+        {/* Effects */}
+        <div>
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 }}>
+            What happened next? →
+          </h4>
+          {effects.length === 0 ? (
+            <FallbackNotice message="No known effects recorded." />
+          ) : (
+            effects.map((ce) => <CausalEventCard key={ce.id} event={ce} />)
+          )}
+        </div>
+      </div>
+
+      {/* Exploration links */}
+      <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
+        <Link
+          to={`/?event=${event.slug}`}
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            marginTop: 12,
-            fontSize: 13,
+            fontSize: 12,
             color: '#60a5fa',
             textDecoration: 'none',
-            padding: '5px 12px',
+            padding: '6px 14px',
             borderRadius: 6,
             border: '1px solid rgba(96,165,250,0.3)',
             backgroundColor: 'rgba(96,165,250,0.08)',
           }}
         >
-          🔗 Read more on Wikipedia
-        </a>
+          🕸️ Explore the full chain
+        </Link>
       </div>
-    </div>
+    </SectionWrapper>
   );
 }
 
-// ── Perspectives section ──────────────────────────────────────────────────────
-
-interface PerspectivesSectionProps {
-  perspectives: Perspective[];
+/** Card for a single causal event link. */
+function CausalEventCard({ event }: { event: ConnectedEvent }) {
+  const typeColor = CONNECTION_COLORS[event.connection_type] ?? '#6b7280';
+  return (
+    <Link
+      to={`/event/${event.slug}`}
+      style={{ textDecoration: 'none', display: 'block', marginBottom: 8 }}
+    >
+      <div
+        style={{
+          padding: '12px 14px',
+          borderRadius: 8,
+          backgroundColor: 'rgba(255,255,255,0.04)',
+          border: `1px solid ${typeColor}33`,
+          transition: 'background 0.15s, border-color 0.15s',
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+          e.currentTarget.style.borderColor = `${typeColor}66`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
+          e.currentTarget.style.borderColor = `${typeColor}33`;
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', lineHeight: 1.3 }}>
+            {event.title}
+          </div>
+          <span style={{ fontSize: 11, color: '#64748b', flexShrink: 0, fontFamily: 'monospace' }}>
+            {event.year_approx}
+          </span>
+        </div>
+        {event.description && (
+          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 }}>
+            {event.description.slice(0, 120)}{event.description.length > 120 ? '…' : ''}
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+          <Badge label={event.connection_type} color={typeColor} />
+          {event.strength != null && (
+            <span style={{ fontSize: 10, color: '#64748b' }}>
+              strength: {event.strength.toFixed(2)}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
 }
 
-/**
- * Renders all available perspectives as staggered animated cards.
- * Each card shows the viewpoint label, narrative, and evidence score.
- *
- * @param props.perspectives - Array of perspective objects from the event detail.
- */
-function PerspectivesSection({ perspectives }: PerspectivesSectionProps) {
-  if (perspectives.length === 0) {
-    return (
-      <SectionWrapper title="Perspectives" icon="🌐">
-        <FallbackNotice message="No perspectives recorded for this event." />
-      </SectionWrapper>
-    );
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: HistoricalContext
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface HistoricalContextProps {
+  slug: string;
+  year: number | null | undefined;
+}
+
+/** "What else was happening?" — contemporary events from other regions. */
+function HistoricalContext({ slug, year }: HistoricalContextProps) {
+  const { data: contextEvents = [] } = useQuery({
+    queryKey: ['context', slug],
+    queryFn: () => fetchHistoricalContext(slug),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  if (contextEvents.length === 0) return null;
 
   return (
-    <SectionWrapper title={`Perspectives (${perspectives.length})`} icon="🌐">
+    <SectionWrapper
+      title={`World Context: ${year ?? 'Unknown'} (±10 years)`}
+      icon="🌍"
+    >
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 16,
+          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          gap: 12,
         }}
       >
-        {perspectives.map((p, i) => (
-          <PerspectiveCard key={p.id} perspective={p} index={i} />
+        {contextEvents.map((ce) => {
+          const catColor = CATEGORY_COLORS[(ce.category ?? 'political') as EventCategory] ?? '#6b7280';
+          return (
+            <Link
+              key={ce.id}
+              to={`/event/${ce.slug}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <div
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  transition: 'background 0.15s',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>
+                  {ce.title}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>
+                    {ce.year_approx}
+                  </span>
+                  {ce.geo_modern && (
+                    <span style={{ fontSize: 10, color: '#94a3b8' }}>
+                      · {ce.geo_modern}
+                    </span>
+                  )}
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  <Badge label={ce.category ?? 'event'} color={catColor} />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </SectionWrapper>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: PeopleInvolved
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface PeopleInvolvedProps {
+  slug: string;
+}
+
+/** Historical figures linked to this event. */
+function PeopleInvolved({ slug }: PeopleInvolvedProps) {
+  const { data: people = [] } = useQuery({
+    queryKey: ['people', slug],
+    queryFn: () => fetchEventPeople(slug),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  if (people.length === 0) return null;
+
+  return (
+    <SectionWrapper title="People Involved" icon="👤">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: 12,
+        }}
+      >
+        {people.map((person) => (
+          <PersonCard key={`${person.id}-${person.role}`} person={person} />
         ))}
       </div>
     </SectionWrapper>
   );
 }
 
-interface PerspectiveCardProps {
-  perspective: Perspective;
-  index: number;
+/** Card for a single person. */
+function PersonCard({ person }: { person: EventPerson }) {
+  const dates = [
+    person.birth_year != null ? String(person.birth_year) : '?',
+    person.death_year != null ? String(person.death_year) : '?',
+  ].join(' – ');
+
+  return (
+    <div
+      style={{
+        padding: '14px 16px',
+        borderRadius: 10,
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+        {person.image_url ? (
+          <img
+            src={person.image_url}
+            alt={person.name}
+            style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              backgroundColor: '#eab30822',
+              border: '1px solid #eab30844',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 16,
+              flexShrink: 0,
+            }}
+          >
+            👤
+          </div>
+        )}
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>
+            {person.name}
+          </div>
+          <div style={{ fontSize: 11, color: '#64748b' }}>{dates}</div>
+        </div>
+      </div>
+      <Badge label={person.role} color="#f59e0b" />
+      {person.description && (
+        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 }}>
+          {person.description.slice(0, 100)}{person.description.length > 100 ? '…' : ''}
+        </div>
+      )}
+    </div>
+  );
 }
 
-/**
- * Individual perspective card with label, type badge, narrative, and evidence score.
- *
- * @param props.perspective - Perspective data object.
- * @param props.index - Position in list — used to compute stagger animation delay.
- */
-function PerspectiveCard({ perspective, index }: PerspectiveCardProps) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: RelatedEvents (from connected_events — similar in category/tags)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface RelatedEventsProps {
+  event: EventDetail;
+}
+
+/** "You might also find interesting" — events with shared tags/category. */
+function RelatedEvents({ event }: RelatedEventsProps) {
+  // Use the first tag as a search query to find semantically related events
+  const searchTerm = event.tags?.[0] ?? event.category ?? event.title.split(' ')[0];
+
+  const { data: related = [] } = useQuery({
+    queryKey: ['related', event.slug, searchTerm],
+    queryFn: () => searchEvents(searchTerm, 6),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  // Filter out self
+  const filtered = related.filter((r) => r.slug !== event.slug).slice(0, 5);
+  if (filtered.length === 0) return null;
+
+  return (
+    <SectionWrapper title="You Might Also Find Interesting" icon="🔮">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: 12,
+        }}
+      >
+        {filtered.map((r) => {
+          const catColor = CATEGORY_COLORS[(r.category ?? 'political') as EventCategory] ?? '#6b7280';
+          const catIcon = CATEGORY_ICONS[(r.category ?? 'political') as EventCategory] ?? '📌';
+          return (
+            <Link key={r.id} to={`/event/${r.slug}`} style={{ textDecoration: 'none' }}>
+              <div
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  transition: 'background 0.15s',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 14 }}>{catIcon}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{r.title}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>{r.year_approx}</span>
+                  {r.geo_modern && <span style={{ fontSize: 10, color: '#94a3b8' }}>· {r.geo_modern}</span>}
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  <Badge label={r.category ?? 'event'} color={catColor} />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </SectionWrapper>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: EraContext (collapsed accordion)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface EraContextProps {
+  year: number | null | undefined;
+  isBce: boolean | undefined;
+}
+
+/** Collapsible era context accordion. */
+function EraContext({ year, isBce }: EraContextProps) {
+  const [expanded, setExpanded] = useState(false);
+  const era = deriveEra(year, isBce);
+  const desc = eraDescription(era);
+
+  return (
+    <SectionWrapper title={`Era: ${era}`} icon="📜">
+      <div
+        style={{
+          borderRadius: 10,
+          backgroundColor: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          overflow: 'hidden',
+        }}
+      >
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 16px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#e2e8f0',
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          <span>About the {era}</span>
+          <span style={{ color: '#64748b', transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+            ▼
+          </span>
+        </button>
+        {expanded && (
+          <div style={{ padding: '0 16px 14px', fontSize: 13, color: '#94a3b8', lineHeight: 1.7 }}>
+            {desc}
+          </div>
+        )}
+      </div>
+    </SectionWrapper>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section: NavigationFooter
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface NavigationFooterProps {
+  slug: string;
+}
+
+/** Prev/next event navigation + random event button. */
+function NavigationFooter({ slug }: NavigationFooterProps) {
+  const navigate = useNavigate();
+  const { data: neighbors } = useQuery({
+    queryKey: ['neighbors', slug],
+    queryFn: () => fetchEventNeighbors(slug),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const handleRandom = useCallback(async () => {
+    // Search for a common term to get random-ish results
+    const terms = ['war', 'revolution', 'discovery', 'empire', 'treaty', 'battle'];
+    const term = terms[Math.floor(Math.random() * terms.length)];
+    const results = await searchEvents(term, 20);
+    if (results.length > 0) {
+      const pick = results[Math.floor(Math.random() * results.length)];
+      if (pick.slug !== slug) {
+        navigate(`/event/${pick.slug}`);
+        return;
+      }
+    }
+    navigate('/');
+  }, [navigate, slug]);
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '24px 32px 40px',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        gap: 12,
+        flexWrap: 'wrap',
+      }}
+    >
+      {/* Previous */}
+      <div style={{ flex: 1 }}>
+        {neighbors?.previous ? (
+          <Link
+            to={`/event/${neighbors.previous.slug}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 13,
+              color: '#60a5fa',
+              textDecoration: 'none',
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: '1px solid rgba(96,165,250,0.3)',
+              backgroundColor: 'rgba(96,165,250,0.08)',
+            }}
+          >
+            ← {neighbors.previous.title}
+            <span style={{ fontSize: 11, color: '#64748b' }}>({neighbors.previous.year_approx})</span>
+          </Link>
+        ) : (
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 13,
+              color: '#64748b',
+              textDecoration: 'none',
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.08)',
+              backgroundColor: 'rgba(255,255,255,0.04)',
+            }}
+          >
+            ← Back to Timeline
+          </Link>
+        )}
+      </div>
+
+      {/* Random */}
+      <button
+        onClick={handleRandom}
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: '#f59e0b',
+          padding: '8px 16px',
+          borderRadius: 8,
+          border: '1px solid rgba(245,158,11,0.3)',
+          backgroundColor: 'rgba(245,158,11,0.08)',
+          cursor: 'pointer',
+          transition: 'background 0.15s',
+        }}
+      >
+        🎲 Random Event
+      </button>
+
+      {/* Next */}
+      <div style={{ flex: 1, textAlign: 'right' }}>
+        {neighbors?.next ? (
+          <Link
+            to={`/event/${neighbors.next.slug}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 13,
+              color: '#60a5fa',
+              textDecoration: 'none',
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: '1px solid rgba(96,165,250,0.3)',
+              backgroundColor: 'rgba(96,165,250,0.08)',
+            }}
+          >
+            <span style={{ fontSize: 11, color: '#64748b' }}>({neighbors.next.year_approx})</span>
+            {neighbors.next.title} →
+          </Link>
+        ) : (
+          <span />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared sub-components
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Small inline badge pill. */
+function Badge({ label, color }: { label: string; color: string }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        fontSize: 10,
+        fontWeight: 700,
+        padding: '3px 8px',
+        borderRadius: 4,
+        backgroundColor: `${color}22`,
+        color,
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+/** Metadata row in sidebar. */
+function MetaRow({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+        {label}
+      </div>
+      {value && <div style={{ fontSize: 13, color: '#e2e8f0' }}>{value}</div>}
+      {children}
+    </div>
+  );
+}
+
+/** Perspective card with evidence bar. */
+function PerspectiveCard({ perspective, index }: { perspective: Perspective; index: number }) {
   const ptKey = (perspective.perspective_type ?? 'academic') as keyof typeof PERSPECTIVE_COLORS;
   const color = PERSPECTIVE_COLORS[ptKey] ?? '#6b7280';
   const typeLabel = PERSPECTIVE_LABELS[ptKey] ?? perspective.perspective_type ?? '';
@@ -436,52 +1187,23 @@ function PerspectiveCard({ perspective, index }: PerspectiveCardProps) {
         backgroundColor: 'rgba(255,255,255,0.04)',
         border: `1px solid ${color}44`,
         borderRadius: 12,
-        padding: '18px 20px',
+        padding: '16px 18px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 8,
       }}
     >
-      {/* Type badge */}
-      <span
-        style={{
-          display: 'inline-block',
-          alignSelf: 'flex-start',
-          fontSize: 10,
-          fontWeight: 700,
-          padding: '3px 8px',
-          borderRadius: 4,
-          backgroundColor: `${color}22`,
-          color,
-          textTransform: 'uppercase',
-          letterSpacing: '0.07em',
-        }}
-      >
-        {typeLabel}
-      </span>
-
-      {/* Label */}
-      <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', lineHeight: 1.3 }}>
+      <Badge label={typeLabel} color={color} />
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', lineHeight: 1.3 }}>
         {perspective.label}
       </div>
-
-      {/* Narrative */}
-      <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.65 }}>
+      <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6 }}>
         {displayText}
       </div>
-
-      {/* Evidence score */}
-      <div style={{ marginTop: 'auto', paddingTop: 8 }}>
+      {/* Evidence bar */}
+      <div style={{ marginTop: 'auto', paddingTop: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div
-            style={{
-              flex: 1,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: 'rgba(255,255,255,0.08)',
-              overflow: 'hidden',
-            }}
-          >
+          <div style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${score * 100}%` }}
@@ -489,16 +1211,7 @@ function PerspectiveCard({ perspective, index }: PerspectiveCardProps) {
               style={{ height: '100%', backgroundColor: scoreColor, borderRadius: 2 }}
             />
           </div>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: scoreColor,
-              fontFamily: 'monospace',
-              minWidth: 90,
-              textAlign: 'right',
-            }}
-          >
+          <span style={{ fontSize: 10, fontWeight: 700, color: scoreColor, fontFamily: 'monospace', minWidth: 80, textAlign: 'right' }}>
             {score.toFixed(2)} · {scoreLabel}
           </span>
         </div>
@@ -507,240 +1220,11 @@ function PerspectiveCard({ perspective, index }: PerspectiveCardProps) {
   );
 }
 
-// ── Mini-timeline section ─────────────────────────────────────────────────────
-
-interface MiniTimelineProps {
-  title: string;
-  connectedEvents: ConnectedEvent[];
-}
-
-/**
- * Horizontal mini-timeline showing causality chain:
- *   [cause events] → [THIS EVENT] → [effect events]
- *
- * Connected events are sorted so causes appear left and effects appear right.
- * Clicking a related event navigates to its detail page.
- *
- * @param props.title - The current event's title (shown in center node).
- * @param props.connectedEvents - All causally related events with direction metadata.
- */
-function MiniTimeline({ title, connectedEvents }: MiniTimelineProps) {
-  if (connectedEvents.length === 0) {
-    return (
-      <SectionWrapper title="Causality Chain" icon="⛓️">
-        <FallbackNotice message="No causality links found for this event." />
-      </SectionWrapper>
-    );
-  }
-
-  // Separate into causes (events that led to this) and effects (events this caused)
-  const causes = connectedEvents.filter((e) => e.direction === 'cause');
-  const effects = connectedEvents.filter((e) => e.direction === 'effect');
-
+/** Section container with heading. */
+function SectionWrapper({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
-    <SectionWrapper title="Causality Chain" icon="⛓️">
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0,
-          overflowX: 'auto',
-          paddingBottom: 8,
-          // Custom scrollbar via className would need CSS; use inline minimal override
-        }}
-      >
-        {/* Cause nodes */}
-        {causes.map((ev) => (
-          <TimelineNodeGroup key={ev.id} event={ev} side="cause" />
-        ))}
-
-        {/* This event — center anchor */}
-        <div
-          style={{
-            flexShrink: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 6,
-          }}
-        >
-          <div
-            style={{
-              padding: '10px 18px',
-              borderRadius: 10,
-              backgroundColor: '#3b82f622',
-              border: '2px solid #3b82f6',
-              fontSize: 13,
-              fontWeight: 800,
-              color: '#93c5fd',
-              textAlign: 'center',
-              maxWidth: 180,
-              lineHeight: 1.3,
-              boxShadow: '0 0 16px #3b82f633',
-            }}
-          >
-            {title}
-          </div>
-          <span style={{ fontSize: 10, color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            This Event
-          </span>
-        </div>
-
-        {/* Effect nodes */}
-        {effects.map((ev) => (
-          <TimelineNodeGroup key={ev.id} event={ev} side="effect" />
-        ))}
-      </div>
-    </SectionWrapper>
-  );
-}
-
-interface TimelineNodeGroupProps {
-  event: ConnectedEvent;
-  side: 'cause' | 'effect';
-}
-
-/**
- * A single causally-related event node plus its connecting arrow.
- *
- * @param props.event - The related event data.
- * @param props.side - 'cause' renders to the left, 'effect' to the right.
- */
-function TimelineNodeGroup({ event, side }: TimelineNodeGroupProps) {
-  const arrowColor = '#475569';
-  const label = connectionLabel(event.direction, event.connection_type);
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-      {/* Arrow connector — left side shows arrow before the node */}
-      {side === 'effect' && (
-        <Arrow color={arrowColor} label={label} />
-      )}
-
-      {/* Event node */}
-      <Link
-        to={`/event/${event.slug}`}
-        style={{ textDecoration: 'none' }}
-      >
-        <div
-          style={{
-            padding: '8px 14px',
-            borderRadius: 8,
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            fontSize: 12,
-            fontWeight: 600,
-            color: '#e2e8f0',
-            textAlign: 'center',
-            maxWidth: 150,
-            lineHeight: 1.3,
-            cursor: 'pointer',
-            transition: 'background 0.15s, border-color 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(255,255,255,0.1)';
-            (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.24)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(255,255,255,0.05)';
-            (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.12)';
-          }}
-        >
-          {event.title}
-          {event.year_approx != null && (
-            <div style={{ fontSize: 10, color: '#64748b', marginTop: 3 }}>
-              {event.year_approx}
-            </div>
-          )}
-        </div>
-      </Link>
-
-      {/* Arrow connector — right side for cause nodes */}
-      {side === 'cause' && (
-        <Arrow color={arrowColor} label={label} />
-      )}
-    </div>
-  );
-}
-
-interface ArrowProps {
-  color: string;
-  label: string;
-}
-
-/**
- * Horizontal arrow connector with a small relationship label below.
- *
- * @param props.color - Arrow color (hex or CSS color).
- * @param props.label - Short text label shown beneath the arrow.
- */
-function Arrow({ color, label }: ArrowProps) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 4,
-        padding: '0 4px',
-        flexShrink: 0,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-        <div style={{ width: 32, height: 2, backgroundColor: color }} />
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderTop: '5px solid transparent',
-            borderBottom: '5px solid transparent',
-            borderLeft: `7px solid ${color}`,
-          }}
-        />
-      </div>
-      <span style={{ fontSize: 9, color, fontWeight: 600, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
-        {label}
-      </span>
-    </div>
-  );
-}
-
-// ── Shared layout helpers ─────────────────────────────────────────────────────
-
-interface SectionWrapperProps {
-  title: string;
-  icon: string;
-  children: React.ReactNode;
-}
-
-/**
- * Consistent section container with a heading row and content area.
- *
- * @param props.title - Section heading text.
- * @param props.icon - Emoji icon shown before the heading.
- * @param props.children - Section body content.
- */
-function SectionWrapper({ title, icon, children }: SectionWrapperProps) {
-  return (
-    <section
-      style={{
-        padding: '28px 32px',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}
-    >
-      <h2
-        style={{
-          fontSize: 13,
-          fontWeight: 700,
-          color: '#475569',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          marginBottom: 18,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
+    <section style={{ padding: '28px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <h2 style={sectionHeadingStyle}>
         <span>{icon}</span>
         {title}
       </h2>
@@ -749,16 +1233,8 @@ function SectionWrapper({ title, icon, children }: SectionWrapperProps) {
   );
 }
 
-interface FallbackNoticeProps {
-  message: string;
-}
-
-/**
- * Graceful fallback notice shown when data is absent or unavailable.
- *
- * @param props.message - Human-readable explanation.
- */
-function FallbackNotice({ message }: FallbackNoticeProps) {
+/** Fallback notice for empty data. */
+function FallbackNotice({ message }: { message: string }) {
   return (
     <div
       style={{
@@ -776,6 +1252,71 @@ function FallbackNotice({ message }: FallbackNoticeProps) {
   );
 }
 
+/** Shared heading style for sections. */
+const sectionHeadingStyle: React.CSSProperties = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: '#475569',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  marginBottom: 18,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Page shell
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Inject responsive styles once. */
+let _responsiveInjected = false;
+function injectResponsiveStyles(): void {
+  if (_responsiveInjected) return;
+  _responsiveInjected = true;
+  const style = document.createElement('style');
+  style.textContent = `
+    .edp-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 32px;
+      padding: 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .edp-causal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .edp-content-grid { grid-template-columns: 1fr; }
+      .edp-causal-grid { grid-template-columns: 1fr; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/** Scrollable full-viewport shell matching the dark Chronicle theme. */
+function PageShell({ children }: { children: React.ReactNode }) {
+  injectResponsiveStyles();
+  return (
+    <div
+      style={{
+        width: '100vw',
+        minHeight: '100vh',
+        backgroundColor: '#070e22',
+        color: '#f1f5f9',
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        overflowY: 'auto',
+      }}
+    >
+      <div style={{ maxWidth: 1060, margin: '0 auto' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main page component
 // ─────────────────────────────────────────────────────────────────────────────
@@ -783,15 +1324,13 @@ function FallbackNotice({ message }: FallbackNoticeProps) {
 /**
  * EventDetailPage — top-level page component for `/event/:slug`.
  *
- * Fetches full event detail from the API and orchestrates all sub-sections.
- * Handles loading, error, and not-found states gracefully.
+ * Fetches full event detail and orchestrates all sub-sections.
+ * Handles loading, error, and not-found states.
  */
 export default function EventDetailPage() {
-  // `slug` is guaranteed by the React Router path `/event/:slug`
   const { slug } = useParams<{ slug: string }>();
 
-  // The Chronicle root CSS sets html/body/root to overflow:hidden for the canvas view.
-  // Override to allow this page to scroll, then restore on unmount.
+  // Override root overflow:hidden for scrollable page
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
@@ -801,12 +1340,15 @@ export default function EventDetailPage() {
     body.style.overflow = 'auto';
     if (root) root.style.overflow = 'auto';
 
+    // Scroll to top on slug change
+    window.scrollTo(0, 0);
+
     return () => {
       html.style.overflow = '';
       body.style.overflow = '';
       if (root) root.style.overflow = '';
     };
-  }, []);
+  }, [slug]);
 
   const {
     data: event,
@@ -820,7 +1362,10 @@ export default function EventDetailPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // ── Loading state ──────────────────────────────────────────────────────────
+  // Set og:meta tags
+  useOgMeta(event, slug);
+
+  // ── Loading ──
   if (isLoading) {
     return (
       <PageShell>
@@ -830,7 +1375,7 @@ export default function EventDetailPage() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100%',
+            height: '60vh',
             gap: 16,
             color: '#64748b',
           }}
@@ -852,10 +1397,9 @@ export default function EventDetailPage() {
     );
   }
 
-  // ── Error state ────────────────────────────────────────────────────────────
+  // ── Error ──
   if (isError || !event) {
-    const message =
-      error instanceof Error ? error.message : `Event "${slug}" not found.`;
+    const message = error instanceof Error ? error.message : `Event "${slug}" not found.`;
     return (
       <PageShell>
         <div style={{ padding: '40px 32px' }}>
@@ -894,92 +1438,32 @@ export default function EventDetailPage() {
     );
   }
 
-  // ── Render full page ───────────────────────────────────────────────────────
+  // ── Full page ──
   return (
     <PageShell>
       {/* 1. Hero */}
-      <HeroSection
-        title={event.title}
-        year={event.year_approx}
-        isBce={event.is_bce}
-        region={event.geo_modern ?? event.geo_era_label}
-        category={event.category}
-        importanceScore={event.importance_score}
-      />
+      <EventHero event={event} slug={slug!} />
 
-      {/* 2. Wikipedia */}
-      {slug && <WikiSection slug={slug} />}
+      {/* 2-3. Narrative + Metadata sidebar */}
+      <ContentArea event={event} slug={slug!} />
 
-      {/* 3. Perspectives */}
-      <PerspectivesSection perspectives={event.perspectives ?? []} />
+      {/* 4. Causality Chain */}
+      <CausalChain event={event} />
 
-      {/* 4. Mini-timeline */}
-      <MiniTimeline
-        title={event.title}
-        connectedEvents={event.connected_events ?? []}
-      />
+      {/* 5. Historical Context */}
+      <HistoricalContext slug={slug!} year={event.year_approx} />
 
-      {/* 5. Bottom back-link */}
-      <div style={{ padding: '24px 32px' }}>
-        <Link
-          to="/"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            fontSize: 14,
-            fontWeight: 600,
-            color: '#60a5fa',
-            textDecoration: 'none',
-            padding: '10px 20px',
-            borderRadius: 8,
-            border: '1px solid rgba(96,165,250,0.3)',
-            backgroundColor: 'rgba(96,165,250,0.08)',
-            transition: 'background 0.15s',
-          }}
-        >
-          ← Back to Timeline
-        </Link>
-      </div>
+      {/* 6. People Involved */}
+      <PeopleInvolved slug={slug!} />
+
+      {/* 7. Related Events */}
+      <RelatedEvents event={event} />
+
+      {/* 8. Era Context */}
+      <EraContext year={event.year_approx} isBce={event.is_bce} />
+
+      {/* 9. Navigation Footer */}
+      <NavigationFooter slug={slug!} />
     </PageShell>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Page shell
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface PageShellProps {
-  children: React.ReactNode;
-}
-
-/**
- * Scrollable full-viewport page shell matching the dark Chronicle theme.
- * All page content renders inside this container.
- *
- * @param props.children - Page sections.
- */
-function PageShell({ children }: PageShellProps) {
-  return (
-    <div
-      style={{
-        width: '100vw',
-        minHeight: '100vh',
-        backgroundColor: '#070e22',
-        color: '#f1f5f9',
-        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-        overflowY: 'auto',
-        // Reset root overflow:hidden from index.html for this page
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 960,
-          margin: '0 auto',
-        }}
-      >
-        {children}
-      </div>
-    </div>
   );
 }

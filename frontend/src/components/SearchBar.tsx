@@ -5,6 +5,7 @@
  * Does NOT own: event detail display, map navigation logic.
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchEvents, searchEventsSemantic } from '../api/client';
 import { useAppStore } from '../store';
@@ -328,10 +329,28 @@ export default function SearchBar() {
                     </div>
                   </div>
 
-                  {/* Fly-to indicator */}
-                  <span style={{ color: '#475569', fontSize: 12, flexShrink: 0 }}>
-                    ✈ fly to
-                  </span>
+                  {/* Action indicators */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    <Link
+                      to={`/event/${result.slug}`}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        color: '#60a5fa',
+                        fontSize: 11,
+                        textDecoration: 'none',
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                        border: '1px solid rgba(96,165,250,0.3)',
+                        backgroundColor: 'rgba(96,165,250,0.08)',
+                        lineHeight: 1,
+                      }}
+                    >
+                      ↗
+                    </Link>
+                    <span style={{ color: '#475569', fontSize: 12 }}>
+                      ✈ fly to
+                    </span>
+                  </div>
                 </button>
               );
             })

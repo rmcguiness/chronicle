@@ -507,3 +507,235 @@ async def get_event_wiki(
         thumbnail_height=wiki_result.thumbnail_height,
         fetched_at=now,
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# People linked to an event — GET /api/events/{slug}/people
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class PersonItem(BaseModel):
+    """A person linked to an event."""
+
+    id: UUID
+    name: str
+    birth_year: int | None = None
+    death_year: int | None = None
+    description: str | None = None
+    wikipedia_slug: str | None = None
+    image_url: str | None = None
+    role: str
+    role_notes: str | None = None
+
+
+class EventPeopleResponse(BaseModel):
+    """People linked to an event via event_people junction."""
+
+    people: list[PersonItem]
+
+
+@router.get("/{slug}/people", response_model=EventPeopleResponse)
+async def get_event_people(
+    slug: str, db: AsyncSession = Depends(get_db)
+) -> EventPeopleResponse:
+    """Return all people linked to this event via the event_people junction table."""
+    from app.models import EventPerson, Person
+
+    ev_stmt = select(Event.id).where(Event.slug == slug)
+    ev_result = await db.execute(ev_stmt)
+    ev_row = ev_result.fetchone()
+    if ev_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+    event_id: UUID = ev_row[0]
+
+    stmt = (
+        select(Person, EventPerson.role, EventPerson.role_notes)
+        .join(EventPerson, Person.id == EventPerson.person_id)
+        .where(EventPerson.event_id == event_id)
+        .order_by(Person.name)
+    )
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    return EventPeopleResponse(
+        people=[
+            PersonItem(
+                id=row.Person.id,
+                name=row.Person.name,
+                birth_year=row.Person.birth_year,
+                death_year=row.Person.death_year,
+                description=row.Person.description,
+                wikipedia_slug=row.Person.wikipedia_slug,
+                image_url=row.Person.image_url,
+                role=row.role,
+                role_notes=row.role_notes,
+            )
+            for row in rows
+        ]
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Historical context — events within ±10 years from different regions
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class ContextEventItem(BaseModel):
+    """A contemporary event for the historical context section."""
+
+    id: UUID
+    slug: str
+    title: str
+    year_approx: int | None = None
+    geo_modern: str | None = None
+    category: str | None = None
+    importance_score: float = 0.5
+
+
+class HistoricalContextResponse(BaseModel):
+    """Events happening around the same time as the target event."""
+
+    events: list[ContextEventItem]
+
+
+@router.get("/{slug}/context", response_model=HistoricalContextResponse)
+async def get_historical_context(
+    slug: str,
+    radius: int = Query(default=10, ge=1, le=50, description="Year radius"),
+    limit: int = Query(default=6, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> HistoricalContextResponse:
+    """Return events from other regions within ±radius years of this event."""
+    ev_stmt = select(Event.id, Event.year_approx, Event.geo_modern).where(
+        Event.slug == slug
+    )
+    ev_result = await db.execute(ev_stmt)
+    ev_row = ev_result.fetchone()
+    if ev_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    year = ev_row.year_approx
+    if year is None:
+        return HistoricalContextResponse(events=[])
+
+    stmt = (
+        select(
+            Event.id,
+            Event.slug,
+            Event.title,
+            Event.year_approx,
+            Event.geo_modern,
+            Event.event_category,
+            Event.importance_score,
+        )
+        .where(
+            Event.id != ev_row.id,
+            Event.year_approx.isnot(None),
+            Event.year_approx >= year - radius,
+            Event.year_approx <= year + radius,
+            Event.geo_modern != ev_row.geo_modern,
+        )
+        .order_by(Event.importance_score.desc())
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    return HistoricalContextResponse(
+        events=[
+            ContextEventItem(
+                id=r.id,
+                slug=r.slug,
+                title=r.title,
+                year_approx=r.year_approx,
+                geo_modern=r.geo_modern,
+                category=r.event_category,
+                importance_score=r.importance_score,
+            )
+            for r in rows
+        ]
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Navigation neighbors — previous/next events in the same region by year
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class NeighborEventItem(BaseModel):
+    """A neighboring event for prev/next navigation."""
+
+    slug: str
+    title: str
+    year_approx: int | None = None
+
+
+class EventNeighborsResponse(BaseModel):
+    """Previous and next events in the same region, by year."""
+
+    previous: NeighborEventItem | None = None
+    next: NeighborEventItem | None = None
+
+
+@router.get("/{slug}/neighbors", response_model=EventNeighborsResponse)
+async def get_event_neighbors(
+    slug: str, db: AsyncSession = Depends(get_db)
+) -> EventNeighborsResponse:
+    """Return the previous and next events by year_approx in the same geo_modern region."""
+    ev_stmt = select(Event.id, Event.year_approx, Event.geo_modern).where(
+        Event.slug == slug
+    )
+    ev_result = await db.execute(ev_stmt)
+    ev_row = ev_result.fetchone()
+    if ev_row is None:
+        raise HTTPException(status_code=404, detail=f"Event '{slug}' not found")
+
+    year = ev_row.year_approx
+    region = ev_row.geo_modern
+    prev_item: NeighborEventItem | None = None
+    next_item: NeighborEventItem | None = None
+
+    if year is not None and region is not None:
+        # Previous: closest event with year <= current, different id
+        prev_stmt = (
+            select(Event.slug, Event.title, Event.year_approx)
+            .where(
+                Event.id != ev_row.id,
+                Event.geo_modern == region,
+                Event.year_approx.isnot(None),
+                Event.year_approx <= year,
+            )
+            .order_by(Event.year_approx.desc())
+            .limit(1)
+        )
+        prev_result = await db.execute(prev_stmt)
+        prev_row = prev_result.fetchone()
+        if prev_row:
+            prev_item = NeighborEventItem(
+                slug=prev_row.slug,
+                title=prev_row.title,
+                year_approx=prev_row.year_approx,
+            )
+
+        # Next: closest event with year >= current, different id
+        next_stmt = (
+            select(Event.slug, Event.title, Event.year_approx)
+            .where(
+                Event.id != ev_row.id,
+                Event.geo_modern == region,
+                Event.year_approx.isnot(None),
+                Event.year_approx >= year,
+            )
+            .order_by(Event.year_approx.asc())
+            .limit(1)
+        )
+        next_result = await db.execute(next_stmt)
+        next_row = next_result.fetchone()
+        if next_row:
+            next_item = NeighborEventItem(
+                slug=next_row.slug,
+                title=next_row.title,
+                year_approx=next_row.year_approx,
+            )
+
+    return EventNeighborsResponse(previous=prev_item, next=next_item)

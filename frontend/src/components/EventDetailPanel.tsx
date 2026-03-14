@@ -9,6 +9,7 @@
  * store state shape, or canvas rendering.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
 import type { ArticleResponse } from '../api/client';
@@ -616,25 +617,51 @@ export default function EventDetailPanel() {
             )}
           </div>
 
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            aria-label="Close detail panel"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: `1px solid ${BORDER_COLOR}`,
-              borderRadius: 8,
-              color: '#94a3b8',
-              cursor: 'pointer',
-              padding: '6px 10px',
-              fontSize: 18,
-              lineHeight: 1,
-              flexShrink: 0,
-              transition: 'all 0.15s',
-            }}
-          >
-            ×
-          </button>
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            {/* Open full page */}
+            {selectedEventSlug && (
+              <Link
+                to={`/event/${selectedEventSlug}`}
+                aria-label="Open full event page"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(96,165,250,0.1)',
+                  border: '1px solid rgba(96,165,250,0.3)',
+                  borderRadius: 8,
+                  color: '#60a5fa',
+                  textDecoration: 'none',
+                  padding: '6px 10px',
+                  fontSize: 13,
+                  lineHeight: 1,
+                  transition: 'all 0.15s',
+                }}
+              >
+                ↗
+              </Link>
+            )}
+            {/* Close button */}
+            <button
+              onClick={handleClose}
+              aria-label="Close detail panel"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid ${BORDER_COLOR}`,
+                borderRadius: 8,
+                color: '#94a3b8',
+                cursor: 'pointer',
+                padding: '6px 10px',
+                fontSize: 18,
+                lineHeight: 1,
+                flexShrink: 0,
+                transition: 'all 0.15s',
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
       </div>
 
