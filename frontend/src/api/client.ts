@@ -517,6 +517,79 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Centuries
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface CenturySummary {
+  key: string;
+  label: string;
+  century_number: number;
+  is_bce: boolean;
+  event_count: number;
+  year_range: string;
+  year_start: number;
+  year_end: number;
+  top_categories: string[];
+  most_important_event: { title: string; slug: string; importance_score: number } | null;
+}
+
+export interface CenturyEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number;
+  is_bce: boolean;
+  category: string | null;
+  importance_score: number;
+  geo_modern: string | null;
+}
+
+export interface DecadeBreakdown {
+  decade: number;
+  decade_label: string;
+  events: CenturyEvent[];
+}
+
+export interface NotablePerson {
+  id: string;
+  name: string;
+  birth_year: number | null;
+  death_year: number | null;
+  roles: string[];
+  description: string | null;
+  image_url: string | null;
+}
+
+export interface CenturyDetail {
+  key: string;
+  label: string;
+  century_number: number;
+  is_bce: boolean;
+  year_range: string;
+  year_start: number;
+  year_end: number;
+  event_count: number;
+  events: CenturyEvent[];
+  decade_breakdown: DecadeBreakdown[];
+  category_distribution: Record<string, number>;
+  top_events: CenturyEvent[];
+  notable_people: NotablePerson[];
+  notable_people_count: number;
+  prev_century: string | null;
+  next_century: string | null;
+}
+
+export async function fetchCenturies(): Promise<CenturySummary[]> {
+  const { data } = await api.get('/api/centuries');
+  return data.centuries ?? [];
+}
+
+export async function fetchCenturyDetail(key: string): Promise<CenturyDetail> {
+  const { data } = await api.get(`/api/centuries/${key}`);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
