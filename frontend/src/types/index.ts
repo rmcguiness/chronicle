@@ -211,3 +211,51 @@ export const CANVAS_CONSTANTS = {
   // Total canvas width in pixels — kept narrow so fitView lands near zoom ≈ 1
   CANVAS_WIDTH: 2_000,
 };
+
+// ─── People / biography types ─────────────────────────────────────────────────
+
+/** A person summary as returned by GET /api/people */
+export interface PersonSummary {
+  id: string;
+  slug: string;
+  name: string;
+  aliases: string[];
+  birth_year: number | null;
+  birth_year_circa: boolean;
+  death_year: number | null;
+  death_year_circa: boolean;
+  birth_year_display: string | null;
+  death_year_display: string | null;
+  nationalities: string[];
+  roles: string[];
+  gender: string | null;
+  description: string | null;
+  image_url: string | null;
+  wikipedia_slug: string | null;
+  wikidata_id: string | null;
+  event_count: number;
+  influence_score: number;
+}
+
+/** An event associated with a person */
+export interface PersonEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  category: string | null;
+  importance_score: number;
+  geo_modern: string | null;
+  role: string;
+  role_notes: string | null;
+}
+
+/** Full person detail as returned by GET /api/people/:slug */
+export interface PersonDetail extends PersonSummary {
+  influence_percentile: number;
+  associated_events: PersonEvent[];
+  contemporaries: PersonSummary[];
+  related_people: (PersonSummary & { shared_event_count: number })[];
+  leaderboard: PersonSummary[];
+}

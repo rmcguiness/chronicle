@@ -8,6 +8,8 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  PersonSummary,
+  PersonDetail,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -587,3 +589,37 @@ export async function fetchWikiData(
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// People / biography
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Response shape from GET /api/people */
+export interface PeopleListResponse {
+  people: PersonSummary[];
+  total: number;
+}
+
+/**
+ * Fetch all people with stats.
+ * @param params - Optional query params (sort, era, region, role).
+ */
+export async function fetchPeople(params?: {
+  sort?: string;
+  era?: string;
+  region?: string;
+  role?: string;
+}): Promise<PeopleListResponse> {
+  const { data } = await api.get<PeopleListResponse>('/api/people', { params });
+  return data;
+}
+
+/**
+ * Fetch a single person's full biography detail.
+ * @param slug - URL slug derived from person name.
+ */
+export async function fetchPersonDetail(slug: string): Promise<PersonDetail> {
+  const { data } = await api.get<PersonDetail>(`/api/people/${slug}`);
+  return data;
+}
+
