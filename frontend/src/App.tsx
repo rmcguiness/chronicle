@@ -28,6 +28,8 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import TimelinesGalleryPage from './pages/TimelinesGalleryPage';
 import TimelineDetailPage from './pages/TimelineDetailPage';
+import TeachPage from './pages/TeachPage';
+import LessonPage from './pages/LessonPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -74,6 +76,27 @@ function MainView() {
 
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
+
+      {/* Teach nav link */}
+      <Link
+        to="/teach"
+        style={{
+          position: 'fixed',
+          top: 12,
+          right: 16,
+          zIndex: 1000,
+          padding: '6px 14px',
+          background: '#1a1a2e',
+          color: '#8ab4f8',
+          borderRadius: 8,
+          textDecoration: 'none',
+          fontSize: 13,
+          fontWeight: 500,
+          border: '1px solid #2a2a3e',
+        }}
+      >
+        Teach
+      </Link>
     </div>
   );
 }
@@ -87,6 +110,8 @@ export default function App() {
         <Route path="/timelines" element={<TimelinesGalleryPage />} />
         <Route path="/timeline/:shareToken" element={<TimelineDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/teach" element={<TeachPage />} />
+        <Route path="/lesson/:id" element={<LessonPage />} />
       </Routes>
     </QueryClientProvider>
   );
