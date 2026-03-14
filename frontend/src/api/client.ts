@@ -571,6 +571,37 @@ export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
   return MOCK_LINKS;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Countries
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface CountryListItem {
+  name: string;
+  slug: string;
+  flag: string;
+  region: string;
+  event_count: number;
+}
+
+export interface CountriesListResponse {
+  countries: CountryListItem[];
+  total: number;
+}
+
+/** Fetch the list of all countries with event counts. */
+export async function fetchCountries(): Promise<CountriesListResponse> {
+  const { data } = await api.get<CountriesListResponse>('/api/countries');
+  return data;
+}
+
+/** Fetch detail for a single country: events, people, era breakdown. */
+export async function fetchCountryDetail(slug: string, era?: string | null): Promise<any> {
+  const params: Record<string, string> = {};
+  if (era) params.era = era;
+  const { data } = await api.get(`/api/countries/${encodeURIComponent(slug)}`, { params });
+  return data;
+}
+
 /**
  * Fetch Wikipedia data for an event, returning a WikiData | WikiDataNotFound
  * discriminated union compatible with EventDetailPage.

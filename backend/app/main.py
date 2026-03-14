@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.database import AsyncSessionLocal
-from app.routers import canvas, causality, events, search
+from app.routers import canvas, causality, countries, events, search  # noqa: E401
 from app.routers.submit import submit_router, admin_router
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -60,6 +60,7 @@ app.add_middleware(
 # ── Routers ───────────────────────────────
 app.include_router(canvas.router)
 app.include_router(causality.router)
+app.include_router(countries.router)  # GET /api/countries, GET /api/countries/{slug}
 app.include_router(events.router)
 app.include_router(search.router)
 app.include_router(submit_router)
