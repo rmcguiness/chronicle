@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  LifespanPerson,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -515,6 +516,21 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 }
 
 export type { Perspective, ConnectedEvent };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lifespans
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch lifespan data for all historical figures with birth years.
+ * @param era - Optional era filter: ancient|classical|medieval|early_modern|modern
+ */
+export async function fetchLifespans(era?: string): Promise<LifespanPerson[]> {
+  const params = new URLSearchParams();
+  if (era) params.set('era', era);
+  const { data } = await api.get<LifespanPerson[]>('/api/lifespans', { params });
+  return data;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // On This Day

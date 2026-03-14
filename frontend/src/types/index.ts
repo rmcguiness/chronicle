@@ -174,6 +174,25 @@ export interface SearchResult {
   lng: number;
 }
 
+// ─── Lifespans ───────────────────────────────────────────────────────────────
+
+export interface LifespanPerson {
+  id: string;
+  name: string;
+  birth_year: number;
+  death_year: number | null;
+  birth_year_circa: boolean;
+  death_year_circa: boolean;
+  role: string | null;
+  roles: string[];
+  region: string;
+  nationalities: string[];
+  description: string | null;
+  image_url: string | null;
+  wikipedia_slug: string | null;
+  event_count: number;
+}
+
 export interface CanvasTransform {
   x: number;
   y: number;

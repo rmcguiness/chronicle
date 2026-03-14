@@ -200,6 +200,28 @@ class HealthResponse(BaseModel):
 # ────────────────────────────────────────────
 # Wikipedia cache — GET /api/events/{slug}/wiki
 # ────────────────────────────────────────────
+# ────────────────────────────────────────────
+# Lifespans — GET /api/lifespans
+# ────────────────────────────────────────────
+class LifespanPersonOut(BaseModel):
+    """Person with lifespan data for the Gantt chart visualization."""
+
+    id: str
+    name: str
+    birth_year: int
+    death_year: Optional[int] = None
+    birth_year_circa: bool = False
+    death_year_circa: bool = False
+    role: Optional[str] = None
+    roles: List[str] = []
+    region: str = "Other"
+    nationalities: List[str] = []
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    wikipedia_slug: Optional[str] = None
+    event_count: int = 0
+
+
 class WikiSummaryOut(BaseModel):
     """
     Wikipedia summary response for an event.
