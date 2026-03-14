@@ -174,6 +174,34 @@ export interface SearchResult {
   lng: number;
 }
 
+// ─── Rabbit Hole types ────────────────────────────────────────────────────
+
+/** Compact event in causes/effects list for rabbit-hole explorer. */
+export interface RabbitHoleEventBrief {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  region: string | null;
+  category: EventCategory | null;
+  importance_score: number;
+  article_summary: string | null;
+}
+
+/** Full rabbit-hole focus event with causes and effects. */
+export interface RabbitHoleDetail {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  region: string | null;
+  geo_era_label: string | null;
+  category: EventCategory | null;
+  importance_score: number;
+  article_summary: string | null;
+  causes: RabbitHoleEventBrief[];
+  effects: RabbitHoleEventBrief[];
+}
+
 export interface CanvasTransform {
   x: number;
   y: number;

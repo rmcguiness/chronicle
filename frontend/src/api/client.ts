@@ -8,6 +8,7 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  RabbitHoleDetail,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -515,6 +516,29 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 }
 
 export type { Perspective, ConnectedEvent };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rabbit Hole
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch a random high-importance event slug for the rabbit-hole explorer.
+ * @returns The slug of a random event with importance > 0.7.
+ */
+export async function fetchRandomRabbitHoleSlug(): Promise<string> {
+  const { data } = await api.get<{ slug: string }>('/api/rabbit-hole/random');
+  return data.slug;
+}
+
+/**
+ * Fetch rabbit-hole detail for an event: focus card data + causes + effects.
+ * @param slug - Event slug to explore.
+ * @returns Full rabbit-hole detail with causes and effects lists.
+ */
+export async function fetchRabbitHoleEvent(slug: string): Promise<RabbitHoleDetail> {
+  const { data } = await api.get<RabbitHoleDetail>(`/api/rabbit-hole/${slug}`);
+  return data;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // On This Day
