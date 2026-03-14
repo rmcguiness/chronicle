@@ -192,6 +192,37 @@ export const REGIONS: { id: Region; label: string }[] = [
   { id: 'global', label: 'Global / Multi-region' },
 ];
 
+// ─── Theme types ─────────────────────────────────────────────────────────────
+
+/** A single event returned in a theme's top_events list. */
+export interface ThemeEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  importance_score: number;
+  region: string | null;
+}
+
+/** A browsable historical theme (returned by GET /api/themes). */
+export interface Theme {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  color: string;
+  event_count: number;
+  top_events: ThemeEvent[];
+}
+
+/** Full event list for a single theme. */
+export interface ThemeEventsResponse {
+  id: string;
+  name: string;
+  event_count: number;
+  events: ThemeEvent[];
+}
+
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {
   // Time axis: pixels per year at zoom 1

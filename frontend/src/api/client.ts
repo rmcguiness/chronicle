@@ -517,6 +517,24 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Themes
+// ─────────────────────────────────────────────────────────────────────────────
+
+import type { Theme, ThemeEventsResponse } from '../types';
+
+/** Fetch all themes with event counts and top events. */
+export async function fetchThemes(): Promise<Theme[]> {
+  const { data } = await api.get<Theme[]>('/api/themes');
+  return data;
+}
+
+/** Fetch all events for a specific theme. */
+export async function fetchThemeEvents(themeId: string): Promise<ThemeEventsResponse> {
+  const { data } = await api.get<ThemeEventsResponse>(`/api/themes/${themeId}/events`);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
