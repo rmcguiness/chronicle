@@ -13,6 +13,7 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /explore       → Magazine-style curated discovery page
  *  /stats         → Knowledge graph analytics
  */
 import { Routes, Route, Link } from 'react-router-dom';
@@ -28,6 +29,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import StatsPage from './pages/StatsPage';
+import ExplorePage from './pages/ExplorePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -72,6 +74,22 @@ function MainView() {
         gap: 6,
       }}>
         <Link
+          to="/explore"
+          style={{
+            padding: '7px 14px',
+            fontSize: 12,
+            fontWeight: 500,
+            color: '#cbd5e1',
+            background: 'rgba(7, 14, 34, 0.85)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8,
+            textDecoration: 'none',
+          }}
+        >
+          Explore
+        </Link>
+        <Link
           to="/stats"
           style={{
             padding: '7px 14px',
@@ -111,6 +129,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/explore" element={<ExplorePage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
