@@ -25,8 +25,6 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
-import CountriesPage from './pages/CountriesPage';
-import CountryDetailPage from './pages/CountryDetailPage';
 import PeoplePage from './pages/PeoplePage';
 import PersonDetailPage from './pages/PersonDetailPage';
 import AdminPage from './pages/AdminPage';
@@ -64,7 +62,6 @@ function MainView() {
       <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 300, display: 'flex', gap: 8 }}>
         {[
           { label: 'People', path: '/people' },
-          { label: 'Countries', path: '/countries' },
         ].map(({ label, path }) => (
           <button
             key={path}
@@ -115,8 +112,6 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/people" element={<PeoplePage />} />
         <Route path="/people/:slug" element={<PersonDetailPage />} />
-        <Route path="/countries" element={<CountriesPage />} />
-        <Route path="/country/:country" element={<CountryDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
