@@ -517,6 +517,73 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Replay
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event in the replay feed. */
+export interface ReplayEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number;
+  category: EventCategory | null;
+  region: string | null;
+  importance_score: number;
+  geo_modern: string | null;
+}
+
+/** Response from GET /api/replay. */
+export interface ReplayResponse {
+  events: ReplayEvent[];
+  total: number;
+  has_more: boolean;
+}
+
+/**
+ * Fetch a chunk of replay events sorted chronologically.
+ * Falls back to mock data when the backend is unavailable.
+ */
+export async function fetchReplayEvents(
+  startYear = -3500,
+  endYear = 2025,
+  limit = 200,
+  offset = 0,
+): Promise<ReplayResponse> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get<ReplayResponse>('/api/replay', {
+        params: { start_year: startYear, end_year: endYear, limit, offset },
+      });
+      return data;
+    } catch {
+      // fall through to mock
+    }
+  }
+
+  // ── Mock fallback ────────────────────────────────────────────────────────
+  const filtered = MOCK_EVENTS
+    .filter((e) => e.year_approx >= startYear && e.year_approx <= endYear)
+    .sort((a, b) => a.year_approx - b.year_approx);
+  const page = filtered.slice(offset, offset + limit);
+  return {
+    events: page.map((e) => ({
+      id: e.id,
+      slug: e.slug,
+      title: e.title,
+      year_approx: e.year_approx,
+      category: e.category,
+      region: e.geo_modern ?? null,
+      importance_score: e.importance_score,
+      geo_modern: e.geo_modern ?? null,
+    })),
+    total: filtered.length,
+    has_more: offset + limit < filtered.length,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -13,8 +13,9 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /replay        → Timeline replay (animated chronological playback)
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -26,6 +27,7 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import ReplayPage from './pages/ReplayPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -60,6 +62,32 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Replay nav link (toolbar) */}
+      <Link
+        to="/replay"
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 290,
+          zIndex: 30,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '8px 14px',
+          borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(15,17,23,0.85)',
+          color: '#d1d5db',
+          fontSize: 13,
+          fontWeight: 500,
+          textDecoration: 'none',
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        ▶ Replay
+      </Link>
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -82,6 +110,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/replay" element={<ReplayPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
