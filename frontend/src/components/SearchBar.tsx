@@ -123,6 +123,41 @@ export default function SearchBar() {
         maxWidth: 'calc(100vw - 40px)',
       }}
     >
+      {/* Collections link */}
+      <Link
+        to="/collections"
+        style={{
+          position: 'absolute',
+          right: -148,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          backgroundColor: 'rgba(7, 14, 34, 0.95)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 8,
+          padding: '6px 10px',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 18,
+          textDecoration: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          transition: 'color 0.15s, border-color 0.15s',
+        }}
+        title="Collections"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = 'rgba(99,102,241,1)';
+          e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+        }}
+      >
+        📚
+      </Link>
+
       {/* People network link */}
       <Link
         to="/people"

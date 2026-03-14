@@ -517,6 +517,70 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Collections — curated "playlists" of historical events
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A collection summary (list view). */
+export interface CollectionSummary {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  theme_color: string;
+  icon_emoji: string;
+  event_count: number;
+}
+
+/** A single event within a collection. */
+export interface CollectionEventItem {
+  event_slug: string;
+  display_order: number;
+  title: string;
+  year_approx: number | null;
+  article_summary: string | null;
+  event_category: string | null;
+  is_bce: boolean;
+}
+
+/** Full collection detail. */
+export interface CollectionDetail {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  theme_color: string;
+  icon_emoji: string;
+  events: CollectionEventItem[];
+}
+
+/**
+ * Fetch all curated collections with event counts.
+ * @returns Array of collection summaries, or empty array on error.
+ */
+export async function fetchCollections(): Promise<CollectionSummary[]> {
+  try {
+    const { data } = await api.get<CollectionSummary[]>('/api/collections');
+    return data;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch a single collection by slug with full event list.
+ * @param slug - The collection's URL slug.
+ * @returns Collection detail or null if not found.
+ */
+export async function fetchCollection(slug: string): Promise<CollectionDetail | null> {
+  try {
+    const { data } = await api.get<CollectionDetail>(`/api/collections/${slug}`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

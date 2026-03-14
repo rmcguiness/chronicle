@@ -498,6 +498,54 @@ class WikipediaCache(Base):
 # ────────────────────────────────────────────
 # CANVAS TILE CACHE
 # ────────────────────────────────────────────
+# ────────────────────────────────────────────
+# CURATED COLLECTIONS
+# ────────────────────────────────────────────
+class Collection(Base):
+    """
+    A curated collection of events — like a playlist for history.
+    Each collection groups events around a theme (e.g. "Rise and Fall of Empires").
+    """
+    __tablename__ = "collections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    slug: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    theme_color: Mapped[str] = mapped_column(Text, nullable=False, default="#6366f1")
+    icon_emoji: Mapped[str] = mapped_column(Text, nullable=False, default="📚")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    collection_events: Mapped[List["CollectionEvent"]] = relationship(
+        back_populates="collection", cascade="all, delete-orphan",
+        order_by="CollectionEvent.display_order"
+    )
+
+
+class CollectionEvent(Base):
+    """
+    Junction table linking collections to events with display ordering.
+    References events by slug (not FK) for flexibility with seeding.
+    """
+    __tablename__ = "collection_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    collection_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("collections.id", ondelete="CASCADE"), nullable=False
+    )
+    event_slug: Mapped[str] = mapped_column(Text, nullable=False)
+    display_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    collection: Mapped["Collection"] = relationship(back_populates="collection_events")
+
+    __table_args__ = (
+        UniqueConstraint("collection_id", "event_slug", name="uq_collection_event"),
+        Index("idx_collection_events_collection", "collection_id"),
+    )
+
+
 class CanvasTile(Base):
     __tablename__ = "canvas_tiles"
 

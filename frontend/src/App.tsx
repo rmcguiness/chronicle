@@ -28,6 +28,8 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import QuizPage from './pages/QuizPage';
 import PeoplePage from './pages/PeoplePage';
+import CollectionsPage from './pages/CollectionsPage';
+import CollectionDetailPage from './pages/CollectionDetailPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +87,8 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/people" element={<PeoplePage />} />
+        <Route path="/collections" element={<CollectionsPage />} />
+        <Route path="/collections/:slug" element={<CollectionDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/quiz" element={<QuizPage />} />
       </Routes>
