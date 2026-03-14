@@ -14,7 +14,7 @@
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -25,6 +25,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import YearsPage from './pages/YearsPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -60,6 +61,32 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Years nav link (top-right area) */}
+      <Link
+        to="/years"
+        style={{
+          position: 'fixed',
+          top: 14,
+          right: 20,
+          zIndex: 40,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 5,
+          padding: '7px 14px',
+          fontSize: 12,
+          fontWeight: 700,
+          color: '#94a3b8',
+          textDecoration: 'none',
+          borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.1)',
+          backgroundColor: 'rgba(7,14,34,0.85)',
+          backdropFilter: 'blur(12px)',
+          transition: 'color 0.15s, border-color 0.15s',
+        }}
+      >
+        📅 Years
+      </Link>
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -82,6 +109,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/years" element={<YearsPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>

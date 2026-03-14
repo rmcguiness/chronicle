@@ -517,6 +517,75 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Years browser
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event in a year's results. */
+export interface YearEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  category: string | null;
+  importance_score: number;
+  geo_modern: string | null;
+  geo_era_label: string | null;
+  lat: number | null;
+  lng: number | null;
+  tags: string[] | null;
+  description: string | null;
+}
+
+/** Response from GET /api/years/:year. */
+export interface YearResponse {
+  year: number;
+  is_bce: boolean;
+  total_events: number;
+  regions: string[];
+  categories: string[];
+  most_important_event: YearEvent | null;
+  events: YearEvent[];
+}
+
+/** A single notable year entry. */
+export interface NotableYearItem {
+  year: number;
+  is_bce: boolean;
+  event_count: number;
+  avg_importance: number;
+  top_event_title: string;
+  top_event_slug: string;
+  top_event_category: string | null;
+}
+
+/** Response from GET /api/years/notable. */
+export interface NotableYearsResponse {
+  years: NotableYearItem[];
+}
+
+/**
+ * Fetch all events for a specific year (with ±2 fuzzy matching for sparse eras).
+ *
+ * @param year - The year to look up (negative for BCE).
+ * @returns Year response with events, regions, categories, and most important event.
+ */
+export async function fetchYearEvents(year: number): Promise<YearResponse> {
+  const { data } = await api.get<YearResponse>(`/api/years/${year}`);
+  return data;
+}
+
+/**
+ * Fetch the curated list of ~50 most historically significant years.
+ *
+ * @returns Notable years with their top events.
+ */
+export async function fetchNotableYears(): Promise<NotableYearsResponse> {
+  const { data } = await api.get<NotableYearsResponse>('/api/years/notable');
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
