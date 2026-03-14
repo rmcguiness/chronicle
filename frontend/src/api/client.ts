@@ -8,6 +8,8 @@ import type {
   CanvasViewport,
   Perspective,
   ConnectedEvent,
+  AdvancedSearchParams,
+  AdvancedSearchResponse,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
 
@@ -517,6 +519,29 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Era endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+import type { EraDetailResponse, EraListResponse, EraSlug } from '../types/era';
+
+/**
+ * Fetch detailed data for a single historical era.
+ * @param era - Era slug (e.g. "medieval", "early-modern")
+ */
+export async function fetchEra(era: EraSlug): Promise<EraDetailResponse> {
+  const { data } = await api.get<EraDetailResponse>(`/api/era/${era}`);
+  return data;
+}
+
+/**
+ * Fetch summary list of all eras (for the /eras directory page).
+ */
+export async function fetchEraList(): Promise<EraListResponse> {
+  const { data } = await api.get<EraListResponse>('/api/era');
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -586,4 +611,33 @@ export async function fetchWikiData(
     summary: result.summary,
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Advanced Search
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Advanced multi-filter search — calls GET /api/search/advanced.
+ * Returns results with causality and people counts.
+ */
+export async function advancedSearch(params: AdvancedSearchParams): Promise<AdvancedSearchResponse> {
+  const { data } = await api.get<AdvancedSearchResponse>('/api/search/advanced', {
+    params,
+    timeout: 10000,
+  });
+  return data;
+}
+
+/**
+ * Fetch distinct event categories from the database.
+ * Used to populate category filter checkboxes.
+ */
+export async function fetchCategories(): Promise<string[]> {
+  try {
+    const { data } = await api.get<string[]>('/api/search/categories', { timeout: 5000 });
+    return data;
+  } catch {
+    return ['war', 'discovery', 'political', 'cultural', 'natural', 'person'];
+  }
 }
