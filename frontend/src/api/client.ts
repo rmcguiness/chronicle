@@ -517,6 +517,33 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Regions
+// ─────────────────────────────────────────────────────────────────────────────
+
+import type { RegionDetail, RegionsDirectory } from '../types';
+
+/**
+ * Fetch detailed data for a single region.
+ *
+ * @param slug - Region URL slug (e.g. "europe", "middle-east")
+ * @returns Full region detail including stats, top events, key figures, etc.
+ */
+export async function fetchRegionDetail(slug: string): Promise<RegionDetail> {
+  const { data } = await api.get<RegionDetail>(`/api/region/${slug}`);
+  return data;
+}
+
+/**
+ * Fetch summary directory of all regions.
+ *
+ * @returns Region summaries with event counts and global stats.
+ */
+export async function fetchRegionsDirectory(): Promise<RegionsDirectory> {
+  const { data } = await api.get<RegionsDirectory>('/api/regions');
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -85,6 +85,9 @@ class Event(Base):
     geo_era_label: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     geo_modern: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
+    # World region (Europe, Asia, Americas, Africa, Middle East, Oceania)
+    region: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     # Canvas rendering — precomputed network layout
     network_y: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
 

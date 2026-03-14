@@ -13,8 +13,10 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /regions       → Region directory listing
+ *  /region/:region → Dedicated region history page
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -25,6 +27,8 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import RegionPage from './pages/RegionPage';
+import RegionsDirectoryPage from './pages/RegionsDirectoryPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -57,6 +61,20 @@ function MainView() {
       {/* Category legend (top-left) */}
       <CategoryLegend />
 
+      {/* Regions nav link (top-right area) */}
+      <Link
+        to="/regions"
+        style={{
+          position: 'absolute', top: 12, right: 16, zIndex: 50,
+          background: 'rgba(17,24,39,0.85)', backdropFilter: 'blur(8px)',
+          color: '#d1d5db', padding: '6px 14px', borderRadius: 9999,
+          fontSize: 13, fontWeight: 500, border: '1px solid #374151',
+          textDecoration: 'none',
+        }}
+      >
+        Regions
+      </Link>
+
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
@@ -82,6 +100,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/regions" element={<RegionsDirectoryPage />} />
+        <Route path="/region/:region" element={<RegionPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>

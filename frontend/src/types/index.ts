@@ -192,6 +192,96 @@ export const REGIONS: { id: Region; label: string }[] = [
   { id: 'global', label: 'Global / Multi-region' },
 ];
 
+// ─── Region page types ──────────────────────────────────────────────────────
+
+/** URL slug for a world region. */
+export type RegionSlug = 'europe' | 'asia' | 'americas' | 'africa' | 'middle-east' | 'oceania';
+
+/** Lightweight event returned in region top-events list. */
+export interface RegionEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  importance_score: number;
+  category: string | null;
+}
+
+/** Person card for region key-figures row. */
+export interface RegionPerson {
+  id: string;
+  slug: string | null;
+  name: string;
+  birth_year: number | null;
+  death_year: number | null;
+  roles: string[] | null;
+}
+
+/** Neighboring region with causality link count. */
+export interface NeighborRegion {
+  region: string;
+  slug: string;
+  count: number;
+}
+
+/** Aggregate stats for a region. */
+export interface RegionStats {
+  total_events: number;
+  total_people: number;
+  avg_importance: number;
+  min_year: number | null;
+  max_year: number | null;
+}
+
+/** Era event count. */
+export interface EraCount {
+  era: string;
+  count: number;
+}
+
+/** Category event count. */
+export interface CategoryCount {
+  category: string;
+  count: number;
+}
+
+/** Decade event count. */
+export interface DecadeCount {
+  decade: number;
+  count: number;
+}
+
+/** Full response from GET /api/region/:slug. */
+export interface RegionDetail {
+  region: string;
+  slug: string;
+  stats: RegionStats;
+  top_events: RegionEvent[];
+  key_figures: RegionPerson[];
+  by_era: EraCount[];
+  by_category: CategoryCount[];
+  influenced_by: NeighborRegion[];
+  influenced: NeighborRegion[];
+  by_decade: DecadeCount[];
+}
+
+/** Summary item for the /regions directory. */
+export interface RegionSummary {
+  region: string;
+  slug: string;
+  event_count: number;
+  min_year: number | null;
+  max_year: number | null;
+  top_event_title: string | null;
+}
+
+/** Response from GET /api/regions. */
+export interface RegionsDirectory {
+  regions: RegionSummary[];
+  total_events: number;
+  most_documented_region: string | null;
+}
+
 // Canvas coordinate helpers
 export const CANVAS_CONSTANTS = {
   // Time axis: pixels per year at zoom 1
