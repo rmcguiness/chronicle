@@ -514,6 +514,53 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Stats
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Aggregate stats for the About page hero. */
+export interface StatsResponse {
+  events_count: number;
+  causality_links_count: number;
+  figures_count: number;
+  year_span: string;
+}
+
+/**
+ * Fetch aggregate stats from /api/stats.
+ * Falls back to /api/health (events_count only) then to hard-coded defaults.
+ */
+export async function fetchStats(): Promise<StatsResponse> {
+  const available = await isBackendAvailable();
+
+  if (available) {
+    try {
+      const { data } = await api.get('/api/stats');
+      return data as StatsResponse;
+    } catch {
+      // Try health endpoint as partial fallback
+      try {
+        const { data } = await api.get('/api/health');
+        return {
+          events_count: data.events_count ?? 1560,
+          causality_links_count: 1419,
+          figures_count: 51,
+          year_span: '5,000+ years',
+        };
+      } catch {
+        // fall through
+      }
+    }
+  }
+
+  return {
+    events_count: 1560,
+    causality_links_count: 1419,
+    figures_count: 51,
+    year_span: '5,000+ years',
+  };
+}
+
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -13,8 +13,10 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /about         → About Chronicle page
+ *  /changelog     → What's New / release history
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -26,6 +28,8 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import AboutPage from './pages/AboutPage';
+import ChangelogPage from './pages/ChangelogPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -37,6 +41,40 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+/**
+ * Bottom-right navigation links to About and Changelog pages.
+ */
+function NavLinks() {
+  const linkStyle: React.CSSProperties = {
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#64748b',
+    textDecoration: 'none',
+    padding: '5px 10px',
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    transition: 'color 0.15s, background-color 0.15s',
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 16,
+        right: 16,
+        zIndex: 200,
+        display: 'flex',
+        gap: 6,
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <Link to="/about" style={linkStyle}>About</Link>
+      <Link to="/changelog" style={linkStyle}>What's New</Link>
+    </div>
+  );
+}
 
 /**
  * Full-screen main view — renders the network graph with all overlaid UI panels.
@@ -72,6 +110,9 @@ function MainView() {
 
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
+
+      {/* Bottom-right nav links */}
+      <NavLinks />
     </div>
   );
 }
@@ -82,6 +123,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
