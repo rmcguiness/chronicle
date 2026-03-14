@@ -19,7 +19,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import CausalityLink, Event, Perspective, Source, WikipediaCache
+from app.models import (
+    CausalityLink, Collection, CollectionEvent, Event, EventPerson,
+    Perspective, Person, Source, WikipediaCache,
+)
 from app.schemas import (
     CausalityLinkItem,
     ConnectedEventItem,
