@@ -32,6 +32,7 @@ import QuizPage from './pages/QuizPage';
 import PeoplePage from './pages/PeoplePage';
 import CollectionsPage from './pages/CollectionsPage';
 import CollectionDetailPage from './pages/CollectionDetailPage';
+import NarrativePage from './pages/NarrativePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -94,6 +95,7 @@ export default function App() {
         <Route path="/people" element={<PeoplePage />} />
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/collections/:slug" element={<CollectionDetailPage />} />
+        <Route path="/narrative/:slug" element={<NarrativePage />} />
         <Route path="/on-this-day" element={<OnThisDayPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/quiz" element={<QuizPage />} />

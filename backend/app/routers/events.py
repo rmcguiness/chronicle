@@ -567,3 +567,189 @@ async def get_event_wiki(
         thumbnail_height=wiki_result.thumbnail_height,
         fetched_at=now,
     )
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Narrative — GET /api/events/{slug}/narrative
+# Assembles a full narrative payload: event, causal chain, people, collections
+# ────────────────────────────────────────────────────────────────────────────
+
+# Max hops for causal chain traversal
+_MAX_PREDECESSOR_HOPS = 3
+_MAX_SUCCESSOR_HOPS = 2
+_MAX_RELATED_EVENTS = 5
+
+
+def _event_summary(row) -> dict:
+    """Convert a lightweight event row to a summary dict."""
+    return {
+        "slug": row.slug,
+        "title": row.title,
+        "year_approx": row.year_approx,
+        "is_bce": row.is_bce,
+        "geo_modern": row.geo_modern,
+        "event_category": row.event_category,
+        "article_summary": row.article_summary,
+        "importance_score": row.importance_score,
+    }
+
+
+async def _traverse_causal_chain(
+    db: AsyncSession,
+    event_id,
+    direction: str,
+    max_hops: int,
+) -> list[dict]:
+    """
+    Walk the causality_links graph in a given direction.
+
+    direction="predecessors": follow cause_event_id ← effect_event_id
+    direction="successors": follow effect_event_id → cause_event_id
+    """
+    visited: set = set()
+    results: list[dict] = []
+    frontier = {event_id}
+
+    for hop in range(max_hops):
+        if not frontier:
+            break
+        if direction == "predecessors":
+            stmt = (
+                select(Event, CausalityLink.description.label("link_desc"))
+                .join(CausalityLink, CausalityLink.cause_event_id == Event.id)
+                .where(
+                    CausalityLink.effect_event_id.in_(frontier),
+                    CausalityLink.review_status == "approved",
+                )
+            )
+        else:
+            stmt = (
+                select(Event, CausalityLink.description.label("link_desc"))
+                .join(CausalityLink, CausalityLink.effect_event_id == Event.id)
+                .where(
+                    CausalityLink.cause_event_id.in_(frontier),
+                    CausalityLink.review_status == "approved",
+                )
+            )
+
+        rows = (await db.execute(stmt)).all()
+        next_frontier: set = set()
+        for row in rows:
+            evt = row[0]
+            if evt.id not in visited and evt.id != event_id:
+                visited.add(evt.id)
+                summary = _event_summary(evt)
+                summary["hop"] = hop + 1
+                summary["link_description"] = row.link_desc
+                results.append(summary)
+                next_frontier.add(evt.id)
+        frontier = next_frontier
+
+    # Sort by year (oldest first for predecessors, newest first handled by frontend)
+    results.sort(key=lambda e: e.get("year_approx") or 0)
+    return results
+
+
+@router.get("/{slug}/narrative")
+async def get_event_narrative(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """
+    Assemble a full narrative payload for deep-read mode.
+
+    Returns event details, causal predecessors/successors, related events,
+    linked historical figures, and collection membership.
+    """
+    event = await _get_event_by_slug(slug, db)
+
+    # ── Core event data ──────────────────────────────────────────────────
+    event_data = {
+        "slug": event.slug,
+        "title": event.title,
+        "date_exact": event.date_exact,
+        "date_earliest": event.date_earliest,
+        "date_latest": event.date_latest,
+        "year_approx": event.year_approx,
+        "is_bce": event.is_bce,
+        "date_circa": event.date_circa,
+        "event_category": event.event_category,
+        "geo_modern": event.geo_modern,
+        "article_summary": event.article_summary,
+        "importance_score": event.importance_score,
+        "tags": event.tags,
+        "wikidata_id": event.wikidata_id,
+        "wikipedia_slug": event.wikipedia_slug,
+    }
+
+    # ── Causal chain ─────────────────────────────────────────────────────
+    predecessors = await _traverse_causal_chain(
+        db, event.id, "predecessors", _MAX_PREDECESSOR_HOPS
+    )
+    successors = await _traverse_causal_chain(
+        db, event.id, "successors", _MAX_SUCCESSOR_HOPS
+    )
+
+    # ── People ───────────────────────────────────────────────────────────
+    people_stmt = (
+        select(Person, EventPerson.role)
+        .join(EventPerson, EventPerson.person_id == Person.id)
+        .where(EventPerson.event_id == event.id)
+    )
+    people_rows = (await db.execute(people_stmt)).all()
+    people = [
+        {
+            "name": p.name,
+            "role": role,
+            "birth_year": p.birth_year,
+            "death_year": p.death_year,
+            "wikidata_id": p.wikidata_id,
+            "wikipedia_slug": p.wikipedia_slug,
+        }
+        for p, role in people_rows
+    ]
+
+    # ── Collections ──────────────────────────────────────────────────────
+    coll_stmt = (
+        select(Collection)
+        .join(CollectionEvent, CollectionEvent.collection_id == Collection.id)
+        .where(CollectionEvent.event_slug == slug)
+    )
+    coll_rows = (await db.execute(coll_stmt)).all()
+    collections = [
+        {
+            "slug": c.slug,
+            "title": c.title,
+            "description": c.description,
+            "theme_color": c.theme_color,
+            "icon_emoji": c.icon_emoji,
+        }
+        for (c,) in coll_rows
+    ]
+
+    # ── Related events (same category, excluding self) ───────────────────
+    related: list[dict] = []
+    if event.event_category:
+        related_stmt = (
+            select(Event)
+            .where(
+                Event.event_category == event.event_category,
+                Event.id != event.id,
+                Event.review_status == "approved",
+            )
+            .order_by(
+                func.abs(func.coalesce(Event.year_approx, 0) - (event.year_approx or 0))
+            )
+            .limit(_MAX_RELATED_EVENTS)
+        )
+        related_rows = (await db.execute(related_stmt)).scalars().all()
+        related = [_event_summary(r) for r in related_rows]
+
+    return {
+        "event": event_data,
+        "predecessors": predecessors,
+        "successors": successors,
+        "related": related,
+        "people": people,
+        "collections": collections,
+    }

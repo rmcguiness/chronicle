@@ -654,3 +654,97 @@ export async function fetchWikiData(
     url: result.source_url ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(result.title)}`,
   };
 }
+
+
+// ────────────────────────────────────────────────────────────────────────────
+// Narrative — GET /api/events/{slug}/narrative
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Summary of a causally-linked event in the narrative chain. */
+export interface NarrativeChainEvent {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  geo_modern: string | null;
+  event_category: string | null;
+  article_summary: string | null;
+  importance_score: number;
+  hop: number;
+  link_description: string | null;
+}
+
+/** Person linked to the narrative event. */
+export interface NarrativePerson {
+  name: string;
+  role: string;
+  birth_year: number | null;
+  death_year: number | null;
+  wikidata_id: string | null;
+  wikipedia_slug: string | null;
+}
+
+/** Collection the event belongs to. */
+export interface NarrativeCollection {
+  slug: string;
+  title: string;
+  description: string;
+  theme_color: string;
+  icon_emoji: string;
+}
+
+/** Related event (same category). */
+export interface NarrativeRelatedEvent {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  is_bce: boolean;
+  geo_modern: string | null;
+  event_category: string | null;
+  article_summary: string | null;
+  importance_score: number;
+}
+
+/** Core event data in the narrative response. */
+export interface NarrativeEvent {
+  slug: string;
+  title: string;
+  date_exact: string | null;
+  date_earliest: string | null;
+  date_latest: string | null;
+  year_approx: number | null;
+  is_bce: boolean;
+  date_circa: boolean;
+  event_category: string | null;
+  geo_modern: string | null;
+  article_summary: string | null;
+  importance_score: number;
+  tags: string[] | null;
+  wikidata_id: string | null;
+  wikipedia_slug: string | null;
+}
+
+/** Full narrative payload returned by the API. */
+export interface NarrativeResponse {
+  event: NarrativeEvent;
+  predecessors: NarrativeChainEvent[];
+  successors: NarrativeChainEvent[];
+  related: NarrativeRelatedEvent[];
+  people: NarrativePerson[];
+  collections: NarrativeCollection[];
+}
+
+/**
+ * Fetch the full narrative payload for an event.
+ *
+ * @param slug - Event slug identifier.
+ * @returns Structured narrative data or null on error.
+ */
+export async function fetchNarrative(slug: string): Promise<NarrativeResponse | null> {
+  try {
+    const { data } = await api.get<NarrativeResponse>(`/api/events/${slug}/narrative`);
+    return data;
+  } catch {
+    return null;
+  }
+}

@@ -147,6 +147,25 @@ function HeroSection({ title, year, isBce, region, category, importanceScore }: 
       >
         ← Back to Timeline
       </Link>
+      <Link
+        to={`/narrative/${slug}`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 13,
+          color: '#818cf8',
+          textDecoration: 'none',
+          marginBottom: 24,
+          marginLeft: 12,
+          padding: '6px 12px',
+          borderRadius: 6,
+          border: '1px solid #818cf844',
+          backgroundColor: '#818cf812',
+        }}
+      >
+        📖 Read Narrative
+      </Link>
 
       {/* Category badge + icon */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>

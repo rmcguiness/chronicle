@@ -9,6 +9,7 @@
  * store state shape, or canvas rendering.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
 import type { ArticleResponse } from '../api/client';
@@ -680,6 +681,23 @@ export default function EventDetailPanel() {
             <div style={{ marginBottom: 20 }}>
               <div style={sectionHeaderStyle}>Article</div>
               <ArticleContent slug={event.slug} />
+              <Link
+                to={`/narrative/${event.slug}`}
+                style={{
+                  display: 'inline-block',
+                  marginTop: 12,
+                  padding: '8px 16px',
+                  backgroundColor: '#818cf822',
+                  color: '#818cf8',
+                  borderRadius: 8,
+                  border: '1px solid #818cf844',
+                  textDecoration: 'none',
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                📖 Read full narrative →
+              </Link>
             </div>
 
             {/* ── Perspectives ──────────────────────────────────────── */}
