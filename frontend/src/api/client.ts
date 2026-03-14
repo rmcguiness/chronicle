@@ -517,6 +517,42 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// People directory
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PersonListItem {
+  id: string;
+  name: string;
+  slug: string;
+  birth_year: number | null;
+  death_year: number | null;
+  birth_year_circa: boolean;
+  death_year_circa: boolean;
+  description: string | null;
+  nationalities: string[] | null;
+  roles: string[] | null;
+  event_count: number;
+  era: string;
+  wikipedia_slug: string | null;
+  image_url: string | null;
+}
+
+export interface PeopleListResponse {
+  people: PersonListItem[];
+  total: number;
+  era_counts: Record<string, number>;
+}
+
+export async function fetchPeople(params?: {
+  q?: string;
+  era?: string;
+  sort?: string;
+}): Promise<PeopleListResponse> {
+  const { data } = await api.get<PeopleListResponse>('/api/people', { params });
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

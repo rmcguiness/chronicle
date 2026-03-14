@@ -25,8 +25,13 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import CountriesPage from './pages/CountriesPage';
+import CountryDetailPage from './pages/CountryDetailPage';
+import PeoplePage from './pages/PeoplePage';
+import PersonDetailPage from './pages/PersonDetailPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
+import { useNavigate } from 'react-router-dom';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -45,6 +50,7 @@ const queryClient = new QueryClient({
 function MainView() {
   // Activates hash ↔ store sync: read on mount, write on change, listen for hashchange
   usePermalink();
+  const navigate = useNavigate();
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
@@ -53,6 +59,31 @@ function MainView() {
 
       {/* Top search bar */}
       <SearchBar />
+
+      {/* Nav buttons (top-right) */}
+      <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 300, display: 'flex', gap: 8 }}>
+        {[
+          { label: 'People', path: '/people' },
+          { label: 'Countries', path: '/countries' },
+        ].map(({ label, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 8,
+              backgroundColor: 'rgba(7,14,34,0.9)', backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(96,165,250,0.25)', color: '#94a3b8',
+              cursor: 'pointer', fontSize: 13, fontWeight: 500,
+              fontFamily: 'inherit', transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(96,165,250,0.5)'; e.currentTarget.style.color = '#e2e8f0'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(96,165,250,0.25)'; e.currentTarget.style.color = '#94a3b8'; }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {/* Category legend (top-left) */}
       <CategoryLegend />
@@ -82,6 +113,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/people" element={<PeoplePage />} />
+        <Route path="/people/:slug" element={<PersonDetailPage />} />
+        <Route path="/countries" element={<CountriesPage />} />
+        <Route path="/country/:country" element={<CountryDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
