@@ -514,6 +514,76 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Causal path (Six Degrees)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A single event node in a causal path. */
+export interface PathEvent {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  category: string | null;
+  geo_modern: string | null;
+}
+
+/** A single edge in the causal path. */
+export interface PathStep {
+  from_event: PathEvent;
+  to_event: PathEvent;
+  connection_type: string;
+  description: string | null;
+}
+
+/** Response from GET /api/path when a path is found. */
+export interface PathFoundResponse {
+  found: true;
+  steps: number;
+  path: PathEvent[];
+  edges: PathStep[];
+  years_spanned: number;
+  regions: string[];
+}
+
+/** Response from GET /api/path when no path exists. */
+export interface PathNotFoundResponse {
+  found: false;
+  steps: number;
+  path: PathEvent[];
+  edges: PathStep[];
+  nearest_from: PathEvent | null;
+  nearest_from_steps: number;
+  nearest_to: PathEvent | null;
+  nearest_to_steps: number;
+}
+
+/** Union of both path response types. */
+export type PathResponse = PathFoundResponse | PathNotFoundResponse;
+
+/** Graph-level stats from GET /api/path/stats. */
+export interface GraphStats {
+  total_events: number;
+  total_links: number;
+  avg_degree: number;
+}
+
+/**
+ * Find the shortest causal path between two events.
+ * @param fromSlug - Start event slug
+ * @param toSlug - End event slug
+ */
+export async function fetchCausalPath(fromSlug: string, toSlug: string): Promise<PathResponse> {
+  const { data } = await api.get('/api/path', { params: { from: fromSlug, to: toSlug }, timeout: 15000 });
+  return data as PathResponse;
+}
+
+/** Fetch aggregate stats about the causality graph. */
+export async function fetchGraphStats(): Promise<GraphStats> {
+  const { data } = await api.get<GraphStats>('/api/path/stats');
+  return data;
+}
+
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
