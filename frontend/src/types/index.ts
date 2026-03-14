@@ -180,6 +180,50 @@ export interface CanvasTransform {
   zoom: number;
 }
 
+// ─── Advanced Search ─────────────────────────────────────────────────────────
+
+/** Parameters for the advanced search API endpoint. */
+export interface AdvancedSearchParams {
+  q?: string;
+  region?: string;
+  category?: string;
+  era?: string;
+  year_from?: number;
+  year_to?: number;
+  min_importance?: number;
+  has_people?: boolean;
+  has_causes?: boolean;
+  has_effects?: boolean;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/** A single result from the advanced search endpoint. */
+export interface AdvancedSearchResult {
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  region: string | null;
+  category: string | null;
+  importance_score: number;
+  cause_count: number;
+  effect_count: number;
+  people_count: number;
+}
+
+/** Response shape from GET /api/search/advanced. */
+export interface AdvancedSearchResponse {
+  results: AdvancedSearchResult[];
+  total: number;
+  page_info: {
+    limit: number;
+    offset: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+}
+
 // ─── Region / swim-lane types ────────────────────────────────────────────────
 
 export type Region = 'europe' | 'americas' | 'asia' | 'middle_east_africa' | 'global';

@@ -5,6 +5,7 @@
  * Does NOT own: event detail display, map navigation logic.
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchEvents, searchEventsSemantic } from '../api/client';
 import { useAppStore } from '../store';
@@ -59,6 +60,7 @@ export default function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const navigate = useNavigate();
   const setFlyToEvent = useAppStore((s) => s.setFlyToEvent);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
@@ -265,6 +267,21 @@ export default function SearchBar() {
               <span>Semantic search — results ranked by meaning</span>
             </div>
           )}
+          {/* Advanced search link */}
+          <button
+            onClick={() => navigate(inputValue ? `/search?q=${encodeURIComponent(inputValue)}` : '/search')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+              padding: '10px 16px', background: 'none', border: 'none',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              color: '#60a5fa', cursor: 'pointer', textAlign: 'left', fontSize: 12, fontWeight: 500,
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+          >
+            <span>&#128269;</span>
+            <span>Advanced Search — filters, regions, eras &amp; more</span>
+          </button>
           {results.length === 0 ? (
             <div style={{ padding: '14px 16px', color: '#475569', fontSize: 13, textAlign: 'center' }}>
               {isFetching ? 'Searching…' : 'No events found'}

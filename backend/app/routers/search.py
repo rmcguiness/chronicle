@@ -19,12 +19,265 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Event
-from app.schemas import SearchResponse, SearchResultItem
+from app.models import CausalityLink, Event, EventPerson
+from app.schemas import (
+    AdvancedSearchResponse,
+    AdvancedSearchResultItem,
+    SearchResponse,
+    SearchResultItem,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["search"])
+
+# ── Region mapping — geo_modern substring → canonical region ─────────────────
+_REGION_KEYWORDS: dict[str, list[str]] = {
+    "Europe": [
+        "England", "France", "Germany", "Italy", "Spain", "Greece", "Rome",
+        "Russia", "Poland", "Netherlands", "Austria", "Hungary", "Czech",
+        "Sweden", "Norway", "Denmark", "Finland", "Portugal", "Belgium",
+        "Switzerland", "Ireland", "Scotland", "Britain", "Byzantine",
+        "Ottoman", "Ukraine", "Serbia", "Croatia", "Bosnia", "Bulgaria",
+        "Romania", "Europe",
+    ],
+    "Asia": [
+        "China", "Japan", "Korea", "India", "Vietnam", "Thailand",
+        "Indonesia", "Philippines", "Cambodia", "Myanmar", "Mongolia",
+        "Tibet", "Pakistan", "Bangladesh", "Sri Lanka", "Nepal",
+        "Singapore", "Malaysia", "Asia", "Manchuria", "Taiwan",
+        "Central Asia", "Kazakhstan", "Uzbekistan",
+    ],
+    "Americas": [
+        "USA", "United States", "America", "Canada", "Mexico", "Brazil",
+        "Argentina", "Peru", "Colombia", "Chile", "Cuba", "Caribbean",
+        "Venezuela", "Bolivia", "Ecuador", "Guatemala",
+        "North Carolina", "New York", "Washington",
+    ],
+    "Africa": [
+        "Africa", "Egypt", "Nigeria", "Ethiopia", "Kenya", "Ghana",
+        "South Africa", "Morocco", "Algeria", "Tunisia", "Libya",
+        "Sudan", "Congo", "Tanzania", "Mali", "Somalia", "Zimbabwe",
+    ],
+    "Middle East": [
+        "Middle East", "Iraq", "Iran", "Persia", "Syria", "Palestine",
+        "Israel", "Saudi", "Arabia", "Yemen", "Jordan", "Lebanon",
+        "Turkey", "Anatolia", "Mesopotamia", "Babylon", "Assyria",
+        "Jerusalem", "Mecca", "Medina", "Baghdad",
+    ],
+    "Oceania": [
+        "Australia", "New Zealand", "Pacific", "Oceania", "Polynesia",
+        "Melanesia", "Fiji", "Samoa", "Papua", "Hawaii",
+    ],
+}
+
+
+def _classify_region(geo_modern: str | None, geo_era_label: str | None) -> str | None:
+    """Classify an event's geo fields into a canonical region."""
+    combined = f"{geo_modern or ''} {geo_era_label or ''}"
+    if not combined.strip():
+        return None
+    for region, keywords in _REGION_KEYWORDS.items():
+        for kw in keywords:
+            if kw.lower() in combined.lower():
+                return region
+    return None
+
+
+# ── Era year ranges ──────────────────────────────────────────────────────────
+_ERA_RANGES: dict[str, tuple[int, int]] = {
+    "Ancient": (-3500, -500),
+    "Classical": (-500, 500),
+    "Medieval": (500, 1500),
+    "Early Modern": (1500, 1800),
+    "Modern": (1800, 1945),
+    "Contemporary": (1945, 2025),
+}
+
+
+@router.get("/search/categories", response_model=list[str])
+async def list_categories(
+    db: AsyncSession = Depends(get_db),
+) -> list[str]:
+    """Return all distinct event categories from approved events."""
+    result = await db.execute(
+        select(Event.event_category)
+        .where(Event.review_status == "approved", Event.event_category.isnot(None))
+        .distinct()
+        .order_by(Event.event_category)
+    )
+    return [row[0] for row in result.fetchall()]
+
+
+@router.get("/search/advanced", response_model=AdvancedSearchResponse)
+async def advanced_search(
+    q: Optional[str] = Query(default=None, description="Text search (title + description)"),
+    region: Optional[str] = Query(default=None, description="Filter by region (comma-sep)"),
+    category: Optional[str] = Query(default=None, description="Filter by category (comma-sep)"),
+    era: Optional[str] = Query(default=None, description="Era name (sets year range)"),
+    year_from: Optional[int] = Query(default=None, description="Min year_approx (negative=BCE)"),
+    year_to: Optional[int] = Query(default=None, description="Max year_approx"),
+    min_importance: Optional[float] = Query(default=None, ge=0.0, le=1.0),
+    has_people: Optional[bool] = Query(default=None),
+    has_causes: Optional[bool] = Query(default=None),
+    has_effects: Optional[bool] = Query(default=None),
+    sort: str = Query(default="importance_desc"),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db),
+) -> AdvancedSearchResponse:
+    """Advanced multi-filter search for events."""
+    from sqlalchemy import or_
+
+    # Sub-queries for counts
+    cause_count_sq = (
+        select(func.count())
+        .select_from(CausalityLink)
+        .where(
+            CausalityLink.effect_event_id == Event.id,
+            CausalityLink.review_status == "approved",
+        )
+        .correlate(Event)
+        .scalar_subquery()
+        .label("cause_count")
+    )
+    effect_count_sq = (
+        select(func.count())
+        .select_from(CausalityLink)
+        .where(
+            CausalityLink.cause_event_id == Event.id,
+            CausalityLink.review_status == "approved",
+        )
+        .correlate(Event)
+        .scalar_subquery()
+        .label("effect_count")
+    )
+    people_count_sq = (
+        select(func.count())
+        .select_from(EventPerson)
+        .where(EventPerson.event_id == Event.id)
+        .correlate(Event)
+        .scalar_subquery()
+        .label("people_count")
+    )
+
+    conditions: list = [Event.review_status == "approved"]
+
+    # Text search
+    if q and q.strip():
+        pattern = f"%{q.strip()}%"
+        conditions.append(
+            (Event.title.ilike(pattern)) | (Event.geo_modern.ilike(pattern))
+        )
+
+    # Category filter (supports comma-separated)
+    if category:
+        cats = [c.strip() for c in category.split(",") if c.strip()]
+        if len(cats) == 1:
+            conditions.append(Event.event_category == cats[0])
+        elif cats:
+            conditions.append(Event.event_category.in_(cats))
+
+    # Year range — era overrides explicit year params
+    eff_year_from = year_from
+    eff_year_to = year_to
+    if era and era in _ERA_RANGES:
+        eff_year_from, eff_year_to = _ERA_RANGES[era]
+    if eff_year_from is not None:
+        conditions.append(Event.year_approx >= eff_year_from)
+    if eff_year_to is not None:
+        conditions.append(Event.year_approx <= eff_year_to)
+
+    # Importance
+    if min_importance is not None:
+        conditions.append(Event.importance_score >= min_importance)
+
+    # Region filter (supports comma-separated)
+    if region:
+        regions = [r.strip() for r in region.split(",") if r.strip()]
+        all_region_conds = []
+        for r in regions:
+            if r in _REGION_KEYWORDS:
+                for kw in _REGION_KEYWORDS[r]:
+                    all_region_conds.append(Event.geo_modern.ilike(f"%{kw}%"))
+                    all_region_conds.append(Event.geo_era_label.ilike(f"%{kw}%"))
+        if all_region_conds:
+            conditions.append(or_(*all_region_conds))
+
+    # Has-people / has-causes / has-effects
+    if has_people:
+        conditions.append(
+            select(func.count()).select_from(EventPerson)
+            .where(EventPerson.event_id == Event.id)
+            .correlate(Event).scalar_subquery() > 0
+        )
+    if has_causes:
+        conditions.append(
+            select(func.count()).select_from(CausalityLink)
+            .where(CausalityLink.effect_event_id == Event.id, CausalityLink.review_status == "approved")
+            .correlate(Event).scalar_subquery() > 0
+        )
+    if has_effects:
+        conditions.append(
+            select(func.count()).select_from(CausalityLink)
+            .where(CausalityLink.cause_event_id == Event.id, CausalityLink.review_status == "approved")
+            .correlate(Event).scalar_subquery() > 0
+        )
+
+    # Sorting
+    if sort == "year_asc":
+        order_clauses = [Event.year_approx.asc().nullslast()]
+    elif sort == "year_desc":
+        order_clauses = [Event.year_approx.desc().nullslast()]
+    elif sort == "connections_desc":
+        order_clauses = [(cause_count_sq + effect_count_sq).desc()]
+    else:
+        order_clauses = [Event.importance_score.desc()]
+
+    # Count total
+    count_stmt = select(func.count()).select_from(Event).where(*conditions)
+    total = (await db.execute(count_stmt)).scalar() or 0
+
+    # Fetch results
+    stmt = (
+        select(
+            Event.slug, Event.title, Event.year_approx,
+            Event.geo_modern, Event.geo_era_label, Event.event_category,
+            Event.importance_score, cause_count_sq, effect_count_sq, people_count_sq,
+        )
+        .where(*conditions)
+        .order_by(*order_clauses)
+        .limit(limit)
+        .offset(offset)
+    )
+    rows = (await db.execute(stmt)).fetchall()
+
+    results = [
+        AdvancedSearchResultItem(
+            slug=row.slug,
+            title=row.title,
+            year_approx=row.year_approx,
+            region=_classify_region(row.geo_modern, row.geo_era_label),
+            category=row.event_category,
+            importance_score=row.importance_score or 0.5,
+            cause_count=row.cause_count or 0,
+            effect_count=row.effect_count or 0,
+            people_count=row.people_count or 0,
+        )
+        for row in rows
+    ]
+
+    return AdvancedSearchResponse(
+        results=results,
+        total=total,
+        page_info={
+            "limit": limit,
+            "offset": offset,
+            "has_next": offset + limit < total,
+            "has_prev": offset > 0,
+        },
+    )
+
 
 # ── Rate limiting for semantic search ─────────────────────────────────────────
 SEMANTIC_RATE_LIMIT = 30  # requests per minute

@@ -189,6 +189,31 @@ class SearchResponse(BaseModel):
 
 
 # ────────────────────────────────────────────
+# Advanced Search — GET /api/search/advanced
+# ────────────────────────────────────────────
+class AdvancedSearchResultItem(BaseModel):
+    """Result item for advanced search — includes causality and people counts."""
+
+    slug: str
+    title: str
+    year_approx: Optional[int] = None
+    region: Optional[str] = None
+    category: Optional[str] = None
+    importance_score: float = 0.5
+    cause_count: int = 0
+    effect_count: int = 0
+    people_count: int = 0
+
+
+class AdvancedSearchResponse(BaseModel):
+    """Advanced search response with total count and pagination info."""
+
+    results: List[AdvancedSearchResultItem]
+    total: int = 0
+    page_info: Dict[str, Any] = {}
+
+
+# ────────────────────────────────────────────
 # Health — GET /api/health
 # ────────────────────────────────────────────
 class HealthResponse(BaseModel):
