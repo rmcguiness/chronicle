@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, CONNECTION_COLORS, CONNECTION_LABELS } from '../utils/categories';
 import type { EventCategory, ConnectionType } from '../types';
 
@@ -100,6 +101,29 @@ export default function CategoryLegend() {
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>{CONNECTION_LABELS[conn]}</span>
               </div>
             ))}
+          </div>
+
+          {/* Glossary link */}
+          <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <Link
+              to="/glossary"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#64748b',
+                textDecoration: 'none',
+                letterSpacing: '0.04em',
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; }}
+            >
+              <span style={{ fontSize: 13 }}>📖</span>
+              Glossary
+            </Link>
           </div>
         </>
       )}
