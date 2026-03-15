@@ -14,6 +14,7 @@
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  *  /math-history  → History of Mathematics deep-dive
+ *  /aztec-empire  → Aztec Empire deep-dive
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -29,6 +30,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
 import MathHistoryPage from './pages/MathHistoryPage';
+import AztecEmpirePage from './pages/AztecEmpirePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -88,6 +90,7 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/math-history" element={<MathHistoryPage />} />
+        <Route path="/aztec-empire" element={<AztecEmpirePage />} />
       </Routes>
     </QueryClientProvider>
   );
