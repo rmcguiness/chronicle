@@ -26,6 +26,10 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import PandemicsPage from './pages/PandemicsPage';
+import PandemicsButton from './components/PandemicsButton';
+import PhilosophyPage from './pages/PhilosophyPage';
+import PhilosophyButton from './components/PhilosophyButton';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -60,6 +64,12 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Pandemics button (toolbar) */}
+      <PandemicsButton />
+
+      {/* Philosophy button (toolbar) */}
+      <PhilosophyButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -83,6 +93,8 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/pandemics" element={<PandemicsPage />} />
+        <Route path="/philosophy" element={<PhilosophyPage />} />
       </Routes>
     </QueryClientProvider>
   );
