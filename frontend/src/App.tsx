@@ -13,6 +13,7 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /inca-empire   → Inca Empire deep-dive
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,6 +28,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
+import IncaEmpirePage from './pages/IncaEmpirePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +87,7 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/korean-war" element={<KoreanWarPage />} />
+        <Route path="/inca-empire" element={<IncaEmpirePage />} />
       </Routes>
     </QueryClientProvider>
   );
