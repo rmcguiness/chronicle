@@ -1,6 +1,5 @@
 /**
  * BattlesButton — toolbar link to the /battles browser page.
- * Positioned in the top toolbar area.
  */
 
 import { Link } from 'react-router-dom';
@@ -9,12 +8,12 @@ export default function BattlesButton() {
   return (
     <Link
       to="/battles"
-      title="Famous Battles"
-      aria-label="Famous Battles"
+      title="Decisive Battles"
+      aria-label="Decisive Battles"
       style={{
         position: 'fixed',
         top: 16,
-        right: 250,
+        right: 430,
         zIndex: 30,
         display: 'flex',
         alignItems: 'center',

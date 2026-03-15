@@ -28,6 +28,8 @@ import BattlesButton from './components/BattlesButton';
 import EventDetailPage from './pages/EventDetailPage';
 import BattlesPage from './pages/BattlesPage';
 import AdminPage from './pages/AdminPage';
+import BattlesPage from './pages/BattlesPage';
+import BattlesButton from './components/BattlesButton';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -89,6 +91,7 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/battles" element={<BattlesPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path='/battles' element={<BattlesPage />} />
       </Routes>
     </QueryClientProvider>
   );
