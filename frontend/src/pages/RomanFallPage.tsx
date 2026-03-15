@@ -1,23 +1,24 @@
 /**
- * RomanFallPage — comprehensive deep-dive on the fall of the Western Roman Empire.
+ * RomanFallPage — comprehensive deep-dive on the fall of the Western Roman
+ * Empire (200–476 CE).
  *
  * Route: /roman-fall
  *
  * Sections:
- *  1. Hero — headline, framing the historiographical debate
- *  2. The Big Question — 200+ theories, Gibbon, modern framing
- *  3. Rome at Its Peak — 1st–2nd century CE statistics and achievements
- *  4. Crisis of the Third Century — 50 years of chaos
- *  5. Division of the Empire — Diocletian through Theodosius
- *  6. The Causes — multi-column breakdown (military/economic/social/external/disease/Christianity)
- *  7. The Germanic Kingdoms — 375–476 CE, barbarian incursions
- *  8. The Final Collapse — 455–476 CE
- *  9. What Actually Fell — debunking the myth of total collapse
- * 10. Legacy and Modern Lessons
- * 11. Key Figures
+ *  1. Hero — headline, key stats bar
+ *  2. Rome at Its Peak — 117 CE, Pax Romana, scale of achievement
+ *  3. The Long Decline — Crisis of Third Century, inflation, plague, overextension
+ *  4. Diocletian and the Division — east/west split, Constantine, Christianity
+ *  5. The Germanic Migrations — Huns, Visigoths, foederati
+ *  6. The Sack of Rome (410 CE) — Alaric, psychological shock
+ *  7. The Final Collapse — Attila, Vandals, puppet emperors, 476 CE
+ *  8. Why Did Rome Fall? The Great Debate — historians' theories
+ *  9. What Actually Fell — western vs eastern, "Dark Ages" myth
+ * 10. The Aftermath — successor states, Church, Charlemagne
+ * 11. Legacy for Today — law, language, echoes in modern debates
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -25,22 +26,21 @@ import { motion } from 'framer-motion';
 // Theme constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const IMPERIAL_RED = '#dc2626';
-const CRIMSON = '#991b1b';
+const CRIMSON = '#dc2626';
 const GOLD = '#f59e0b';
-const PURPLE = '#a855f7';
+const AMBER = '#d97706';
 const BLUE = '#3b82f6';
 const TEAL = '#14b8a6';
-const AMBER = '#d97706';
 const INDIGO = '#6366f1';
 const GREEN = '#22c55e';
-const STEEL = '#64748b';
+const ROSE = '#f43f5e';
+const PURPLE = '#a855f7';
 const ASH = '#94a3b8';
 const SLATE = '#64748b';
+const IMPERIAL_PURPLE = '#7c3aed';
 const BRONZE = '#b45309';
-const ROSE = '#f43f5e';
-const STONE = '#78716c';
-const MARBLE = '#e2e8f0';
+const LEGION_RED = '#b91c1c';
+const STEEL = '#64748b';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data
@@ -58,441 +58,344 @@ interface InsightEntry {
   detail: string;
 }
 
-interface FigureEntry {
-  name: string;
-  years: string;
-  contribution: string;
+interface StatEntry {
+  value: string;
+  label: string;
+  color: string;
 }
 
-interface StatEntry {
-  label: string;
-  value: string;
+interface DebateEntry {
+  historian: string;
+  theory: string;
+  detail: string;
   color: string;
 }
 
 interface ConnectionCard {
-  title: string;
+  to: string;
+  label: string;
   description: string;
-  path: string;
   color: string;
 }
 
-// ── Hero Stats ──────────────────────────────────────────────────────────────
+// ── Key Stats ───────────────────────────────────────────────────────────────
 
-const HERO_STATS: StatEntry[] = [
-  { label: 'Western Empire Duration', value: '1,229 years', color: IMPERIAL_RED },
-  { label: 'Eastern Empire Survived', value: '977 more years', color: PURPLE },
-  { label: 'Peak Population', value: '70 million', color: GOLD },
-  { label: 'Proposed Causes', value: '200+', color: TEAL },
-  { label: 'Peak Territory', value: '5 million km²', color: BLUE },
-];
-
-// ── The Big Question ────────────────────────────────────────────────────────
-
-const DEBATE_INSIGHTS: InsightEntry[] = [
-  {
-    label: 'Gibbon\'s "Decline and Fall" (1776)',
-    detail:
-      'Edward Gibbon\'s six-volume masterwork blamed two forces: Christianity — which he argued replaced Roman civic and martial virtues with otherworldly passivity — and "barbarism," the relentless pressure of Germanic and nomadic peoples on the frontiers. Published the same year as the American Declaration of Independence, Gibbon\'s work shaped how the West understood Rome\'s fall for two centuries. His prose remains magnificent; his thesis, most modern historians agree, is oversimplified.',
-  },
-  {
-    label: '200+ Proposed Causes',
-    detail:
-      'German historian Alexander Demandt catalogued over 200 distinct explanations scholars have proposed for Rome\'s fall — from lead poisoning to soil exhaustion to moral decay to excessive bathing. The sheer number of theories tells us something important: no single cause is sufficient. The fall of Rome was a convergence of military, economic, environmental, social, and political failures that reinforced each other over centuries.',
-  },
-  {
-    label: 'Not a Collapse — A Transformation',
-    detail:
-      'Modern historians increasingly reject the word "fall" entirely. Peter Brown\'s influential "The World of Late Antiquity" (1971) reframed the period as a transformation rather than a catastrophe. Roman institutions, culture, law, and language didn\'t vanish — they evolved into medieval European civilization. The "fall of Rome" was less like a building collapsing and more like a building being slowly renovated into something different while people kept living in it.',
-  },
-  {
-    label: 'The Eastern Counter-Example',
-    detail:
-      'The most powerful argument against any single-cause theory: the Eastern Roman Empire (Byzantine Empire), which shared Rome\'s religion, bureaucracy, and many of its supposed "weaknesses," survived for nearly 1,000 years after the West fell. Constantinople didn\'t fall until 1453 CE — to the Ottoman Turks, not Germanic tribes. Whatever killed the Western Empire, it wasn\'t Christianity, Roman culture, or imperial governance per se.',
-  },
+const KEY_STATS: StatEntry[] = [
+  { value: '70M', label: 'People at peak (21% of world)', color: GOLD },
+  { value: '2M mi\u00B2', label: 'Territory: Scotland to Mesopotamia', color: IMPERIAL_PURPLE },
+  { value: '50+', label: 'Emperors in 50 years (235\u2013284 CE)', color: CRIMSON },
+  { value: '476 CE', label: 'Western Empire falls', color: LEGION_RED },
+  { value: '1453 CE', label: 'Eastern Empire (Byzantine) falls', color: TEAL },
+  { value: '977 yrs', label: 'Eastern outlasted Western', color: BLUE },
 ];
 
 // ── Rome at Its Peak ────────────────────────────────────────────────────────
 
 const PEAK_INSIGHTS: InsightEntry[] = [
   {
-    label: 'One-Quarter of Humanity',
+    label: '70 Million People \u2014 21% of the World',
     detail:
-      'At its height under Trajan (117 CE), the Roman Empire held approximately 70 million people — roughly one-quarter of the world\'s total population. The empire stretched from Britain to Mesopotamia, from the Rhine to the Sahara. A single currency, a single legal system, and a network of 250,000 miles of roads connected the Mediterranean world into the largest unified political entity the West had ever seen.',
+      'At its height under Emperor Trajan in 117 CE, the Roman Empire encompassed roughly 70 million people \u2014 more than one in five humans alive. It stretched from Hadrian\'s Wall in northern Britain to the deserts of Mesopotamia, from the Rhine and Danube rivers to the Sahara. No single political entity would govern this many people in the West again until the modern era. The city of Rome itself held over one million inhabitants \u2014 a population European cities wouldn\'t match for over a thousand years.',
   },
   {
-    label: 'Pax Romana: 200 Years of Peace',
+    label: 'The Roman Achievement: Roads, Law, and Commerce',
     detail:
-      'From 27 BCE to 180 CE — the Pax Romana — the Roman world experienced two centuries of relative peace, stability, and prosperity unmatched in Western history until the modern era. Trade flourished from India to Scotland. Cities grew. Architecture reached new heights — the Colosseum, Pantheon, and aqueducts that still stand today were built during this era. Roman GDP may have constituted roughly 30% of the world total.',
+      'Rome built 250,000 miles of roads, including 50,000 miles of paved highways \u2014 an infrastructure network not surpassed until the 19th century. Roman aqueducts delivered 300 million gallons of fresh water daily to the capital. Roman law \u2014 codified in the Corpus Juris Civilis \u2014 became the foundation of most European legal systems. A common currency, standardized weights and measures, and enforced contracts created a Mediterranean-wide economy. A merchant in Roman Britain could do business with a trader in Roman Syria using the same legal framework.',
   },
   {
-    label: 'The Five Good Emperors',
+    label: 'Pax Romana: 200 Years of Relative Peace',
     detail:
-      'Nerva, Trajan, Hadrian, Antoninus Pius, and Marcus Aurelius (96–180 CE) — adopted rather than hereditary successors — produced what Gibbon called "the period in the history of the world during which the condition of the human race was most happy and prosperous." Each chose his successor based on merit, not blood. This system of adoptive succession ended when Marcus Aurelius broke the pattern and named his son Commodus as heir. Commodus was a disaster.',
+      'From Augustus (27 BCE) to Marcus Aurelius (180 CE), the Roman Empire enjoyed the Pax Romana \u2014 roughly 200 years of relative internal stability and prosperity. This wasn\'t peace in the modern sense: Rome fought frontier wars constantly. But within the empire\'s borders, the rule of law largely held, trade flourished, cities grew, and millions lived in a level of material comfort not seen again in Europe until the Renaissance. Edward Gibbon called this period "the most happy and prosperous" in the history of the human race.',
   },
   {
-    label: 'Engineering and Infrastructure',
+    label: 'Why the Fall Matters',
     detail:
-      'Rome\'s infrastructure was staggering: 250,000 miles of roads (50,000 paved), 11 aqueducts supplying Rome with 300 million gallons of fresh water daily, public baths that could hold thousands, a postal system spanning three continents, and concrete so durable that Roman harbors still stand underwater 2,000 years later. No European state would match Rome\'s engineering until the Industrial Revolution.',
+      'The collapse of the Western Roman Empire ended a continuous civilization that had lasted over 500 years (or over 1,000 years counting the Roman Republic). In its wake, Western Europe entered a period of political fragmentation, economic contraction, population decline, and loss of literacy that lasted centuries. Long-distance trade collapsed. Cities shrank to a fraction of their former size. The population of Rome fell from over 1 million to roughly 30,000. The fall of Rome remains one of the most consequential events in world history.',
   },
 ];
 
-// ── Crisis of the Third Century ────────────────────────────────────────────
+// ── The Long Decline ────────────────────────────────────────────────────────
 
-const CRISIS_TIMELINE: TimelineEntry[] = [
+const DECLINE_TIMELINE: TimelineEntry[] = [
   {
-    year: '235 CE',
-    title: 'Assassination of Severus Alexander — Chaos Begins',
+    year: '235\u2013284 CE',
+    title: 'Crisis of the Third Century: 50 Emperors in 50 Years',
     description:
-      'The murder of Emperor Severus Alexander by his own troops in 235 CE opened a 50-year period of near-total political collapse. Over the next half-century, more than 50 men claimed the title of emperor — most ruling only months before being assassinated by rivals or their own soldiers. The army, not the Senate, made and unmade emperors at will.',
-    color: IMPERIAL_RED,
-  },
-  {
-    year: '249–262 CE',
-    title: 'Plague of Cyprian — 5,000 Dead Per Day',
-    description:
-      'A devastating pandemic — possibly smallpox or a hemorrhagic fever — swept the empire for over a decade. At its peak, the plague reportedly killed 5,000 people per day in Rome alone. Total deaths may have reached 5 million across the empire. The plague devastated the army, depopulated frontier provinces, and shattered tax revenue. Combined with constant civil war, it nearly destroyed the empire.',
-    color: ROSE,
-  },
-  {
-    year: '260 CE',
-    title: 'Economic Collapse — Currency Debased to Nothing',
-    description:
-      'To pay armies and fund wars, emperors debased the currency relentlessly. The silver content of the denarius plummeted from 85% under Nero to roughly 5% by the reign of Gallienus. The result was hyperinflation: prices rose by an estimated 1,000% over the century. Confidence in Roman currency collapsed. Soldiers demanded payment in kind — grain and goods — rather than worthless coins. The sophisticated monetary economy that had powered Rome\'s trade networks disintegrated.',
-    color: AMBER,
-  },
-  {
-    year: '260–274 CE',
-    title: 'The Empire Fractures',
-    description:
-      'The empire nearly split permanently into three parts: the Gallic Empire (Britain, Gaul, Hispania) under Postumus, the Palmyrene Empire (Syria, Egypt) under Queen Zenobia, and a rump central empire in Italy and the Balkans. For 14 years, three separate governments claimed to be the legitimate Roman Empire. That the empire was reunified at all — by the soldier-emperor Aurelian — was remarkable. He earned the title "Restorer of the World."',
-    color: PURPLE,
-  },
-  {
-    year: '284 CE',
-    title: 'Diocletian — The Crisis Ends',
-    description:
-      'Diocletian, a low-born Dalmatian soldier who rose through the ranks, seized power in 284 CE and ended the Crisis of the Third Century through radical reforms. He divided the empire into a Tetrarchy (rule of four), reorganized the provinces, reformed taxation, attempted price controls (the Edict on Maximum Prices), and doubled the size of the army. His reforms stabilized the empire but also transformed it: the relatively free Principate became the authoritarian Dominate.',
-    color: TEAL,
-  },
-];
-
-// ── Division of the Empire ──────────────────────────────────────────────────
-
-const DIVISION_TIMELINE: TimelineEntry[] = [
-  {
-    year: '285 CE',
-    title: 'Diocletian Splits the Empire',
-    description:
-      'Recognizing that one man could not govern and defend an empire stretching from Scotland to Iraq, Diocletian created the Tetrarchy: two senior emperors (Augusti) and two junior emperors (Caesares), one pair for the East and one for the West. It was a pragmatic solution — the empire had grown too large and faced threats on too many frontiers for centralized rule. The division was meant to be administrative, not permanent. It became permanent.',
-    color: TEAL,
-  },
-  {
-    year: '306–337 CE',
-    title: 'Constantine I — Christianity and Constantinople',
-    description:
-      'Constantine reunified the empire after a series of civil wars, converted to Christianity (the Edict of Milan in 313 CE legalized the faith), and made the fateful decision to build a new capital — Constantinople — on the site of the Greek city of Byzantium. The "New Rome" was strategically brilliant: positioned on the Bosphorus, it controlled trade between Europe and Asia, was nearly impregnable behind its massive walls, and anchored the wealthier, more urbanized eastern half of the empire. Constantinople would outlast Rome by a millennium.',
-    color: GOLD,
-  },
-  {
-    year: '361–363 CE',
-    title: 'Julian the Apostate — The Last Pagan Emperor',
-    description:
-      'Julian, Constantine\'s nephew, attempted to reverse Christianization and restore traditional Roman religion. He reopened pagan temples, revoked Christian privileges, and tried to rebuild the Jewish Temple in Jerusalem. His brief reign — he died fighting the Sassanid Persians after only 20 months — demonstrated that Christianity had become too deeply rooted to uproot. After Julian, no emperor would seriously challenge Christianity\'s dominance.',
-    color: BRONZE,
-  },
-  {
-    year: '395 CE',
-    title: 'Theodosius I — The Final Division',
-    description:
-      'Theodosius I was the last emperor to rule both halves of the Roman Empire. He made Christianity the official state religion (Edict of Thessalonica, 380 CE), banned pagan worship, and closed the ancient temples. When he died in 395 CE, the empire was divided between his two young sons: Arcadius received the East, Honorius the West. The two halves would never be reunited. The wealthier, more defensible East would survive; the West, hemorrhaging territory and revenue, had less than a century left.',
-    color: IMPERIAL_RED,
-  },
-];
-
-// ── The Causes — Military/Political ────────────────────────────────────────
-
-const MILITARY_CAUSES: InsightEntry[] = [
-  {
-    label: 'Over-Extension: Too Large to Defend',
-    detail:
-      'The empire\'s frontier stretched over 10,000 miles — from Hadrian\'s Wall in Britain to the Euphrates River in Mesopotamia, along the Rhine, the Danube, and across North Africa. Defending this perimeter required an army of 400,000–600,000 men, a logistical and financial burden that consumed perhaps 70% of the imperial budget. When threats appeared on multiple frontiers simultaneously — as they increasingly did in the 4th and 5th centuries — there simply weren\'t enough soldiers to go around.',
-  },
-  {
-    label: 'Foederati: Outsourcing Defense to the Enemy',
-    detail:
-      'As Roman manpower declined, the empire increasingly relied on Germanic foederati — allied barbarian warriors who fought under their own chiefs in exchange for land and payment. By the 5th century, "Roman" armies were largely barbarian in composition. The problem was loyalty: foederati served their own leaders, not Rome. When the interests of barbarian generals and Roman emperors diverged, the barbarian generals had the armies. The last Roman armies in the West were Roman in name only.',
-  },
-  {
-    label: 'Constant Civil Wars',
-    detail:
-      'Rome never solved its succession problem. From the "Year of Four Emperors" (69 CE) to the final decades, civil wars bled the empire of soldiers, wealth, and legitimacy. The army learned it could make and unmake emperors — and frequently did. Between 235 and 284 CE alone, over 50 men claimed the purple. Every civil war meant Roman soldiers killing Roman soldiers while the frontiers went undefended.',
-  },
-  {
-    label: 'Loss of Civic Virtue',
-    detail:
-      'In the Republic and early Empire, Roman citizens served in the legions out of duty and patriotism. By the late Empire, military service was avoided by the wealthy, who paid to be exempted, and increasingly filled by barbarian recruits who fought for pay, not for Rome. The citizen-soldier who had built the empire was replaced by professional mercenaries with no stake in Roman civilization.',
-  },
-];
-
-// ── The Causes — Economic ──────────────────────────────────────────────────
-
-const ECONOMIC_CAUSES: InsightEntry[] = [
-  {
-    label: 'Currency Debasement: 85% → 5% Silver',
-    detail:
-      'The story of Rome\'s economy is written in its coins. Under Augustus, the silver denarius was 98% pure. Nero reduced it to 85%. Septimius Severus brought it to 50%. By Gallienus (260s CE), the "silver" coin contained only about 5% silver — the rest was bronze washed with a thin silver coating. This wasn\'t a sudden crisis but a 300-year erosion of monetary credibility that destroyed savings, disrupted trade, and made long-term economic planning impossible.',
-  },
-  {
-    label: 'Hyperinflation and the Collapse of Commerce',
-    detail:
-      'As the currency lost value, prices skyrocketed. Diocletian\'s Edict on Maximum Prices (301 CE) — which set price ceilings on over 1,000 goods and services, with the death penalty for violations — was a desperate response to inflation that had made the economy nearly ungovernable. The edict failed: merchants simply stopped selling goods. The sophisticated monetary economy of the Pax Romana gave way to a barter economy and payment in kind.',
-  },
-  {
-    label: 'Tax Burden and Economic Flight',
-    detail:
-      'As the empire shrank and military costs grew, the tax burden on remaining provinces became crushing. Small farmers, unable to pay, abandoned their land or became coloni — essentially serfs tied to large estates owned by wealthy landowners who could negotiate tax exemptions. The productive middle class was squeezed out of existence. Tax revenue declined further, military spending couldn\'t be maintained, frontiers weakened — a vicious cycle.',
-  },
-  {
-    label: 'Trade Network Collapse',
-    detail:
-      'The Pax Romana had sustained a Mediterranean-wide trade network: Egyptian grain fed Rome, Spanish silver funded the treasury, Gallic wine flowed east, eastern spices flowed west. As barbarian incursions disrupted trade routes, piracy returned to the Mediterranean, and provinces fell under barbarian control, this integrated economy fragmented. Cities shrank. Specialized production gave way to local self-sufficiency. The economic integration that had been Rome\'s greatest achievement unraveled.',
-  },
-];
-
-// ── The Causes — Social/Political ──────────────────────────────────────────
-
-const SOCIAL_CAUSES: InsightEntry[] = [
-  {
-    label: 'Corruption and Bureaucratic Bloat',
-    detail:
-      'Diocletian\'s administrative reforms saved the empire but created an enormous bureaucracy. The number of provinces was doubled, administrative layers multiplied, and a vast corps of officials — many of them corrupt — siphoned off resources. Offices were bought and sold. Tax collectors enriched themselves. The gap between the imperial court and the provinces it governed widened into an abyss.',
-  },
-  {
-    label: 'Loss of Roman Identity',
-    detail:
-      'The Edict of Caracalla (212 CE) extended Roman citizenship to all free inhabitants of the empire — a seemingly generous act that actually devalued citizenship by making it universal. When everyone was a Roman citizen, the distinction meant nothing. The shared identity and civic obligation that had bound the Republic and early Empire together dissolved. Late Roman provincials felt little connection to a distant emperor in Constantinople or Ravenna.',
-  },
-  {
-    label: 'Declining Civic Engagement',
-    detail:
-      'In the Republic, wealthy Romans competed to build temples, roads, and aqueducts — civic euergetism was the path to political prestige. By the late Empire, the wealthy retreated to private estates, avoided civic obligations, and sought exemptions from the crushing responsibilities of local governance. Cities, once the foundation of Roman civilization, decayed as their leading citizens stopped investing in public infrastructure and started investing in fortified rural villas.',
-  },
-];
-
-// ── The Causes — External Pressure ─────────────────────────────────────────
-
-const EXTERNAL_CAUSES: InsightEntry[] = [
-  {
-    label: 'The Huns: Domino Effect from Central Asia',
-    detail:
-      'In the 370s CE, the Huns — nomadic warriors from the Central Asian steppe — burst into Europe with a ferocity that terrified even the Germanic tribes. The Huns didn\'t directly destroy Rome, but they triggered a catastrophic chain reaction: fleeing the Huns, the Goths, Vandals, Burgundians, and other Germanic peoples surged into Roman territory in numbers too large to be stopped or absorbed. The Huns were the stone thrown into the pond; the waves wrecked the empire.',
-  },
-  {
-    label: 'Pressure on All Frontiers',
-    detail:
-      'In the 1st and 2nd centuries, Rome faced threats on one or two frontiers at a time. By the 4th and 5th centuries, it faced them everywhere simultaneously: Goths on the Danube, Franks and Alamanni on the Rhine, Saxons raiding Britain, Vandals in North Africa, Persians in the East. The empire couldn\'t concentrate forces against any one threat without leaving another frontier exposed. This strategic overstretch was ultimately insoluble with the resources available.',
-  },
-];
-
-// ── The Causes — Environmental/Disease ─────────────────────────────────────
-
-const DISEASE_CAUSES: InsightEntry[] = [
-  {
-    label: 'Antonine Plague (165–180 CE)',
-    detail:
-      'Probably smallpox, brought back by soldiers returning from campaigns in Mesopotamia. The plague killed an estimated 5–10 million people across the empire — perhaps 10% of the population. It struck during the reign of Marcus Aurelius, killing soldiers, depopulating frontier provinces, and reducing tax revenue. Some historians date the beginning of Rome\'s decline to this plague, which ended the demographic growth of the Pax Romana.',
-  },
-  {
-    label: 'Plague of Cyprian (249–262 CE)',
-    detail:
-      'Named for St. Cyprian, Bishop of Carthage, who described its horrors, this epidemic (possibly a viral hemorrhagic fever) devastated the empire during the already catastrophic Crisis of the Third Century. At its peak, 5,000 people reportedly died per day in Rome. The plague ravaged the army, depopulated cities, and contributed to the economic and military collapse of the mid-3rd century. Two emperors may have died of it.',
-  },
-  {
-    label: 'Climate Cooling (5th Century)',
-    detail:
-      'Recent climate science has revealed that the "Roman Climate Optimum" — a period of warm, stable, and wet conditions that supported Mediterranean agriculture — ended in the late 4th and 5th centuries. Cooler temperatures, drought in some regions, and reduced agricultural yields compounded the empire\'s other problems. The Late Antique Little Ice Age (c. 536–660 CE) — triggered partly by volcanic eruptions — further destabilized post-Roman Europe.',
-  },
-  {
-    label: 'Lead Poisoning (Controversial)',
-    detail:
-      'Some historians have argued that chronic lead poisoning from Roman water pipes (the word "plumbing" comes from the Latin plumbum, lead), lead-lined cookware, and lead-sweetened wine (sapa) impaired the Roman ruling class — causing infertility, cognitive decline, and erratic behavior. The theory is disputed: most Roman water pipes developed calcium deposits that limited lead leaching, and the poor (who didn\'t use lead cookware) suffered the same social decline. But the lead levels in Roman skeletons are measurably elevated.',
-  },
-];
-
-// ── Christianity (Controversial) ───────────────────────────────────────────
-
-const CHRISTIANITY_DEBATE: InsightEntry[] = [
-  {
-    label: 'Gibbon\'s Argument: From Civic Virtue to Spiritual Withdrawal',
-    detail:
-      'Gibbon argued that Christianity undermined Rome by shifting society\'s values from civic duty, military honor, and public engagement to otherworldly salvation, monasticism, and passive acceptance of suffering. Resources that once built roads and aqueducts were diverted to build churches and monasteries. The best minds, who might have been generals or administrators, became monks and theologians. Roman aggression was replaced by Christian meekness — and meekness, Gibbon implied, doesn\'t defend frontiers.',
-  },
-  {
-    label: 'The Devastating Counter-Argument',
-    detail:
-      'The Eastern Roman Empire — which was just as Christian as the West, with an even more powerful church establishment — survived for nearly 1,000 years after the West fell. If Christianity caused Rome\'s fall, why did it only destroy the western half? The East was, if anything, more thoroughly Christianized. The obvious conclusion: Christianity was not a sufficient cause. The differences between East and West — wealth, defensibility, strategic depth, the quality of Constantinople\'s walls — mattered far more than religion.',
-  },
-];
-
-// ── The Germanic Kingdoms ──────────────────────────────────────────────────
-
-const GERMANIC_TIMELINE: TimelineEntry[] = [
-  {
-    year: '376 CE',
-    title: 'Visigoths Cross the Danube — Rome\'s Fatal Mistake',
-    description:
-      'Fleeing the Huns, the Visigoths — perhaps 200,000 men, women, and children — begged Emperor Valens for permission to cross the Danube into Roman territory. Valens agreed, seeing a source of cheap soldiers. But Roman officials exploited the desperate refugees: they withheld food, sold dog meat at extortionate prices, and reportedly traded Gothic children into slavery for scraps. The Goths, starving and furious, revolted. Rome had created its own worst enemy.',
-    color: AMBER,
-  },
-  {
-    year: '378 CE',
-    title: 'Battle of Adrianople — An Emperor Dies',
-    description:
-      'Emperor Valens marched against the rebelling Goths near Adrianople (modern Edirne, Turkey) without waiting for reinforcements from the Western Empire. The Gothic cavalry shattered the Roman lines. Two-thirds of the Eastern Roman army — perhaps 20,000 soldiers — were killed, including Valens himself, whose body was never recovered. Adrianople was the worst Roman military disaster since Cannae, 600 years earlier. It proved that barbarian armies could defeat Roman legions in a pitched battle.',
-    color: IMPERIAL_RED,
-  },
-  {
-    year: '410 CE',
-    title: 'Sack of Rome by the Visigoths — Psychological Earthquake',
-    description:
-      'On August 24, 410 CE, Alaric I and his Visigoths entered Rome and sacked the city for three days. It was the first time in 800 years — since the Gauls in 390 BCE — that a foreign enemy had taken the Eternal City. The physical damage was relatively limited (Alaric was a Christian and spared churches), but the psychological impact was immense. St. Jerome, writing from Bethlehem, declared: "The city which had taken the whole world was itself taken." St. Augustine wrote "The City of God" in direct response, arguing that earthly empires are transient — only God\'s kingdom endures.',
+      'After the Severan dynasty ended in 235 CE, the empire descended into chaos. Over the next 50 years, more than 50 men claimed the title of emperor \u2014 most murdered by their own troops or rival generals. The empire briefly split into three competing states: the Gallic Empire in the west, the Palmyrene Empire in the east, and the rump Roman Empire in between. Civil war was constant. Armies that should have defended the frontiers instead fought each other. The legitimacy of imperial authority \u2014 the glue holding the empire together \u2014 was shattered.',
     color: CRIMSON,
   },
   {
-    year: '434–453 CE',
-    title: 'Attila the Hun — "The Scourge of God"',
+    year: '212\u2013300 CE',
+    title: 'Inflation and Currency Debasement',
     description:
-      'Attila united the Hunnic tribes and created an empire stretching from the Rhine to the Ural Mountains. He devastated the Balkans, extorted enormous tribute from Constantinople, invaded Gaul (where a combined Roman-Visigothic army stopped him at the Battle of the Catalaunian Plains in 451 CE), and ravaged Italy. Yet he never took Rome — legend credits Pope Leo I with persuading him to withdraw. Attila died in 453 CE on his wedding night (possibly of a nosebleed), and his empire immediately collapsed.',
+      'Emperor Caracalla began debasing the Roman denarius \u2014 reducing its silver content to pay the army. Subsequent emperors followed suit until the denarius was essentially a bronze coin with a thin silver wash. Prices rose roughly 1,000% by 300 CE. The government increasingly collected taxes in kind (grain, goods) rather than money because currency was nearly worthless. Trade networks that depended on stable currency began to break down. The Roman economy, once the most sophisticated in the ancient world, was reverting to barter in many regions.',
+    color: AMBER,
+  },
+  {
+    year: '249\u2013262 CE',
+    title: 'The Plague of Cyprian',
+    description:
+      'Named after the Bishop of Carthage who described it, this pandemic \u2014 possibly smallpox or a hemorrhagic fever \u2014 devastated the empire for over a decade. At its peak, it killed an estimated 5,000 people per day in Rome alone. Entire regions were depopulated. The army couldn\'t recruit enough soldiers. Fields went unplanted. Tax revenues collapsed. The plague struck an empire already weakened by civil war and economic crisis, compounding every existing problem. Some historians estimate it killed 25\u201333% of the empire\'s population.',
     color: ROSE,
   },
   {
-    year: '455 CE',
-    title: 'Sack of Rome by the Vandals',
+    year: '200\u2013400 CE',
+    title: 'Military Overextension',
     description:
-      'The Vandals, who had crossed from Spain to North Africa and built a naval power based in Carthage, sailed to Rome and sacked the city for two weeks — far more thoroughly than the Visigoths had in 410. They stripped the Temple of Jupiter, carried off treasures reportedly including items looted from Jerusalem by Titus in 70 CE, and took thousands of captives including the Empress Eudoxia. The word "vandalism" entered European languages as a result, though recent scholarship suggests the damage was more systematic looting than wanton destruction.',
+      'The empire\'s borders stretched roughly 10,000 miles \u2014 from Hadrian\'s Wall to the Euphrates. Defending this enormous perimeter required an army of 400,000\u2013600,000 soldiers, which the empire increasingly couldn\'t recruit or pay. Rome\'s solution was to hire Germanic and other non-Roman soldiers (foederati), but their loyalty was to their commanders, not to Rome. The professional legions that had conquered the world gave way to a patchwork of mercenary forces with divided allegiances.',
+    color: STEEL,
+  },
+  {
+    year: '200\u2013400 CE',
+    title: 'Bureaucratic Bloat',
+    description:
+      'As military and economic crises multiplied, the Roman government\'s response was to grow: more officials, more regulations, more taxes to pay for it all. Diocletian\'s administrative reforms multiplied the number of provinces from 50 to over 100, each with its own governor, staff, and bureaucracy. The tax burden on ordinary Romans became crushing. Many small farmers abandoned their land rather than face the tax collector. A civilization that had once thrived on commerce and civic engagement was strangling itself with its own administrative apparatus.',
     color: BRONZE,
   },
 ];
 
-// ── The Final Collapse ─────────────────────────────────────────────────────
+// ── Diocletian and the Division ─────────────────────────────────────────────
 
-const FINAL_COLLAPSE_INSIGHTS: InsightEntry[] = [
+const DIVISION_INSIGHTS: InsightEntry[] = [
   {
-    label: 'An Empire Reduced to Italy',
+    label: 'Diocletian\'s Reforms (284\u2013305 CE)',
     detail:
-      'By 460 CE, the Western Roman Empire had lost virtually all its provinces: Britain (abandoned c. 410), Gaul (divided among Franks, Visigoths, and Burgundians), Spain (Visigoths and Suevi), North Africa (Vandals). The "Emperor" controlled little more than Italy itself — and even that was effectively governed by Germanic military strongmen. The imperial title had become a fiction maintained by barbarian generals who found it useful to rule through puppet emperors rather than claim the throne themselves.',
+      'Emperor Diocletian, a former soldier who seized power in 284 CE, stabilized the empire through radical reorganization. He created the Tetrarchy \u2014 splitting imperial authority among four co-emperors ruling different regions. He doubled the size of the army, reformed taxation, imposed price controls (the Edict on Maximum Prices, 301 CE), and created a court ceremonial modeled on Persian monarchy. The emperor was no longer "first citizen" (princeps) but "lord and god" (dominus et deus). Diocletian\'s reforms bought the empire another century, but at the cost of transforming Rome from a republic-in-spirit into an openly authoritarian state.',
   },
   {
-    label: 'Puppet Emperors, Barbarian Generals',
+    label: 'Constantine and the New Capital (306\u2013337 CE)',
     detail:
-      'The last two decades of the Western Empire were dominated by Germanic generals — Ricimer, Gundobad, Orestes — who installed and deposed emperors at will. Nine emperors reigned (if you can call it reigning) between 455 and 476 CE, most for only months. Real power lay with the military commanders, not the men wearing the purple. The imperial title was a costume, not a command.',
+      'Constantine the Great reunified the empire after another round of civil wars and made two decisions that changed history forever. In 330 CE, he moved the imperial capital from Rome to a "New Rome" \u2014 Constantinople (modern Istanbul) \u2014 strategically located at the crossroads of Europe and Asia. The move was a tacit admission that the empire\'s center of gravity had shifted east. Rome, the eternal city, was effectively abandoned as the seat of power. Constantinople would remain the capital of the Eastern Roman Empire for over 1,100 years.',
   },
   {
-    label: 'September 4, 476 CE — The "End"',
+    label: 'The Edict of Milan (313 CE): Christianity Legalized',
     detail:
-      'Odoacer, a Germanic chieftain who had served in the Roman army, deposed Romulus Augustulus — the last Western Roman Emperor, a teenage boy placed on the throne by his father, the general Orestes. Odoacer didn\'t kill the boy; he pensioned him off to a villa in Campania with a comfortable annual allowance. Odoacer then sent the imperial regalia to Constantinople, acknowledging the Eastern Emperor as the sole Roman Emperor. There would be no more Western emperors.',
+      'Constantine\'s second world-changing decision was the Edict of Milan (313 CE), which legalized Christianity throughout the empire. Within a generation, Christianity went from a persecuted minority religion to the official state religion (under Theodosius I in 380 CE). The consequences were enormous: pagan temples were closed, Christian bishops became political power brokers, theological disputes became matters of state, and the Church began to build the institutional structure that would survive the empire\'s collapse and shape European civilization for the next millennium.',
   },
   {
-    label: 'Nobody Noticed at the Time',
+    label: 'The Permanent East-West Split (395 CE)',
     detail:
-      'The most remarkable thing about the "fall of Rome" is that contemporaries barely registered it. No one wrote "the Roman Empire fell today." The machinery of Roman life — tax collection, law courts, the Church, local governance — continued under Odoacer much as it had under the last emperors. Odoacer ruled Italy competently for 17 years. For most people, the transition from Roman emperor to barbarian king changed nothing in their daily lives. The fall of Rome was less a dramatic collapse than the final evaporation of a fiction.',
+      'When Emperor Theodosius I died in 395 CE, he divided the empire between his two sons: Arcadius received the East (capital: Constantinople) and Honorius received the West (capital: Ravenna, not Rome). The division was meant to be administrative, not permanent \u2014 but the two halves never reunited. The wealthier, more urbanized, more defensible East would survive and thrive. The poorer, more rural, more exposed West would crumble. The question "why did Rome fall?" is really the question "why did the West fall while the East survived?"',
   },
 ];
 
-// ── What Actually Fell ─────────────────────────────────────────────────────
+// ── The Germanic Migrations ─────────────────────────────────────────────────
 
-const SURVIVED_INSIGHTS: InsightEntry[] = [
+const MIGRATIONS_TIMELINE: TimelineEntry[] = [
   {
-    label: 'Roman Law — The Foundation of Western Legal Systems',
-    detail:
-      'Roman law survived the fall of the Western Empire and became the foundation of legal systems across continental Europe and, through colonialism, much of the world. Justinian\'s compilation of Roman law (the Corpus Juris Civilis, 529–534 CE) became the basis of the Napoleonic Code and, through it, the legal systems of France, Germany, Italy, Spain, Latin America, and much of Africa and Asia. Concepts like innocent until proven guilty, the right to a defense, and the distinction between public and private law are Roman innovations.',
+    year: '370s CE',
+    title: 'The Huns Arrive \u2014 A Domino Effect',
+    description:
+      'The Huns \u2014 fierce nomadic warriors from the Central Asian steppe \u2014 burst into Eastern Europe in the 370s CE, shattering the Gothic kingdoms north of the Danube. The Huns didn\'t invade Rome directly (not yet); instead, they set off a chain reaction. Germanic peoples who had lived along Rome\'s borders for centuries \u2014 Visigoths, Ostrogoths, Vandals, Burgundians, Franks \u2014 were pushed toward and across Roman frontiers by Hunnic pressure. What Romans called "barbarian invasions" were often desperate migrations by peoples fleeing an even more terrifying enemy.',
+    color: CRIMSON,
   },
   {
-    label: 'Latin → French, Spanish, Italian, Portuguese, Romanian',
-    detail:
-      'Latin didn\'t die — it evolved. The "vulgar Latin" spoken by soldiers, merchants, and farmers across the empire gradually diverged into the Romance languages: French, Spanish, Italian, Portuguese, and Romanian. Today, approximately 920 million people speak a language derived from Latin. Latin itself survived as the language of the Catholic Church, science, medicine, and law well into the modern era.',
+    year: '376 CE',
+    title: 'Visigoths Cross the Danube \u2014 Rome\'s Fatal Mistake',
+    description:
+      'In 376 CE, a massive group of Visigoths \u2014 perhaps 100,000 men, women, and children \u2014 appeared at the Danube, fleeing the Huns, and begged Emperor Valens for permission to settle inside Roman territory. Valens agreed, seeing an opportunity for cheap military recruits. But Roman officials treated the Visigoths abominably: they were settled on barren land, sold spoiled food at extortionate prices, and Roman commanders reportedly sold Visigothic children into slavery in exchange for dog meat to feed starving refugees. The Visigoths revolted.',
+    color: GOLD,
   },
   {
-    label: 'The Eastern Empire Continued Until 1453',
-    detail:
-      'The "other half" of Rome — the Eastern Roman Empire, which modern historians call the Byzantine Empire — survived for nearly a millennium after the fall of the West. Constantinople remained one of the world\'s greatest cities, Byzantine scholars preserved Greek and Roman learning, and the empire served as a Christian bulwark against Islamic expansion into Europe. The Byzantine Empire fell only when the Ottoman Turks finally breached Constantinople\'s legendary walls in 1453.',
+    year: '378 CE',
+    title: 'Battle of Adrianople \u2014 The Day Rome\'s Army Died',
+    description:
+      'On August 9, 378 CE, Emperor Valens led the Eastern Roman field army against the rebellious Visigoths near Adrianople (modern Edirne, Turkey). The Romans attacked before reinforcements could arrive. The Visigothic cavalry smashed the Roman flanks, surrounded the legions, and annihilated them. Valens was killed \u2014 his body never found. Two-thirds of the Eastern Roman army was destroyed. It was the worst Roman military disaster since Cannae, 600 years earlier. The empire never fully recovered its military capacity. After Adrianople, Rome would increasingly rely on Germanic foederati to defend its own borders.',
+    color: LEGION_RED,
   },
   {
-    label: 'The Catholic Church Preserved Learning',
-    detail:
-      'The Roman Catholic Church became the primary institution that preserved Latin literacy, Roman administrative practices, and classical learning through the early medieval period. Monasteries copied manuscripts, bishops administered cities, and the Church\'s organizational structure — dioceses, provinces, a centralized hierarchy — was modeled directly on Roman imperial administration. The Pope, ruling from Rome, was in many ways the successor of the Western Emperor.',
-  },
-  {
-    label: 'Charlemagne: The Revival of Rome (800 CE)',
-    detail:
-      'On Christmas Day 800 CE, Pope Leo III crowned Charlemagne, King of the Franks, as "Emperor of the Romans" — reviving the Western imperial title 324 years after its extinction. Charlemagne\'s empire (the Carolingian Empire) encompassed much of Western Europe and consciously modeled itself on Rome. The "Holy Roman Empire" that followed (962–1806 CE) claimed direct continuity with ancient Rome. The idea of Rome was so powerful that Europeans kept trying to resurrect it for over a thousand years.',
+    year: '380s\u2013400s CE',
+    title: 'The Foederati Problem \u2014 Barbarians Defending Rome',
+    description:
+      'After Adrianople, Rome could no longer recruit enough Roman soldiers to defend its frontiers. The solution was to settle entire Germanic tribes inside the empire as foederati \u2014 allies who provided military service in exchange for land and subsidies. Germanic generals like Stilicho (half-Vandal) and Ricimer rose to become the real powers behind the Western Roman throne. The Roman army became increasingly "barbarianized" \u2014 its soldiers and commanders were the very people it was supposed to be defending against. The distinction between Roman and barbarian was dissolving.',
+    color: STEEL,
   },
 ];
 
-// ── Legacy and Modern Lessons ──────────────────────────────────────────────
+// ── The Sack of Rome (410 CE) ───────────────────────────────────────────────
+
+const SACK_410_INSIGHTS: InsightEntry[] = [
+  {
+    label: 'Alaric and the Visigothic Siege',
+    detail:
+      'Alaric, king of the Visigoths, didn\'t want to destroy Rome \u2014 he wanted a legitimate place within it. For years he negotiated with the Western court for land, grain, and an official military command. When Emperor Honorius (safely hidden in the marshes of Ravenna) repeatedly broke promises and refused reasonable terms, Alaric besieged Rome three times. On August 24, 410 CE, someone inside the city opened the Salarian Gate. The Visigoths poured in. For the first time in 800 years \u2014 since the Gauls under Brennus in 390 BCE \u2014 an enemy army occupied Rome.',
+  },
+  {
+    label: 'Three Days of Plunder',
+    detail:
+      'The sack lasted three days. By the standards of ancient warfare, it was relatively restrained: Alaric, a Christian, ordered his troops to spare churches and those who took refuge in them. There was looting, violence, and captive-taking, but no wholesale massacre or deliberate destruction. The physical damage to Rome was far less severe than what the Vandals would inflict 45 years later. Yet the psychological impact was shattering. The "Eternal City," unconquered for eight centuries, symbol of civilization itself, had fallen to barbarians.',
+  },
+  {
+    label: 'The Shock Heard Around the World',
+    detail:
+      'The news of Rome\'s sack sent shockwaves through the entire Mediterranean. Saint Jerome, writing from Bethlehem, declared: "The city which had taken the whole world was itself taken." Refugees from Rome flooded into North Africa, Palestine, and Constantinople. Pagans blamed Christianity \u2014 arguing that Rome had been protected by the old gods and fell because it abandoned them. In response, Saint Augustine spent 13 years writing The City of God, arguing that earthly empires are transient but God\'s kingdom is eternal \u2014 a work that became one of the most influential books in Western history.',
+  },
+  {
+    label: 'The Emperor Who Didn\'t Care',
+    detail:
+      'A famous anecdote (possibly apocryphal) captures the absurdity of the Western Empire\'s final decades. When a servant told Emperor Honorius that "Rome has perished," Honorius \u2014 who kept pet chickens \u2014 reportedly cried out in distress, thinking his favorite bird named "Roma" had died. When told it was the city that had fallen, he was relieved. Whether true or not, the story perfectly illustrates the detachment and incompetence of the late Western emperors, most of whom were puppets controlled by Germanic military commanders.',
+  },
+];
+
+// ── The Final Collapse ──────────────────────────────────────────────────────
+
+const COLLAPSE_TIMELINE: TimelineEntry[] = [
+  {
+    year: '434\u2013453 CE',
+    title: 'Attila the Hun \u2014 The Scourge of God',
+    description:
+      'Attila united the Hunnic tribes into a terrifying empire stretching from the Rhine to the Ural Mountains. He extorted massive tributes from both halves of the Roman Empire \u2014 the Eastern Empire paid him 2,100 pounds of gold annually to stay away. In 451 CE, Attila invaded Gaul with a force of perhaps 500,000 warriors. He was defeated at the Battle of the Catalaunian Plains by a combined Roman-Visigothic army under the general Aetius \u2014 one of the last great Roman military victories. Attila invaded Italy the following year but withdrew (legend credits Pope Leo I\'s intervention, but plague and famine in his army were likely more persuasive). Attila died in 453 CE \u2014 reportedly of a nosebleed on his wedding night \u2014 and his empire disintegrated immediately.',
+    color: CRIMSON,
+  },
+  {
+    year: '455 CE',
+    title: 'The Vandals Sack Rome \u2014 Second Sack in 45 Years',
+    description:
+      'In June 455 CE, the Vandals \u2014 a Germanic people who had conquered Roman North Africa and built a powerful naval kingdom based in Carthage \u2014 sailed to Italy and sacked Rome for two weeks. Unlike Alaric\'s relatively restrained sack, the Vandal plundering was thorough and systematic: they stripped the Temple of Jupiter, carried off treasures from the Temple of Peace (including items looted from Jerusalem by Titus in 70 CE), took thousands of Roman captives including the Empress, and loaded their ships with everything of value. The word "vandalism" entered European languages as a result.',
+    color: ROSE,
+  },
+  {
+    year: '455\u2013476 CE',
+    title: 'Puppet Emperors \u2014 The Walking Dead',
+    description:
+      'After 455 CE, the Western Roman emperors were puppets of Germanic military commanders. Real power was held by men like Ricimer (half-Vandal, half-Visigoth), who made and unmade emperors at will \u2014 installing and deposing four emperors in 16 years. The Western Empire controlled only Italy and bits of southern Gaul. Gaul, Spain, Africa, and Britain had all been lost to Germanic kingdoms. The "Roman Empire" in the West was a fiction maintained by a Germanic strongman ruling through a Roman figurehead.',
+    color: STEEL,
+  },
+  {
+    year: '476 CE',
+    title: 'Romulus Augustulus \u2014 The Last Emperor',
+    description:
+      'On September 4, 476 CE, Odoacer \u2014 a Germanic chieftain commanding the foederati troops who made up virtually the entire Western Roman army \u2014 deposed the teenage emperor Romulus Augustulus. The irony was poetic: the last emperor shared names with both Rome\'s legendary founder (Romulus) and its first emperor (Augustus), though the diminutive "Augustulus" ("little Augustus") was a mocking nickname. Odoacer sent the imperial regalia to Constantinople with a message: there was no need for a Western emperor. The Eastern Emperor Zeno grudgingly accepted. There was no battle, no dramatic last stand \u2014 just a quiet bureaucratic memo ending 500 years of Western Roman rule.',
+    color: LEGION_RED,
+  },
+  {
+    year: '476\u20131453 CE',
+    title: 'But the East Survived \u2014 The Byzantine Empire',
+    description:
+      'The fall of the Western Empire in 476 CE was not the fall of the Roman Empire. The Eastern Roman Empire \u2014 what historians call the Byzantine Empire \u2014 continued for nearly another thousand years, until Constantinople fell to the Ottoman Turks in 1453 CE. The Byzantines preserved Roman law, Greek learning, and Christian civilization. Under Justinian I (527\u2013565 CE), they even reconquered parts of the West. The Byzantines considered themselves Romans to the very end. The "fall of Rome" was really the fall of Rome\'s western provinces \u2014 the eastern half outlived the west by 977 years.',
+    color: TEAL,
+  },
+];
+
+// ── The Great Debate ────────────────────────────────────────────────────────
+
+const DEBATE_ENTRIES: DebateEntry[] = [
+  {
+    historian: 'Edward Gibbon (1776)',
+    theory: 'Christianity sapped Roman martial virtue',
+    detail:
+      'In his monumental Decline and Fall of the Roman Empire (6 volumes, 1.5 million words \u2014 still in print after 250 years), Gibbon argued that Christianity replaced the warlike civic virtues of pagan Rome with passive, otherworldly values. Romans who once fought for glory and country now joined monasteries and argued about theology. The Church diverted wealth, talent, and energy away from defending the empire. Gibbon\'s thesis was controversial in his own time and is largely rejected by modern historians, but his work remains the most famous historical narrative ever written.',
+    color: PURPLE,
+  },
+  {
+    historian: 'Henri Pirenne (1937)',
+    theory: 'Arab conquests, not barbarians, ended Rome',
+    detail:
+      'Belgian historian Henri Pirenne argued that the Germanic invasions didn\'t really end Roman civilization \u2014 trade, cities, and Latin culture continued under the barbarian successor kingdoms. What truly killed the Roman Mediterranean world, Pirenne claimed, was the Arab conquests of the 7th century, which cut off Western Europe from eastern trade routes and forced it into an agrarian, feudal economy. "Without Islam, the Frankish Empire would probably never have existed. Without Mohammed, Charlemagne would have been inconceivable."',
+    color: GOLD,
+  },
+  {
+    historian: 'Peter Heather (2005)',
+    theory: 'Barbarian invasions were the primary cause',
+    detail:
+      'Oxford historian Peter Heather argues that Rome didn\'t "decline" \u2014 it was pushed. The Hunnic invasion of Europe set off a chain reaction of barbarian migrations that overwhelmed Roman defenses. The Germanic peoples who entered the empire were not passive refugees but organized, militarized groups that seized Roman territory by force. Without the external pressure of the Huns and the military capabilities of groups like the Visigoths and Vandals, the Western Empire \u2014 weakened but functional \u2014 would likely have survived.',
+    color: CRIMSON,
+  },
+  {
+    historian: 'Bryan Ward-Perkins (2005)',
+    theory: 'Real catastrophic collapse \u2014 not a "transformation"',
+    detail:
+      'British archaeologist Bryan Ward-Perkins used material evidence \u2014 pottery, roof tiles, coin finds, animal bones \u2014 to show that the end of the Western Empire was a genuine catastrophe, not a gentle "transformation." Living standards plummeted. The sophistication of pottery production in post-Roman Britain fell to levels below those of the pre-Roman Iron Age. Roof tiles disappeared from buildings for centuries. Average cattle size shrank (indicating less sophisticated animal husbandry). This wasn\'t a gentle transition \u2014 it was civilizational collapse.',
+    color: ROSE,
+  },
+  {
+    historian: 'Guy Halsall (2007)',
+    theory: 'Internal Roman political failures, not external pressure',
+    detail:
+      'Guy Halsall argues that the barbarian "invasions" were largely caused by the collapse of Roman political authority on the frontiers, not the other way around. Germanic groups that had been kept in check by Roman power moved into the vacuum created by Roman civil wars, usurpations, and administrative failures. The barbarians didn\'t destroy Rome; Rome destroyed itself through political dysfunction, and the barbarians moved into the ruins.',
+    color: INDIGO,
+  },
+  {
+    historian: 'Modern Consensus',
+    theory: 'Multicausal \u2014 no single reason',
+    detail:
+      'Most historians today agree the fall was multicausal. The leading factors: political instability (50+ emperors in 50 years), economic problems (currency debasement, overtaxation, trade decline), military overextension and reliance on Germanic troops, climate change and pandemics (the Antonine and Cyprian plagues killed millions), external pressure from the Huns pushing Germanic tribes into Roman territory, and a gradual loss of civic identity and administrative capacity. No single cause was sufficient \u2014 but together they created a cascade of failures that no empire could survive.',
+    color: GREEN,
+  },
+];
+
+// ── What Actually Fell ──────────────────────────────────────────────────────
+
+const WHAT_FELL_INSIGHTS: InsightEntry[] = [
+  {
+    label: 'Western Empire: Collapsed 476 CE',
+    detail:
+      'The Western Roman Empire \u2014 Italy, Gaul, Spain, Britain, and North Africa \u2014 fragmented into Germanic successor kingdoms. Cities shrank. Long-distance trade collapsed. Literacy declined dramatically. The population of Rome fell from over 1 million at its peak to roughly 30,000 by the 6th century. Roads and aqueducts fell into disrepair. The sophisticated money economy reverted to barter in many regions. By any material measure, the standard of living in Western Europe declined sharply and didn\'t recover for centuries.',
+  },
+  {
+    label: 'Eastern Empire (Byzantine): Survived Until 1453 CE',
+    detail:
+      'The Eastern Roman Empire \u2014 centered on Constantinople, controlling Greece, Anatolia, the Levant, and Egypt \u2014 not only survived but thrived. Under Justinian I (527\u2013565 CE), it reconquered North Africa, Italy, and parts of Spain. Constantinople was the largest and wealthiest city in Europe for most of the medieval period. The Byzantines preserved Roman law (the Corpus Juris Civilis), Greek philosophy, and classical learning that would later fuel the Renaissance. The Eastern Empire outlived the West by 977 years \u2014 nearly a millennium.',
+  },
+  {
+    label: 'The "Dark Ages" Myth \u2014 Mostly True in the West',
+    detail:
+      'The term "Dark Ages" has fallen out of favor among historians, but the reality it describes is undeniable for Western Europe. Archaeological evidence shows dramatic declines in: pottery quality, building construction, coin circulation, trade volume, urban population, and literacy rates between the 5th and 8th centuries. This wasn\'t universal \u2014 monasteries preserved learning, Germanic law codes emerged, and some regions fared better than others. But the overall trajectory was clearly downward. Meanwhile, the Islamic world and Byzantine Empire experienced golden ages.',
+  },
+  {
+    label: 'What Survived: Law, Language, and the Church',
+    detail:
+      'Rome didn\'t vanish \u2014 it transformed. Roman law survived through Justinian\'s codification and became the basis of most continental European legal systems. Latin evolved into the Romance languages: French, Spanish, Italian, Portuguese, and Romanian. The Roman Catholic Church \u2014 headquartered in Rome, organized along Roman administrative lines, conducting services in Latin \u2014 became the most powerful institution in medieval Europe. In many ways, the Church was Rome\'s most successful and enduring creation, outlasting the empire by 1,500 years and counting.',
+  },
+];
+
+// ── The Aftermath ───────────────────────────────────────────────────────────
+
+const AFTERMATH_INSIGHTS: InsightEntry[] = [
+  {
+    label: 'Germanic Successor States',
+    detail:
+      'The Western Empire didn\'t become a wasteland \u2014 it became a patchwork of Germanic kingdoms that adopted Roman culture even as they replaced Roman rule. The Ostrogothic Kingdom ruled Italy (493\u2013553 CE), maintaining Roman laws and institutions. The Visigothic Kingdom controlled Spain (418\u2013711 CE). The Frankish Kingdom dominated Gaul and would evolve into France and Germany. These kingdoms preserved elements of Roman administration, converted to Christianity, and used Latin as their language of governance and religion.',
+  },
+  {
+    label: 'The Church Fills the Vacuum',
+    detail:
+      'As Roman political authority collapsed, the Catholic Church stepped into the void. Bishops became the de facto rulers of cities. Monasteries \u2014 particularly the Benedictine order \u2014 preserved classical texts, maintained agricultural knowledge, ran schools, and provided the only social services available. Pope Gregory the Great (590\u2013604 CE) essentially governed Rome and its surrounding territory, negotiating with Lombard invaders, feeding the city\'s poor, and administering justice. The papacy evolved from a religious office into a political power.',
+  },
+  {
+    label: 'Charlemagne: "Roman Emperor" Again (800 CE)',
+    detail:
+      'On Christmas Day 800 CE, Pope Leo III crowned the Frankish king Charlemagne as "Emperor of the Romans." It was the first time a "Roman Emperor" had ruled in the West since 476 CE. Charlemagne\'s empire covered modern France, Germany, the Low Countries, and northern Italy. The "Holy Roman Empire" \u2014 which Voltaire famously noted was "neither holy, nor Roman, nor an empire" \u2014 would endure in various forms until Napoleon dissolved it in 1806. The ghost of Rome haunted European politics for over a millennium.',
+  },
+  {
+    label: 'The Great Irony',
+    detail:
+      'Rome fell to people who wanted to BE Roman, not destroy Rome. The Visigoths, Ostrogoths, Vandals, and Franks all admired Roman civilization. They wanted land within the empire, Roman titles, and acceptance into the Roman system. Odoacer didn\'t declare himself "King of the Germans" \u2014 he ruled Italy as a Roman-style administrator. Theodoric the Ostrogoth spoke Latin, patronized Roman arts, and preserved the Roman Senate. The "barbarian invasions" were more like a hostile takeover of a declining corporation by people who wanted to run it, not shut it down.',
+  },
+];
+
+// ── Legacy for Today ────────────────────────────────────────────────────────
 
 const LEGACY_INSIGHTS: InsightEntry[] = [
   {
-    label: 'The "Decline and Fall" Template',
+    label: 'Roman Law: Foundation of Western Legal Systems',
     detail:
-      'Ever since Gibbon, the fall of Rome has served as the default template for understanding imperial decline. The British Empire\'s retreat was compared to Rome. American commentators invoke Rome when discussing overstretch, debt, and political polarization. The European Union has been compared to Rome\'s multi-ethnic, multi-lingual experiment. Whether these comparisons are valid is debatable — but the fact that they\'re made constantly tells us how deeply Rome\'s fall shaped Western political imagination.',
+      'The Corpus Juris Civilis \u2014 Justinian\'s codification of Roman law \u2014 is the foundation of civil law in continental Europe, Latin America, and much of the world. Concepts we take for granted \u2014 innocent until proven guilty, the right to a fair trial, the distinction between civil and criminal law, contract law, property rights \u2014 all have Roman origins. English common law developed differently but still absorbed Roman legal principles. Every time you sign a contract or stand trial, you are participating in a system the Romans created.',
   },
   {
-    label: 'Internal Weakness, Not Just External Pressure',
+    label: 'Latin: The Language That Never Died',
     detail:
-      'The central lesson historians draw from Rome: empires are not usually destroyed by external enemies alone. They are weakened by internal dysfunction — political instability, economic mismanagement, inequality, loss of social cohesion — until they can no longer resist external pressures that they once handled easily. The Germanic tribes that overran the West in the 5th century were not significantly stronger than the tribes Rome had defeated for centuries. Rome was weaker.',
+      'Latin didn\'t die \u2014 it evolved. Five major world languages are direct descendants of Latin: French, Spanish, Italian, Portuguese, and Romanian. Together these Romance languages are spoken by over 900 million people as native languages. Latin vocabulary permeates English (roughly 60% of English words have Latin roots). Latin remained the language of science, law, medicine, and the Catholic Church well into the modern era. The biological classification system (Homo sapiens) is in Latin. Latin inscriptions grace courthouses and universities worldwide.',
   },
   {
-    label: 'Transformation, Not Extinction',
+    label: 'The Idea of Rome: A Political Ghost',
     detail:
-      'Perhaps the most important modern insight: Rome didn\'t "fall" — it transformed over centuries into medieval Europe. The Roman legal system evolved into medieval law. Latin evolved into Romance languages. Roman Christianity became medieval Catholicism. Roman cities became medieval towns. Roman roads remained Europe\'s primary transportation network for a thousand years. The fall of Rome was a political event; culturally and institutionally, Rome never truly ended.',
+      'The idea of Rome \u2014 universal empire, civilizational authority, imperial destiny \u2014 has haunted Western politics for 1,500 years. The Holy Roman Empire claimed Roman legitimacy for 1,000 years. Napoleon crowned himself with Roman imagery. Mussolini explicitly modeled his fascist state on Rome, using the fasces (a Roman symbol of authority) as his emblem. The word "emperor" derives from imperator, "senate" from senatus, "republic" from res publica. American founders consciously modeled their republic on Rome \u2014 the Senate, the Capitol, the eagle, the architecture of Washington, D.C.',
   },
   {
-    label: 'The Complexity Lesson',
+    label: '"Decline and Fall" as a Warning',
     detail:
-      'With 200+ proposed causes, Rome\'s fall teaches us that complex systems fail for complex reasons. There is no silver bullet explanation — no single villain, no single mistake, no single cause. Military overstretch, economic decline, environmental change, disease, political corruption, and external invasion all played roles, and they reinforced each other in feedback loops that made recovery increasingly impossible. Anyone offering a simple explanation for the fall of Rome is selling something.',
-  },
-];
-
-// ── Key Figures ─────────────────────────────────────────────────────────────
-
-const KEY_FIGURES: FigureEntry[] = [
-  {
-    name: 'Marcus Aurelius',
-    years: '121–180 CE',
-    contribution:
-      'The last of the "Five Good Emperors" and the Stoic philosopher-king who wrote the "Meditations" while campaigning on the Danube frontier. Widely considered the last emperor of Rome\'s golden age. His fateful decision to name his son Commodus as successor — breaking the adoptive tradition — marked the beginning of Rome\'s long decline.',
-  },
-  {
-    name: 'Diocletian',
-    years: '244–311 CE',
-    contribution:
-      'The pragmatic administrator who ended the Crisis of the Third Century through radical reforms: splitting the empire into the Tetrarchy, doubling the army, reorganizing provinces, and attempting price controls. He briefly stabilized the empire and then became the only Roman emperor to voluntarily retire — to a palace in Split, Croatia, where he famously grew cabbages.',
-  },
-  {
-    name: 'Constantine I',
-    years: '272–337 CE',
-    contribution:
-      'The emperor who Christianized Rome and founded Constantinople. His conversion — whether sincere or political — transformed the empire\'s religious character permanently. By moving the capital east, he ensured that the wealthier, more defensible half of the empire would survive. Constantine reshaped the Roman world more fundamentally than any emperor since Augustus.',
-  },
-  {
-    name: 'Attila the Hun',
-    years: 'c. 406–453 CE',
-    contribution:
-      'The "Scourge of God" who terrorized both halves of the Roman Empire. He united the Hunnic tribes, devastated the Balkans and Gaul, and invaded Italy. Yet he never took Rome or Constantinople. His empire collapsed immediately after his death, proving that the Hunnic threat was personal, not structural. The Huns\' real impact was indirect: by displacing Germanic tribes westward into Roman territory.',
-  },
-  {
-    name: 'Romulus Augustulus',
-    years: 'c. 460–after 476 CE',
-    contribution:
-      'The last Western Roman Emperor — a teenager placed on the throne by his father, the general Orestes. His name is bitterly ironic: "Romulus" was Rome\'s legendary founder, and "Augustulus" (little Augustus) mocked the greatness of the first emperor. When Odoacer deposed him, he was exiled to a Campanian villa — not executed. He was so insignificant that no one recorded when he died.',
-  },
-  {
-    name: 'Odoacer',
-    years: 'c. 433–493 CE',
-    contribution:
-      'The Germanic chieftain who "ended" the Western Roman Empire by deposing Romulus Augustulus in 476 CE. Rather than destroying Rome, he ruled Italy competently for 17 years, maintaining Roman administrative structures and governing through the Senate. He was eventually defeated and killed by the Ostrogothic king Theodoric, who also ruled Italy in Roman style — further blurring the line between "Roman" and "barbarian."',
+      'The fall of Rome has been invoked as a warning by every generation since Gibbon. The parallels are debated endlessly: military overextension, growing inequality, political dysfunction and polarization, reliance on foreign labor, loss of civic virtue, unsustainable debt, declining trust in institutions. Whether these analogies are valid is debatable \u2014 modern states differ fundamentally from ancient empires. But the lesson that civilizations are mortal, that decline is not inevitable but possible, that complex societies can and do collapse, remains as relevant as ever. Rome reminds us that nothing lasts forever unless it is actively maintained.',
   },
 ];
 
@@ -500,28 +403,28 @@ const KEY_FIGURES: FigureEntry[] = [
 
 const CONNECTIONS: ConnectionCard[] = [
   {
-    title: 'The Roman Republic',
-    description: 'How Rome grew from a city-state to a Mediterranean superpower — and why the Republic fell.',
-    path: '/roman-republic',
-    color: IMPERIAL_RED,
+    to: '/roman-republic',
+    label: 'The Roman Republic',
+    description: 'How Rome built its empire \u2014 from city-state to superpower',
+    color: CRIMSON,
   },
   {
-    title: 'Ancient Rome',
-    description: 'The full sweep of Roman civilization, from founding myth to imperial peak.',
-    path: '/ancient-rome',
+    to: '/byzantine-empire',
+    label: 'The Byzantine Empire',
+    description: 'The Eastern Empire that survived 977 years longer',
+    color: TEAL,
+  },
+  {
+    to: '/medieval-europe',
+    label: 'Medieval Europe',
+    description: 'What came after: feudalism, the Church, and Charlemagne',
     color: GOLD,
   },
   {
-    title: 'The Byzantine Empire',
-    description: 'The Eastern Roman Empire that survived for 1,000 years after the West fell.',
-    path: '/byzantine-empire',
-    color: PURPLE,
-  },
-  {
-    title: 'The Barbarian Kingdoms',
-    description: 'The Germanic successor states that replaced Roman rule in Western Europe.',
-    path: '/barbarian-kingdoms',
-    color: BRONZE,
+    to: '/barbarian-kingdoms',
+    label: 'The Barbarian Kingdoms',
+    description: 'Germanic successor states that replaced the Western Empire',
+    color: INDIGO,
   },
 ];
 
@@ -686,18 +589,17 @@ function InsightGrid({ items }: { items: InsightEntry[] }) {
   );
 }
 
-const FIGURE_COLORS = [GOLD, TEAL, IMPERIAL_RED, BRONZE, STEEL, GREEN, PURPLE, BLUE, ROSE, AMBER];
-
-function FigureGrid({ figures }: { figures: FigureEntry[] }) {
+function StatsBar({ stats }: { stats: StatEntry[] }) {
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: 16,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+        gap: 14,
+        marginBottom: 8,
       }}
     >
-      {figures.map((f, i) => (
+      {stats.map((s, i) => (
         <motion.div
           key={i}
           initial={{ opacity: 0, y: 20 }}
@@ -706,67 +608,23 @@ function FigureGrid({ figures }: { figures: FigureEntry[] }) {
           transition={{ duration: 0.4, delay: i * 0.06 }}
           style={{
             backgroundColor: 'rgba(255,255,255,0.03)',
-            border: `1px solid ${FIGURE_COLORS[i % FIGURE_COLORS.length]}33`,
-            borderRadius: 10,
-            padding: 18,
-          }}
-        >
-          <h4
-            style={{
-              fontWeight: 600,
-              color: FIGURE_COLORS[i % FIGURE_COLORS.length],
-              marginBottom: 2,
-              fontSize: '1.05rem',
-            }}
-          >
-            {f.name}
-          </h4>
-          <p
-            style={{
-              fontSize: '0.8rem',
-              color: SLATE,
-              marginBottom: 8,
-            }}
-          >
-            {f.years}
-          </p>
-          <p style={{ color: ASH, lineHeight: 1.7, fontSize: '0.9rem' }}>
-            {f.contribution}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-function StatsBar({ stats }: { stats: StatEntry[] }) {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-        gap: 14,
-        marginTop: 28,
-      }}
-    >
-      {stats.map((s, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.04)',
-            border: `1px solid ${s.color}44`,
+            border: `1px solid ${s.color}33`,
             borderRadius: 10,
             padding: '14px 16px',
             textAlign: 'center',
           }}
         >
-          <p style={{ color: s.color, fontWeight: 700, fontSize: '1.3rem' }}>
+          <p
+            style={{
+              color: s.color,
+              fontSize: '1.5rem',
+              fontWeight: 800,
+              marginBottom: 4,
+            }}
+          >
             {s.value}
           </p>
-          <p style={{ color: SLATE, fontSize: '0.78rem', marginTop: 4 }}>
+          <p style={{ color: ASH, fontSize: '0.8rem', lineHeight: 1.4 }}>
             {s.label}
           </p>
         </motion.div>
@@ -775,118 +633,87 @@ function StatsBar({ stats }: { stats: StatEntry[] }) {
   );
 }
 
-function CurrencyDebasementChart() {
-  const dataPoints = [
-    { emperor: 'Augustus', year: '27 BCE', silver: 98, color: GOLD },
-    { emperor: 'Nero', year: '64 CE', silver: 85, color: AMBER },
-    { emperor: 'Trajan', year: '117 CE', silver: 85, color: BLUE },
-    { emperor: 'M. Aurelius', year: '170 CE', silver: 75, color: TEAL },
-    { emperor: 'Sept. Severus', year: '200 CE', silver: 50, color: BRONZE },
-    { emperor: 'Caracalla', year: '215 CE', silver: 40, color: STEEL },
-    { emperor: 'Gallienus', year: '260 CE', silver: 5, color: IMPERIAL_RED },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.5 }}
-      style={{
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 12,
-        padding: 24,
-        marginTop: 20,
-        marginBottom: 8,
-      }}
-    >
-      <h4
-        style={{
-          fontWeight: 700,
-          color: MARBLE,
-          marginBottom: 20,
-          fontSize: '1.05rem',
-          textAlign: 'center',
-        }}
-      >
-        Silver Content of the Roman Denarius Over 300 Years
-      </h4>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 180, justifyContent: 'center' }}>
-        {dataPoints.map((d, i) => (
-          <motion.div
-            key={i}
-            initial={{ height: 0 }}
-            whileInView={{ height: `${d.silver * 1.7}px` }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: i * 0.1 }}
-            style={{
-              width: 55,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <p
-              style={{
-                color: d.color,
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                marginBottom: 4,
-              }}
-            >
-              {d.silver}%
-            </p>
-            <div
-              style={{
-                width: '100%',
-                height: `${d.silver * 1.7}px`,
-                background: `linear-gradient(180deg, ${d.color}, ${d.color}66)`,
-                borderRadius: '6px 6px 0 0',
-              }}
-            />
-          </motion.div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
-        {dataPoints.map((d, i) => (
-          <div key={i} style={{ width: 55, textAlign: 'center' }}>
-            <p style={{ color: ASH, fontSize: '0.65rem', lineHeight: 1.3 }}>{d.emperor}</p>
-            <p style={{ color: SLATE, fontSize: '0.6rem' }}>{d.year}</p>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function ConnectionCards({ cards }: { cards: ConnectionCard[] }) {
+function DebateGrid({ entries }: { entries: DebateEntry[] }) {
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: 16,
+      }}
+    >
+      {entries.map((e, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.4, delay: i * 0.06 }}
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            border: `1px solid ${e.color}33`,
+            borderRadius: 10,
+            padding: 18,
+          }}
+        >
+          <h4
+            style={{
+              fontWeight: 700,
+              color: e.color,
+              marginBottom: 4,
+              fontSize: '1.05rem',
+            }}
+          >
+            {e.historian}
+          </h4>
+          <p
+            style={{
+              color: '#f1f5f9',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              marginBottom: 10,
+              fontStyle: 'italic',
+            }}
+          >
+            &ldquo;{e.theory}&rdquo;
+          </p>
+          <p style={{ color: ASH, lineHeight: 1.7, fontSize: '0.9rem' }}>
+            {e.detail}
+          </p>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function ConnectionCards({ cards }: { cards: ConnectionCard[] }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
         gap: 14,
       }}
     >
       {cards.map((c, i) => (
-        <motion.div
+        <Link
           key={i}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.4, delay: i * 0.06 }}
+          to={c.to}
+          style={{ textDecoration: 'none' }}
+          onMouseEnter={() => setHovered(i)}
+          onMouseLeave={() => setHovered(null)}
         >
-          <Link
-            to={c.path}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.4, delay: i * 0.06 }}
             style={{
-              display: 'block',
               backgroundColor: 'rgba(255,255,255,0.03)',
-              border: `1px solid ${c.color}33`,
+              border: `1px solid ${hovered === i ? `${c.color}88` : `${c.color}33`}`,
               borderRadius: 10,
               padding: 18,
-              textDecoration: 'none',
               transition: 'border-color 0.2s',
             }}
           >
@@ -898,13 +725,13 @@ function ConnectionCards({ cards }: { cards: ConnectionCard[] }) {
                 fontSize: '1rem',
               }}
             >
-              {c.title}
+              {c.label} &rarr;
             </h4>
-            <p style={{ color: SLATE, fontSize: '0.85rem', lineHeight: 1.5 }}>
+            <p style={{ color: ASH, fontSize: '0.85rem', lineHeight: 1.5 }}>
               {c.description}
             </p>
-          </Link>
-        </motion.div>
+          </motion.div>
+        </Link>
       ))}
     </div>
   );
@@ -949,7 +776,7 @@ export default function RomanFallPage() {
               fontSize: '0.95rem',
             }}
           >
-            ← Back to Timeline
+            &larr; Back to Timeline
           </Link>
         </div>
 
@@ -964,12 +791,13 @@ export default function RomanFallPage() {
               fontWeight: 800,
               lineHeight: 1.2,
               marginBottom: 20,
-              background: `linear-gradient(135deg, ${IMPERIAL_RED}, ${GOLD})`,
+              background: `linear-gradient(135deg, ${LEGION_RED}, ${GOLD})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
-            The Fall of Rome — How the Ancient World's Greatest Empire Collapsed (376–476 CE)
+            The Fall of Rome &mdash; How a 500-Year Civilization Collapsed
+            (200&ndash;476&nbsp;CE)
           </motion.h1>
           <motion.div
             initial={{ opacity: 0 }}
@@ -985,11 +813,14 @@ export default function RomanFallPage() {
                 marginBottom: 16,
               }}
             >
-              For 1,500 years, historians have debated why the mightiest empire
-              the ancient world ever produced — 70 million people, one-quarter
-              of humanity, connected by 250,000 miles of roads — crumbled into a
-              patchwork of barbarian kingdoms. Over 200 theories have been
-              proposed. There is no single answer.
+              The Roman Empire &mdash; 70&nbsp;million people,
+              2&nbsp;million&nbsp;square miles, the most powerful civilization
+              the ancient world ever produced &mdash; didn&rsquo;t fall in a
+              day. It took centuries of crisis, plague, invasion, and political
+              dysfunction to bring down an empire that stretched from Scotland
+              to Mesopotamia. Its collapse ended the Pax Romana, fragmented
+              Western Europe into warring kingdoms, and launched the era once
+              called the &ldquo;Dark Ages.&rdquo;
             </p>
             <p
               style={{
@@ -999,195 +830,140 @@ export default function RomanFallPage() {
                 maxWidth: 800,
               }}
             >
-              The better question isn't "why did Rome fall?" but "how did a
-              300-year transformation turn the ancient Mediterranean superpower
-              into medieval Europe?" Rome didn't collapse in a day. It eroded —
-              militarily, economically, demographically, and politically — until
-              the final act, in 476 CE, was so anticlimactic that contemporaries
-              barely noticed.
+              Yet the fall wasn&rsquo;t total. The Eastern Roman Empire survived
+              nearly 1,000&nbsp;more years. Roman law, Latin language, and the
+              Catholic Church outlived the empire and shaped the modern world.
+              The fall of Rome remains history&rsquo;s greatest cautionary
+              tale &mdash; and its most debated mystery.
             </p>
           </motion.div>
-          <StatsBar stats={HERO_STATS} />
         </header>
 
-        {/* ── The Big Question ─────────────────────────────────────────── */}
-        <SectionWrapper
-          id="debate"
-          icon="📜"
-          title="The Question Historians Have Debated for 1,500 Years"
-          accentColor={GOLD}
-          intro="Edward Gibbon published 'The History of the Decline and Fall of the Roman Empire' in 1776 — the same year as the American Declaration of Independence. He blamed Christianity and barbarism. Modern historians have proposed over 200 different primary causes, from lead poisoning to climate change to moral decay. The real answer is that there is no single answer — and the framing of the question matters as much as any response."
-        >
-          <InsightGrid items={DEBATE_INSIGHTS} />
-        </SectionWrapper>
+        {/* ── Key Stats Bar ─────────────────────────────────────────── */}
+        <StatsBar stats={KEY_STATS} />
 
-        {/* ── Rome at Its Peak ────────────────────────────────────────── */}
+        {/* ── Rome at Its Peak ──────────────────────────────────────── */}
         <SectionWrapper
           id="peak"
           icon="🏛️"
-          title="Rome at Its Peak — The Greatest Empire the West Had Ever Seen (1st–2nd Century CE)"
-          accentColor={MARBLE}
-          intro="To understand what was lost, you must first understand what Rome was at its height. In the 1st and 2nd centuries CE, the Roman Empire was the most powerful, wealthy, and sophisticated state the Western world had ever produced — and arguably the most successful large-scale political organization in human history until the modern era."
+          title="Rome at Its Peak — The Greatest Empire of the Ancient World (117 CE)"
+          accentColor={GOLD}
+          intro="At its zenith under Emperor Trajan, Rome encompassed 21% of the world's population, built 250,000 miles of roads, delivered 300 million gallons of water daily to its capital, and maintained 200 years of relative peace across the Mediterranean. Nothing like it had existed before — and nothing like it would exist again in the West for over a thousand years."
         >
           <InsightGrid items={PEAK_INSIGHTS} />
         </SectionWrapper>
 
-        {/* ── Crisis of the Third Century ─────────────────────────────── */}
+        {/* ── The Long Decline ──────────────────────────────────────── */}
         <SectionWrapper
-          id="crisis"
-          icon="⚡"
-          title="The Crisis of the Third Century — 50 Years, 50+ Emperors (235–284 CE)"
-          accentColor={IMPERIAL_RED}
-          intro="The Crisis of the Third Century nearly destroyed Rome 200 years before the final collapse. In half a century, the empire suffered constant civil war, devastating plague, economic meltdown, and territorial fragmentation. That Rome survived at all was remarkable — but it emerged a fundamentally different state, more authoritarian, more militarized, and more brittle."
+          id="decline"
+          icon="📉"
+          title="The Long Decline — Crisis, Plague, and Inflation (200–400 CE)"
+          accentColor={CRIMSON}
+          intro="Rome didn't fall overnight. For two centuries, the empire was battered by an accelerating cascade of crises: civil wars that destroyed political legitimacy, currency debasement that wrecked the economy, plagues that killed millions, military overextension that drained the treasury, and a bloating bureaucracy that strangled the society it was meant to serve."
         >
-          <TimelineCard entries={CRISIS_TIMELINE} />
+          <TimelineCard entries={DECLINE_TIMELINE} />
         </SectionWrapper>
 
-        {/* ── Division of the Empire ──────────────────────────────────── */}
+        {/* ── Diocletian and the Division ────────────────────────────── */}
         <SectionWrapper
           id="division"
-          icon="🗡️"
-          title="The Division of the Empire — One Rome Becomes Two (285–395 CE)"
-          accentColor={PURPLE}
-          intro="Diocletian's decision to split the empire was pragmatic — one man couldn't govern territory stretching from Scotland to Iraq. Constantine's decision to build Constantinople was visionary — it ensured the eastern half would survive for another millennium. Theodosius's death in 395 CE made the split permanent. The West was left with the poorer, less defensible, more vulnerable half."
+          icon="⚖️"
+          title="Diocletian and the Division — Splitting the Empire (284–395 CE)"
+          accentColor={IMPERIAL_PURPLE}
+          intro="Diocletian stabilized the empire through radical reforms — but at the cost of transforming it into an authoritarian state. Constantine moved the capital east and legalized Christianity. By 395 CE, the empire was permanently divided into East and West. The wealthier, more defensible East would survive a millennium. The poorer, more exposed West had less than a century left."
         >
-          <TimelineCard entries={DIVISION_TIMELINE} />
+          <InsightGrid items={DIVISION_INSIGHTS} />
         </SectionWrapper>
 
-        {/* ── The Causes: Military ────────────────────────────────────── */}
+        {/* ── The Germanic Migrations ───────────────────────────────── */}
         <SectionWrapper
-          id="causes-military"
+          id="migrations"
           icon="⚔️"
-          title="The Causes — Military and Political"
-          accentColor={IMPERIAL_RED}
-          intro="Rome was built by its legions. When the legions could no longer defend the frontiers — because of overstretch, civil war, reliance on barbarian mercenaries, and the loss of the citizen-soldier tradition — the empire's political structure became indefensible."
-        >
-          <InsightGrid items={MILITARY_CAUSES} />
-        </SectionWrapper>
-
-        {/* ── The Causes: Economic ────────────────────────────────────── */}
-        <SectionWrapper
-          id="causes-economic"
-          icon="💰"
-          title="The Causes — Economic Collapse"
+          title="The Germanic Migrations — Pushed by the Huns, Pulled by Rome"
           accentColor={AMBER}
-          intro="Rome's economy was the engine of its power — Mediterranean-wide trade, a trusted currency, a productive tax base. Over 300 years, every component failed: the currency was debased to nothing, trade networks collapsed, the tax base shrank, and the productive middle class was crushed between a parasitic aristocracy and an insatiable military."
+          intro="The 'barbarian invasions' weren't a sudden assault — they were a decades-long process of migration, settlement, and conflict, driven by the terrifying Hunnic expansion from Central Asia. Germanic peoples who had lived alongside Rome for centuries were pushed across Roman frontiers by forces beyond their control. Rome's fatal mistake was not keeping its promises to those it let in."
         >
-          <InsightGrid items={ECONOMIC_CAUSES} />
-          <CurrencyDebasementChart />
+          <TimelineCard entries={MIGRATIONS_TIMELINE} />
         </SectionWrapper>
 
-        {/* ── The Causes: Social ──────────────────────────────────────── */}
+        {/* ── The Sack of Rome (410 CE) ─────────────────────────────── */}
         <SectionWrapper
-          id="causes-social"
-          icon="🏚️"
-          title="The Causes — Social and Political Decay"
-          accentColor={STONE}
-          intro="A state is only as strong as the civic bonds that hold its people together. In the late Empire, corruption metastasized, civic engagement collapsed, and the shared Roman identity that had once united the Mediterranean world dissolved into parochialism."
+          id="sack-410"
+          icon="🔥"
+          title="The Sack of Rome — 410 CE: The Eternal City Falls"
+          accentColor={LEGION_RED}
+          intro="On August 24, 410 CE, the Visigoths under Alaric entered Rome — the first enemy to breach the city in 800 years. The psychological shock reverberated across the entire Mediterranean world. Saint Jerome wept in Bethlehem. Saint Augustine began writing The City of God. The 'Eternal City' was eternal no more."
         >
-          <InsightGrid items={SOCIAL_CAUSES} />
+          <InsightGrid items={SACK_410_INSIGHTS} />
         </SectionWrapper>
 
-        {/* ── The Causes: External ────────────────────────────────────── */}
+        {/* ── The Final Collapse ────────────────────────────────────── */}
         <SectionWrapper
-          id="causes-external"
-          icon="🐎"
-          title="The Causes — External Pressure"
+          id="collapse"
+          icon="💀"
+          title="The Final Collapse — From Attila to the Last Emperor (410–476 CE)"
           accentColor={ROSE}
-          intro="Rome had always faced enemies on its frontiers — but in the 4th and 5th centuries, the scale and simultaneity of external threats exceeded anything the empire had previously confronted. The arrival of the Huns from Central Asia triggered a catastrophic chain reaction that pushed entire nations into Roman territory."
+          intro="After the sack of 410, the Western Empire stumbled on for another 66 years — but it was a walking corpse. Attila the Hun devastated Gaul and Italy. The Vandals sacked Rome again in 455. Puppet emperors came and went at the whim of Germanic generals. Finally, in 476 CE, a Germanic chieftain named Odoacer quietly deposed the last Western Roman emperor — a teenager mockingly called 'Little Augustus.' There was no dramatic last stand. The empire simply ceased to exist."
         >
-          <InsightGrid items={EXTERNAL_CAUSES} />
+          <TimelineCard entries={COLLAPSE_TIMELINE} />
         </SectionWrapper>
 
-        {/* ── The Causes: Disease/Environment ─────────────────────────── */}
+        {/* ── The Great Debate ──────────────────────────────────────── */}
         <SectionWrapper
-          id="causes-disease"
-          icon="🦠"
-          title="The Causes — Disease and Environmental Change"
-          accentColor={GREEN}
-          intro="Recent scholarship has highlighted factors that earlier historians overlooked: devastating pandemics that killed millions, and climate shifts that undermined the agricultural base of Mediterranean civilization. Rome's decline was not just political — it was biological and environmental."
+          id="debate"
+          icon="🤔"
+          title="Why Did Rome Fall? — The Great Debate"
+          accentColor={PURPLE}
+          intro="For 250 years, historians have argued about why Rome fell. Over 200 theories have been proposed — from lead poisoning to moral decay to climate change. Edward Gibbon blamed Christianity. Peter Heather blamed barbarians. Guy Halsall blamed Roman political dysfunction. The truth is probably: all of the above. Here are the major theories."
         >
-          <InsightGrid items={DISEASE_CAUSES} />
+          <DebateGrid entries={DEBATE_ENTRIES} />
         </SectionWrapper>
 
-        {/* ── Christianity Debate ─────────────────────────────────────── */}
+        {/* ── What Actually Fell ────────────────────────────────────── */}
         <SectionWrapper
-          id="christianity"
-          icon="✝️"
-          title="The Christianity Debate"
-          accentColor={INDIGO}
-          intro="Did Christianity weaken Rome? Gibbon thought so. But the Eastern Roman Empire — just as Christian — survived for 1,000 more years. The debate is one of the most enduring in historical scholarship."
-        >
-          <InsightGrid items={CHRISTIANITY_DEBATE} />
-        </SectionWrapper>
-
-        {/* ── The Germanic Kingdoms ───────────────────────────────────── */}
-        <SectionWrapper
-          id="germanic"
-          icon="🛡️"
-          title="The Germanic Kingdoms — The Barbarians at (and Through) the Gates (375–476 CE)"
-          accentColor={BRONZE}
-          intro="The final century of the Western Roman Empire was defined by the Germanic peoples who entered, settled, fought for, fought against, and ultimately replaced Roman authority. The relationship between Rome and the 'barbarians' was far more complex than simple invasion — it involved diplomacy, alliance, exploitation, betrayal, and gradual transformation."
-        >
-          <TimelineCard entries={GERMANIC_TIMELINE} />
-        </SectionWrapper>
-
-        {/* ── The Final Collapse ──────────────────────────────────────── */}
-        <SectionWrapper
-          id="final"
-          icon="🏚️"
-          title="The Final Collapse — Not with a Bang but a Whimper (455–476 CE)"
-          accentColor={STEEL}
-          intro="The last two decades of the Western Roman Empire were less a dramatic collapse than a slow evaporation. The 'emperor' controlled only Italy, and even that was ruled by Germanic generals who installed and deposed puppet rulers at will. When the end came, it was so quiet that contemporaries barely noticed."
-        >
-          <InsightGrid items={FINAL_COLLAPSE_INSIGHTS} />
-        </SectionWrapper>
-
-        {/* ── What Actually Fell ──────────────────────────────────────── */}
-        <SectionWrapper
-          id="survived"
-          icon="🌍"
-          title="What Actually Fell — And What Didn't"
+          id="what-fell"
+          icon="🗺️"
+          title="What Actually Fell — And What Survived"
           accentColor={TEAL}
-          intro="The political structure of the Western Roman Empire collapsed in 476 CE. But Roman civilization — its law, its language, its religion, its architecture, its administrative traditions — did not. The 'fall of Rome' was far less total than popular imagination suggests. Much of what we think of as 'Western civilization' is Roman civilization, still living."
+          intro="The 'fall of Rome' is misleading. Only the Western half fell in 476 CE. The Eastern Roman Empire — the Byzantine Empire — survived and thrived for nearly 1,000 more years, until Constantinople fell to the Ottoman Turks in 1453 CE. Roman law, Latin, and the Catholic Church all outlived the empire itself. Rome's most enduring creations weren't its legions or aqueducts — they were its ideas."
         >
-          <InsightGrid items={SURVIVED_INSIGHTS} />
+          <InsightGrid items={WHAT_FELL_INSIGHTS} />
         </SectionWrapper>
 
-        {/* ── Legacy ──────────────────────────────────────────────────── */}
+        {/* ── The Aftermath ─────────────────────────────────────────── */}
+        <SectionWrapper
+          id="aftermath"
+          icon="⛪"
+          title="The Aftermath — From Roman Ruins to Medieval Europe"
+          accentColor={BRONZE}
+          intro="The Western Empire didn't become a void — it transformed. Germanic kingdoms adopted Roman culture. The Catholic Church filled the power vacuum, preserving learning and providing governance. Charlemagne crowned himself 'Roman Emperor' in 800 CE. The great irony of Rome's fall: it was destroyed by people who wanted to be Roman, not destroy Rome."
+        >
+          <InsightGrid items={AFTERMATH_INSIGHTS} />
+        </SectionWrapper>
+
+        {/* ── Legacy for Today ──────────────────────────────────────── */}
         <SectionWrapper
           id="legacy"
-          icon="🔮"
-          title="Legacy and Modern Lessons"
-          accentColor={BLUE}
-          intro="The fall of Rome is the template through which the West understands imperial decline. Every faltering superpower — Britain, the Soviet Union, the United States — has been compared to Rome. Whether these comparisons are valid matters less than the fact that Rome's fall has shaped how we think about power, civilization, and the fragility of complex societies."
+          icon="🌍"
+          title="Legacy for Today — Why Rome Still Matters"
+          accentColor={GREEN}
+          intro="Roman law underpins most European legal systems. Five major world languages descend from Latin. The Catholic Church is a direct institutional successor to Rome's religious role. Every generation since Gibbon has seen its own society reflected in Rome's decline — overextension, inequality, political dysfunction. Rome reminds us that civilizations are mortal."
         >
           <InsightGrid items={LEGACY_INSIGHTS} />
         </SectionWrapper>
 
-        {/* ── Key Figures ─────────────────────────────────────────────── */}
-        <SectionWrapper
-          id="figures"
-          icon="👤"
-          title="Key Figures of Rome's Fall"
-          accentColor={GOLD}
-          intro="The story of Rome's fall is shaped by philosopher-kings and barbarian warlords, pragmatic administrators and teenage puppet emperors. These are the people who tried to save the empire, those who hastened its end, and those who built something new from its ruins."
-        >
-          <FigureGrid figures={KEY_FIGURES} />
-        </SectionWrapper>
-
-        {/* ── Connections ─────────────────────────────────────────────── */}
+        {/* ── Connections ───────────────────────────────────────────── */}
         <SectionWrapper
           id="connections"
           icon="🔗"
-          title="Explore Connected Topics"
-          accentColor={PURPLE}
-          intro="The fall of the Western Roman Empire connects to the broader story of Roman civilization, the survival of the Eastern Empire, and the emergence of the medieval world."
+          title="Explore Related Topics"
+          accentColor={BLUE}
+          intro="The fall of Rome connects to nearly every major theme in Western history. Explore these related deep-dives."
         >
           <ConnectionCards cards={CONNECTIONS} />
         </SectionWrapper>
 
-        {/* ── Footer ──────────────────────────────────────────────────── */}
+        {/* ── Footer ───────────────────────────────────────────────── */}
         <footer
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -1206,8 +982,14 @@ export default function RomanFallPage() {
               fontStyle: 'italic',
             }}
           >
-            "The city which had taken the whole world was itself taken."
-            — St. Jerome, on the sack of Rome, 410 CE
+            &ldquo;The decline of Rome was the natural and inevitable effect of
+            immoderate greatness. Prosperity ripened the principle of decay; the
+            cause of the destruction multiplied with the extent of conquest;
+            and, as soon as time or accident had removed the artificial
+            supports, the stupendous fabric yielded to the pressure of its own
+            weight.&rdquo;
+            &mdash; Edward Gibbon, <em>The History of the Decline and Fall of
+            the Roman Empire</em> (1776)
           </p>
           <Link
             to="/"
@@ -1217,7 +999,7 @@ export default function RomanFallPage() {
               fontSize: '0.95rem',
             }}
           >
-            ← Back to Timeline
+            &larr; Back to Timeline
           </Link>
         </footer>
       </div>
