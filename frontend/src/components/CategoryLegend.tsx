@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, CONNECTION_COLORS, CONNECTION_LABELS } from '../utils/categories';
 import type { EventCategory, ConnectionType } from '../types';
 
@@ -100,6 +101,28 @@ export default function CategoryLegend() {
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>{CONNECTION_LABELS[conn]}</span>
               </div>
             ))}
+          </div>
+
+          {/* Deep Dives */}
+          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
+              Deep Dives
+            </div>
+            <Link
+              to="/democracy"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 11,
+                color: '#60a5fa',
+                textDecoration: 'none',
+                padding: '4px 0',
+              }}
+            >
+              <span style={{ fontSize: 12 }}>{'\u{1F3DB}'}</span>
+              History of Democracy
+            </Link>
           </div>
         </>
       )}
