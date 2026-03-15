@@ -517,6 +517,51 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Pandemics
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PandemicItem {
+  slug: string;
+  name: string;
+  year_start: number;
+  year_end: number;
+  year_display: string;
+  pathogen: string;
+  pathogen_type: string;
+  death_toll: string;
+  death_toll_number: number;
+  geographic_spread: string;
+  impact_rating: string;
+  regions: string[];
+  cause_of_death: string;
+  how_it_spread: string;
+  how_it_ended: string;
+  historical_impact: string;
+  key_facts: string[];
+  era: string;
+  chronicle_query: string;
+  db_event_count: number;
+  db_event_slugs: string[];
+}
+
+export interface PandemicsResponse {
+  pandemics: PandemicItem[];
+  total: number;
+  total_db_events: number;
+}
+
+export async function fetchPandemics(params?: {
+  era?: string;
+  impact?: string;
+  pathogen_type?: string;
+  region?: string;
+  sort?: string;
+}): Promise<PandemicsResponse> {
+  const { data } = await api.get<PandemicsResponse>('/api/pandemics', { params });
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 

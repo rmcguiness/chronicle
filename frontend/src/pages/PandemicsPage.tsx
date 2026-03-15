@@ -15,9 +15,12 @@
  *  - "Find in Chronicle" search links
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fetchPandemics } from '../api/client';
+import type { PandemicItem } from '../api/client';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +44,8 @@ interface Pandemic {
   keyFacts: string[];
   era: string;
   chronicleQuery: string;
+  dbEventCount: number;
+  dbEventSlugs: string[];
 }
 
 // ── Hardcoded dataset ────────────────────────────────────────────────────────
@@ -519,6 +524,40 @@ const PANDEMICS: Pandemic[] = [
   },
 ];
 
+/** Map API response to local Pandemic type */
+function apiToPandemic(item: PandemicItem): Pandemic {
+  return {
+    slug: item.slug,
+    name: item.name,
+    yearStart: item.year_start,
+    yearEnd: item.year_end,
+    yearDisplay: item.year_display,
+    pathogen: item.pathogen,
+    pathogenType: item.pathogen_type,
+    deathToll: item.death_toll,
+    deathTollNumber: item.death_toll_number,
+    geographicSpread: item.geographic_spread,
+    impactRating: item.impact_rating,
+    regions: item.regions,
+    causeOfDeath: item.cause_of_death,
+    howItSpread: item.how_it_spread,
+    howItEnded: item.how_it_ended,
+    historicalImpact: item.historical_impact,
+    keyFacts: item.key_facts,
+    era: item.era,
+    chronicleQuery: item.chronicle_query,
+    dbEventCount: item.db_event_count,
+    dbEventSlugs: item.db_event_slugs,
+  };
+}
+
+/** Add default db fields to hardcoded pandemics */
+const PANDEMICS_WITH_DEFAULTS: Pandemic[] = PANDEMICS.map(p => ({
+  ...p,
+  dbEventCount: 0,
+  dbEventSlugs: [],
+} as Pandemic));
+
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const IMPACT_COLORS: Record<string, string> = {
@@ -584,7 +623,7 @@ function getPandemicOfTheDay(): Pandemic {
   const dayOfYear = Math.floor(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
   );
-  return PANDEMICS[dayOfYear % PANDEMICS.length];
+  return PANDEMICS_WITH_DEFAULTS[dayOfYear % PANDEMICS_WITH_DEFAULTS.length];
 }
 
 function formatDeathToll(n: number): string {
@@ -796,8 +835,8 @@ function ComparePanel() {
   const [leftSlug, setLeftSlug] = useState('');
   const [rightSlug, setRightSlug] = useState('');
 
-  const left = PANDEMICS.find((p) => p.slug === leftSlug);
-  const right = PANDEMICS.find((p) => p.slug === rightSlug);
+  const left = PANDEMICS_WITH_DEFAULTS.find((p) => p.slug === leftSlug);
+  const right = PANDEMICS_WITH_DEFAULTS.find((p) => p.slug === rightSlug);
 
   const selectStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.06)',
@@ -841,7 +880,7 @@ function ComparePanel() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
         <select value={leftSlug} onChange={(e) => setLeftSlug(e.target.value)} style={selectStyle}>
           <option value="" style={{ background: '#1e293b' }}>Select first pandemic...</option>
-          {PANDEMICS.map((p) => (
+          {PANDEMICS_WITH_DEFAULTS.map((p) => (
             <option key={p.slug} value={p.slug} style={{ background: '#1e293b' }}>
               {p.name} ({p.yearDisplay})
             </option>
@@ -850,7 +889,7 @@ function ComparePanel() {
         <span style={{ color: '#64748b', fontWeight: 700, alignSelf: 'center' }}>vs</span>
         <select value={rightSlug} onChange={(e) => setRightSlug(e.target.value)} style={selectStyle}>
           <option value="" style={{ background: '#1e293b' }}>Select second pandemic...</option>
-          {PANDEMICS.map((p) => (
+          {PANDEMICS_WITH_DEFAULTS.map((p) => (
             <option key={p.slug} value={p.slug} style={{ background: '#1e293b' }}>
               {p.name} ({p.yearDisplay})
             </option>
@@ -1056,26 +1095,63 @@ function PandemicCard({ pandemic, index }: { pandemic: Pandemic; index: number }
                   </ul>
                 </div>
 
-                {/* Find in Chronicle link */}
-                <Link
-                  to={`/search?q=${encodeURIComponent(pandemic.chronicleQuery)}`}
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    display: 'inline-block',
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    background: 'rgba(59,130,246,0.15)',
-                    color: '#60a5fa',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.25)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; }}
-                >
-                  Find in Chronicle
-                </Link>
+                {/* Find in Chronicle link + DB event count */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Link
+                    to={`/search?q=${encodeURIComponent(pandemic.chronicleQuery)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      display: 'inline-block',
+                      padding: '6px 12px',
+                      borderRadius: 6,
+                      background: 'rgba(59,130,246,0.15)',
+                      color: '#60a5fa',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.25)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; }}
+                  >
+                    Find in Chronicle
+                  </Link>
+                  {pandemic.dbEventCount > 0 && (
+                    <span style={{
+                      padding: '4px 10px',
+                      borderRadius: 12,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      backgroundColor: 'rgba(34,197,94,0.15)',
+                      color: '#4ade80',
+                    }}>
+                      {pandemic.dbEventCount} linked event{pandemic.dbEventCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+                {/* Related event links */}
+                {pandemic.dbEventSlugs.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                    {pandemic.dbEventSlugs.slice(0, 5).map(slug => (
+                      <Link
+                        key={slug}
+                        to={`/event/${slug}`}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          fontSize: 10,
+                          color: '#94a3b8',
+                          textDecoration: 'none',
+                          padding: '2px 8px',
+                          borderRadius: 6,
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: 'rgba(255,255,255,0.03)',
+                        }}
+                      >
+                        {slug}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1161,10 +1237,41 @@ export default function PandemicsPage() {
   const [impactFilter, setImpactFilter] = useState<string>('All');
   const [sortMode, setSortMode] = useState<SortMode>('chronological');
 
+  // Allow scrolling (override root overflow:hidden)
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+    html.style.overflow = 'auto';
+    body.style.overflow = 'auto';
+    if (root) root.style.overflow = 'auto';
+    return () => {
+      html.style.overflow = '';
+      body.style.overflow = '';
+      if (root) root.style.overflow = '';
+    };
+  }, []);
+
+  // Fetch from API, fallback to hardcoded data
+  const { data: apiData } = useQuery({
+    queryKey: ['pandemics'],
+    queryFn: () => fetchPandemics({ sort: 'chronological' }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const allPandemics: Pandemic[] = useMemo(() => {
+    if (apiData?.pandemics?.length) {
+      return apiData.pandemics.map(apiToPandemic);
+    }
+    return PANDEMICS_WITH_DEFAULTS;
+  }, [apiData]);
+
+  const totalDbEvents = apiData?.total_db_events ?? 0;
+
   const pandemicOfTheDay = useMemo(() => getPandemicOfTheDay(), []);
 
   const filtered = useMemo(() => {
-    let list = [...PANDEMICS];
+    let list = [...allPandemics];
 
     if (eraFilter !== 'All') {
       list = list.filter((p) => p.era === eraFilter);
@@ -1182,14 +1289,14 @@ export default function PandemicsPage() {
     }
 
     return list;
-  }, [eraFilter, impactFilter, sortMode]);
+  }, [eraFilter, impactFilter, sortMode, allPandemics]);
 
   function scrollToPandemic(slug: string) {
     const el = document.getElementById(`pandemic-${slug}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  const totalDeaths = PANDEMICS.reduce((sum, p) => sum + p.deathTollNumber, 0);
+  const totalDeaths = allPandemics.reduce((sum, p) => sum + p.deathTollNumber, 0);
 
   return (
     <div
@@ -1232,7 +1339,7 @@ export default function PandemicsPage() {
           transition={{ delay: 0.1 }}
           style={{ color: '#94a3b8', marginTop: 8, fontSize: 16, maxWidth: 700 }}
         >
-          18 pandemics and epidemics that shaped civilization — from the Plague of Athens to COVID-19. Each one changed medicine, society, and the course of history.
+          How disease shaped human civilization — from the Plague of Athens to COVID-19. Each pandemic changed medicine, society, and the course of history.
         </motion.p>
 
         {/* Stats bar */}
@@ -1242,9 +1349,10 @@ export default function PandemicsPage() {
           transition={{ delay: 0.2 }}
           style={{ display: 'flex', gap: 24, marginTop: 24, flexWrap: 'wrap' }}
         >
-          <StatBox value="18" label="Pandemics" />
+          <StatBox value={String(allPandemics.length)} label="Pandemics" />
           <StatBox value="2,449 yrs" label="Span (430 BCE – 2023 CE)" />
           <StatBox value={formatDeathToll(totalDeaths) + '+'} label="Estimated Total Deaths" />
+          {totalDbEvents > 0 && <StatBox value={String(totalDbEvents)} label="Chronicle Events Linked" />}
           <StatBox value="5" label="Eras Covered" />
         </motion.div>
       </header>
@@ -1299,13 +1407,13 @@ export default function PandemicsPage() {
         </motion.div>
 
         {/* Timeline visualization */}
-        <TimelineVisualization pandemics={PANDEMICS} onSelect={scrollToPandemic} />
+        <TimelineVisualization pandemics={allPandemics} onSelect={scrollToPandemic} />
 
         {/* Death toll comparison */}
-        <DeathTollChart pandemics={PANDEMICS} />
+        <DeathTollChart pandemics={allPandemics} />
 
         {/* Most Catastrophic top-5 */}
-        <MostCatastrophicList pandemics={PANDEMICS} />
+        <MostCatastrophicList pandemics={allPandemics} />
 
         {/* What We Learned */}
         <WhatWeLearned />
