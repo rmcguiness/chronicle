@@ -25,7 +25,9 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import LeadersPage from './pages/LeadersPage';
 import AdminPage from './pages/AdminPage';
+import LeadersButton from './components/LeadersButton';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -60,6 +62,9 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* World Leaders button (toolbar) */}
+      <LeadersButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -82,6 +87,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/leaders" element={<LeadersPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
