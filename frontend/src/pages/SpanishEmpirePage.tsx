@@ -187,6 +187,25 @@ const KEY_FIGURES: FigureEntry[] = [
   { name: 'José de San Martín', years: '1778–1850', contribution: 'Argentina\'s national hero who led armies across the Andes to liberate Chile and Peru. Unlike Bolívar, he quietly stepped aside from power — a rare act of selflessness among revolutionaries.' },
 ];
 
+/* ── Spanish Golden Age ── */
+const GOLDEN_AGE: InsightEntry[] = [
+  { label: 'Miguel de Cervantes', detail: 'Published Don Quixote (1605/1615) — widely considered the first modern novel. A former soldier and Algerian captive, Cervantes created a work that satirized chivalric romance while inventing narrative techniques still used today.' },
+  { label: 'Diego Velázquez', detail: 'Court painter to Philip IV whose masterpiece Las Meninas (1656) is considered one of the greatest paintings in Western art. His revolutionary use of light and perspective influenced every major painter who followed.' },
+  { label: 'El Greco', detail: 'Greek-born painter who made Toledo his home. His elongated figures and dramatic lighting in works like The Burial of the Count of Orgaz (1586) were centuries ahead of their time — anticipating Expressionism by 300 years.' },
+  { label: 'Lope de Vega', detail: 'The most prolific playwright in history — credited with 1,500+ plays (of which ~425 survive). He essentially invented the Spanish comedia and influenced every subsequent dramatist, including Shakespeare\'s contemporaries.' },
+  { label: 'Bartolomé Esteban Murillo', detail: 'Seville\'s greatest painter, known for luminous religious works and unflinching depictions of street children. His paintings defined the image of the Immaculate Conception for centuries of Catholic art.' },
+  { label: 'Funded by Silver', detail: 'The entire Golden Age was underwritten by American silver. Philip IV\'s court was the wealthiest in Europe, attracting artists, writers, and intellectuals — even as the empire\'s economic foundations were rotting beneath them.' },
+];
+
+/* ── Black Legend vs White Legend ── */
+const BLACK_WHITE_LEGEND: InsightEntry[] = [
+  { label: 'The Black Legend (La Leyenda Negra)', detail: 'Protestant England and the Netherlands portrayed Spanish colonialism as uniquely cruel — driven by greed, fanaticism, and sadism. While partly propaganda to justify their own imperial ambitions, the Black Legend drew on real and well-documented atrocities.' },
+  { label: 'Bartolomé de las Casas\'s Testimony', detail: 'His 1542 "Short Account of the Destruction of the Indies" described mass killings, forced labor, and systematic cruelty in graphic detail. Written to convince the Spanish crown to reform, it was instead translated and weaponized by Spain\'s enemies across Europe.' },
+  { label: 'The White Legend (La Leyenda Blanca)', detail: 'Spanish defenders argued that Spain built universities (the first in the Americas: Santo Domingo, 1538), hospitals, cathedrals, and legal protections for indigenous people — things no other colonial power did. The New Laws of 1542 technically abolished indigenous slavery.' },
+  { label: 'The Reality', detail: 'Neither legend captures the truth. Spanish colonialism involved systematic exploitation, demographic catastrophe, and cultural destruction — but also individual dissenters, legal debates about indigenous rights (the Valladolid debate of 1550), and genuine attempts at reform. It was brutal even by contemporary standards, and the scale of death was unprecedented.' },
+  { label: 'The Valladolid Debate (1550–1551)', detail: 'The Spanish crown convened a formal debate on whether indigenous peoples had souls and rights. Las Casas argued for their full humanity; Juan Ginés de Sepúlveda argued they were "natural slaves." No clear winner, but the debate itself was unique — no other colonial power questioned its own right to conquer.' },
+];
+
 /* ── Legacy ── */
 const LEGACY: InsightEntry[] = [
   { label: 'Spanish Language', detail: '500+ million speakers across 21 countries. The 4th most spoken language in the world. From Buenos Aires to Manila, the linguistic legacy is inescapable.' },
@@ -420,7 +439,7 @@ export default function SpanishEmpirePage() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            The Spanish Empire &mdash; First Global Power (1492&ndash;1826)
+            The Spanish Empire &mdash; From Reconquista to the Last Colony (1492&ndash;1898)
           </motion.h1>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
             <p style={{ color: ASH, lineHeight: 1.8, fontSize: '1.05rem', maxWidth: 800, marginBottom: 16 }}>
@@ -572,6 +591,28 @@ export default function SpanishEmpirePage() {
           intro="Cerro Rico de Potosí, in modern-day Bolivia, was the engine of the Spanish Empire and the tragedy of millions. Its silver financed wars, built palaces, funded exploration, and flowed to every corner of the globe. But every ounce came at a cost measured in human lives — an estimated 8 million workers died in its tunnels over three centuries."
         >
           <InsightGrid items={POTOSI} />
+        </SectionWrapper>
+
+        {/* ── Spanish Golden Age ── */}
+        <SectionWrapper
+          id="golden-age"
+          icon="&#x1F3A8;"
+          title="The Spanish Golden Age (1550–1650)"
+          accentColor={AMBER}
+          intro="Even as its empire strained under military overreach and economic mismanagement, Spain produced one of the greatest cultural flowerings in European history. The Siglo de Oro — the Golden Century — saw the invention of the modern novel, revolutionary painting techniques, and a theatrical output unmatched before or since. All of it was funded by American silver."
+        >
+          <InsightGrid items={GOLDEN_AGE} />
+        </SectionWrapper>
+
+        {/* ── Black Legend vs White Legend ── */}
+        <SectionWrapper
+          id="black-white-legend"
+          icon="&#x2696;&#xFE0F;"
+          title="The Black Legend vs. the White Legend"
+          accentColor={SLATE}
+          intro="How cruel was the Spanish Empire — and was it uniquely so? For five centuries, this question has been debated, distorted, and weaponized. Protestant rivals painted Spain as singularly barbaric. Spanish defenders pointed to their legal and religious contributions. The truth, as always, is more complicated — and more damning — than either side admits."
+        >
+          <InsightGrid items={BLACK_WHITE_LEGEND} />
         </SectionWrapper>
 
         {/* ── Catholic Mission ── */}
