@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, CONNECTION_COLORS, CONNECTION_LABELS } from '../utils/categories';
 import type { EventCategory, ConnectionType } from '../types';
 
@@ -79,7 +80,7 @@ export default function CategoryLegend() {
           </div>
 
           {/* Causality edges */}
-          <div>
+          <div style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
               Causality
             </div>
@@ -100,6 +101,21 @@ export default function CategoryLegend() {
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>{CONNECTION_LABELS[conn]}</span>
               </div>
             ))}
+          </div>
+
+          {/* Explore topic pages */}
+          <div>
+            <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
+              Explore
+            </div>
+            <Link to="/literature" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, textDecoration: 'none' }}>
+              <span style={{ width: 18, textAlign: 'center', fontSize: 12, flexShrink: 0 }}>&#128218;</span>
+              <span style={{ fontSize: 11, color: '#94a3b8' }}>Literature</span>
+            </Link>
+            <Link to="/medicine" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, textDecoration: 'none' }}>
+              <span style={{ width: 18, textAlign: 'center', fontSize: 12, flexShrink: 0 }}>&#9877;&#65039;</span>
+              <span style={{ fontSize: 11, color: '#94a3b8' }}>Medicine</span>
+            </Link>
           </div>
         </>
       )}

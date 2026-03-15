@@ -27,6 +27,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import MedicineTopicPage from './pages/MedicineTopicPage';
+import LiteraturePage from './pages/LiteraturePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/medicine" element={<MedicineTopicPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/literature" element={<LiteraturePage />} />
       </Routes>
     </QueryClientProvider>
   );
