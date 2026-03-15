@@ -28,6 +28,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
 import VikingAgePage from './pages/VikingAgePage';
+import MedievalEuropePage from './pages/MedievalEuropePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -87,6 +88,7 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/viking-age" element={<VikingAgePage />} />
+        <Route path="/medieval-europe" element={<MedievalEuropePage />} />
       </Routes>
     </QueryClientProvider>
   );
