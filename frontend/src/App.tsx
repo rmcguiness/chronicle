@@ -28,6 +28,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
 import IncaEmpirePage from './pages/IncaEmpirePage';
+import MayaCivilizationPage from './pages/MayaCivilizationPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -87,6 +88,7 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/inca-empire" element={<IncaEmpirePage />} />
+        <Route path="/maya-civilization" element={<MayaCivilizationPage />} />
       </Routes>
     </QueryClientProvider>
   );

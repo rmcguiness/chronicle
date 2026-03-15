@@ -805,6 +805,7 @@ export default function IncaEmpirePage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
             {[
               { to: '/aztec-empire', label: 'Aztec Empire' },
+              { to: '/maya-civilization', label: 'Maya Civilization' },
               { to: '/age-of-exploration', label: 'Age of Exploration' },
               { to: '/ancient-india', label: 'Ancient India' },
             ].map((link, i) => (
