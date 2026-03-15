@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, CONNECTION_COLORS, CONNECTION_LABELS } from '../utils/categories';
 import type { EventCategory, ConnectionType } from '../types';
 
@@ -100,6 +101,20 @@ export default function CategoryLegend() {
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>{CONNECTION_LABELS[conn]}</span>
               </div>
             ))}
+          </div>
+
+          {/* Explore pages */}
+          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
+              Explore
+            </div>
+            <Link to="/explorers" style={{
+              display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5,
+              textDecoration: 'none', fontSize: 11, color: '#94a3b8', padding: '3px 4px',
+              borderRadius: 4, transition: 'color 0.15s',
+            }}>
+              <span style={{ fontSize: 13 }}>{'\u{1F9ED}'}</span> Explorers
+            </Link>
           </div>
         </>
       )}
