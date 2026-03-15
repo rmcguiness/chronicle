@@ -30,6 +30,7 @@ import KoreanWarPage from './pages/KoreanWarPage';
 import IncaEmpirePage from './pages/IncaEmpirePage';
 import HumanRightsHistoryPage from './pages/HumanRightsHistoryPage';
 import SpanishEmpirePage from './pages/SpanishEmpirePage';
+import RussianRevolutionPage from './pages/RussianRevolutionPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -91,6 +92,7 @@ export default function App() {
         <Route path="/inca-empire" element={<IncaEmpirePage />} />
         <Route path="/human-rights-history" element={<HumanRightsHistoryPage />} />
         <Route path="/spanish-empire" element={<SpanishEmpirePage />} />
+        <Route path="/russian-revolution" element={<RussianRevolutionPage />} />
       </Routes>
     </QueryClientProvider>
   );
