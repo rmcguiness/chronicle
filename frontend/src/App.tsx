@@ -27,6 +27,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import PsychologyHistoryPage from './pages/PsychologyHistoryPage';
+import EconomicThoughtPage from './pages/EconomicThoughtPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/psychology-history" element={<PsychologyHistoryPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/economic-thought" element={<EconomicThoughtPage />} />
       </Routes>
     </QueryClientProvider>
   );
