@@ -27,6 +27,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import IndustrialRevolutionPage from './pages/IndustrialRevolutionPage';
+import DecolonizationPage from './pages/DecolonizationPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/industrial-revolution" element={<IndustrialRevolutionPage />} />
+        <Route path="/decolonization" element={<DecolonizationPage />} />
       </Routes>
     </QueryClientProvider>
   );
