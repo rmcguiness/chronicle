@@ -49,7 +49,7 @@ const KEY_STATS: InsightEntry[] = [
   { label: '13 million km²', detail: 'Spanish Empire at peak — larger than the Roman Empire' },
   { label: '334 years', detail: 'Colonial period in the Americas (1492–1826)' },
   { label: '45,000 tons', detail: 'Silver extracted from Potosí — financed early European capitalism' },
-  { label: '500+ million', detail: 'Spanish speakers today — 4th most spoken language worldwide' },
+  { label: '500+ million', detail: 'Native Spanish speakers today — 2nd most spoken language by native speakers' },
   { label: '21 countries', detail: 'With Spanish as an official language' },
   { label: '~50% of calories', detail: 'Tomatoes, potatoes, and corn now account for roughly half of global caloric intake' },
 ];
@@ -208,7 +208,7 @@ const BLACK_WHITE_LEGEND: InsightEntry[] = [
 
 /* ── Legacy ── */
 const LEGACY: InsightEntry[] = [
-  { label: 'Spanish Language', detail: '500+ million speakers across 21 countries. The 4th most spoken language in the world. From Buenos Aires to Manila, the linguistic legacy is inescapable.' },
+  { label: 'Spanish Language', detail: '500+ million native speakers across 21 countries. The 2nd most spoken language by native speakers. From Buenos Aires to Manila, the linguistic legacy is inescapable.' },
   { label: 'Catholicism', detail: '40% of the world\'s Catholics live in Latin America. The region\'s churches, festivals, and cultural identity remain profoundly shaped by the missionary conquest.' },
   { label: 'The Columbian Exchange', detail: 'Potatoes saved millions from famine in Europe and Asia. Corn became a global staple. Tomatoes transformed Italian cuisine. Chocolate became universal. These New World crops now account for ~50% of global caloric intake.' },
   { label: 'Silver and Capitalism', detail: 'Potosí silver financed the rise of European capitalism, funded the Dutch East India Company, connected China to the global economy, and caused the Price Revolution that reshaped European society.' },
@@ -439,7 +439,7 @@ export default function SpanishEmpirePage() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            The Spanish Empire &mdash; From Reconquista to the Last Colony (1492&ndash;1898)
+            The Empire on Which the Sun Never Sets &mdash; The Spanish Empire (1492&ndash;1898)
           </motion.h1>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
             <p style={{ color: ASH, lineHeight: 1.8, fontSize: '1.05rem', maxWidth: 800, marginBottom: 16 }}>
@@ -710,8 +710,8 @@ export default function SpanishEmpirePage() {
                 { to: '/inca-empire', label: 'The Inca Empire' },
                 { to: '/aztec-empire', label: 'The Aztec Empire' },
                 { to: '/age-of-exploration', label: 'Age of Exploration' },
+                { to: '/columbus', label: 'Columbus' },
                 { to: '/decolonization', label: 'Decolonization' },
-                { to: '/american-revolution', label: 'American Revolution' },
               ].map((link, i) => (
                 <Link
                   key={i}
