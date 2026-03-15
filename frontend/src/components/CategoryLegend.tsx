@@ -109,6 +109,7 @@ export default function CategoryLegend() {
             </div>
             {[
               { to: '/sports', icon: '\uD83C\uDFC5', label: 'Sports' },
+              { to: '/technology', icon: '\u2699\uFE0F', label: 'Technology' },
             ].map((page) => (
               <Link
                 key={page.to}
