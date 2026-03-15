@@ -110,6 +110,7 @@ export default function CategoryLegend() {
             </div>
             {[
               { to: '/mongol-empire', label: 'Mongol Empire', icon: '🏇' },
+              { to: '/ottoman-empire', label: 'Ottoman Empire', icon: '🏛️' },
             ].map((dd) => (
               <Link key={dd.to} to={dd.to} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, textDecoration: 'none', color: '#94a3b8', fontSize: 11 }}>
                 <span style={{ fontSize: 12, width: 18, textAlign: 'center' }}>{dd.icon}</span>
