@@ -28,6 +28,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import IndustrialRevolutionPage from './pages/IndustrialRevolutionPage';
 import DecolonizationPage from './pages/DecolonizationPage';
+import SlaveryHistoryPage from './pages/SlaveryHistoryPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -87,6 +88,7 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/industrial-revolution" element={<IndustrialRevolutionPage />} />
         <Route path="/decolonization" element={<DecolonizationPage />} />
+        <Route path="/slavery" element={<SlaveryHistoryPage />} />
       </Routes>
     </QueryClientProvider>
   );
