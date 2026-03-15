@@ -14,6 +14,7 @@
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  *  /democracy     → History of Democracy deep-dive page
+ *  /globalization → Globalization deep-dive page
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -28,6 +29,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import DemocracyHistoryPage from './pages/DemocracyHistoryPage';
 import AdminPage from './pages/AdminPage';
+import GlobalizationPage from './pages/GlobalizationPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +87,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/democracy" element={<DemocracyHistoryPage />} />
+        <Route path="/globalization" element={<GlobalizationPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
