@@ -13,6 +13,7 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /medicine-history → History of Medicine deep-dive page
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -25,6 +26,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import MedicineHistoryPage from './pages/MedicineHistoryPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -82,6 +84,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/medicine-history" element={<MedicineHistoryPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
