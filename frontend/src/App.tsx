@@ -14,7 +14,7 @@
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
@@ -26,6 +26,7 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import SilkRoadPage from './pages/SilkRoadPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -70,6 +71,21 @@ function MainView() {
           In network mode it acts as a time-range filter for visible events. */}
       <TimelineScrubber />
 
+      {/* Deep-dive topic links (bottom-left) */}
+      <div style={{
+        position: 'fixed', bottom: 80, left: 16, zIndex: 150,
+        display: 'flex', flexDirection: 'column', gap: 6,
+      }}>
+        <Link to="/silk-road" style={{
+          display: 'inline-block', padding: '6px 14px', borderRadius: 8,
+          background: 'rgba(7,14,34,0.90)', backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(201,168,76,0.25)', color: '#c9a84c',
+          textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600,
+        }}>
+          Silk Road →
+        </Link>
+      </div>
+
       {/* Welcome overlay — shown on first load each session */}
       <WelcomeOverlay />
     </div>
@@ -83,6 +99,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/silk-road" element={<SilkRoadPage />} />
       </Routes>
     </QueryClientProvider>
   );
