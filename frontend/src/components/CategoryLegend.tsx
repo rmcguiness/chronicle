@@ -123,6 +123,21 @@ export default function CategoryLegend() {
               <span style={{ fontSize: 12 }}>{'\u{1F9B4}'}</span>
               Human Origins
             </Link>
+            <Link
+              to="/psychology-history"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 11,
+                color: '#60a5fa',
+                textDecoration: 'none',
+                padding: '4px 0',
+              }}
+            >
+              <span style={{ fontSize: 12 }}>{'\u{1F9E0}'}</span>
+              History of Psychology
+            </Link>
           </div>
         </>
       )}

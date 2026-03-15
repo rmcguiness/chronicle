@@ -27,6 +27,7 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import HumanOriginsPage from './pages/HumanOriginsPage';
+import PsychologyHistoryPage from './pages/PsychologyHistoryPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/human-origins" element={<HumanOriginsPage />} />
+        <Route path="/psychology-history" element={<PsychologyHistoryPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
