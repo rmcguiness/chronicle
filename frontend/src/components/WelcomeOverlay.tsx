@@ -5,6 +5,7 @@
  *   year: 1910–1950 · lat: 35–60°N (Europe)
  */
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppStore } from '../store';
 
 const SESSION_KEY = 'chronicle_welcome_dismissed';
@@ -186,6 +187,32 @@ export default function WelcomeOverlay() {
           Explore History
           <span style={{ fontSize: 18 }}>→</span>
         </button>
+
+        {/* Deep-dive link */}
+        <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Link
+            to="/industrial-revolution"
+            style={{
+              fontSize: 13,
+              color: '#64748b',
+              textDecoration: 'none',
+              padding: '6px 14px',
+              borderRadius: 8,
+              border: '1px solid rgba(99,179,237,0.15)',
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#94a3b8';
+              e.currentTarget.style.borderColor = 'rgba(99,179,237,0.35)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#64748b';
+              e.currentTarget.style.borderColor = 'rgba(99,179,237,0.15)';
+            }}
+          >
+            🏭 Industrial Revolution
+          </Link>
+        </div>
 
         {/* Dismiss hint */}
         <p
