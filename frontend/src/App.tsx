@@ -27,6 +27,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
+import OttomanDeclinePage from './pages/OttomanDeclinePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/korean-war" element={<KoreanWarPage />} />
+        <Route path="/ottoman-decline" element={<OttomanDeclinePage />} />
       </Routes>
     </QueryClientProvider>
   );
