@@ -30,6 +30,8 @@ import KoreanWarPage from './pages/KoreanWarPage';
 import ProtestantReformationPage from './pages/ProtestantReformationPage';
 import BritishEmpirePage from './pages/BritishEmpirePage';
 import IndigenousPeoplesPage from './pages/IndigenousPeoplesPage';
+import RiseOfNazismPage from './pages/RiseOfNazismPage';
+import VikingAgePage from './pages/VikingAgePage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -91,6 +93,8 @@ export default function App() {
         <Route path="/protestant-reformation" element={<ProtestantReformationPage />} />
         <Route path="/british-empire" element={<BritishEmpirePage />} />
         <Route path="/indigenous-peoples" element={<IndigenousPeoplesPage />} />
+        <Route path="/rise-of-nazism" element={<RiseOfNazismPage />} />
+        <Route path="/viking-age" element={<VikingAgePage />} />
       </Routes>
     </QueryClientProvider>
   );
