@@ -24,7 +24,11 @@ import CategoryLegend from './components/CategoryLegend';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
+import EmpiresButton from './components/EmpiresButton';
+import BattlesButton from './components/BattlesButton';
 import EventDetailPage from './pages/EventDetailPage';
+import EmpiresPage from './pages/EmpiresPage';
+import BattlesPage from './pages/BattlesPage';
 import AdminPage from './pages/AdminPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -60,6 +64,12 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Empires browser button (toolbar) */}
+      <EmpiresButton />
+
+      {/* Battles browser button (toolbar) */}
+      <BattlesButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -82,6 +92,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/empires" element={<EmpiresPage />} />
+        <Route path="/battles" element={<BattlesPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
