@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, CONNECTION_COLORS, CONNECTION_LABELS } from '../utils/categories';
 import type { EventCategory, ConnectionType } from '../types';
 
@@ -75,6 +76,22 @@ export default function CategoryLegend() {
                 </div>
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>{CATEGORY_LABELS[cat]}</span>
               </div>
+            ))}
+          </div>
+
+          {/* Deep Dives */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
+              Deep Dives
+            </div>
+            {[
+              { to: '/renaissance', label: 'The Renaissance', icon: '🎨' },
+              { to: '/wwi', label: 'World War I', icon: '⚔️' },
+            ].map((dd) => (
+              <Link key={dd.to} to={dd.to} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, textDecoration: 'none', color: '#94a3b8', fontSize: 11 }}>
+                <span style={{ fontSize: 12, width: 18, textAlign: 'center' }}>{dd.icon}</span>
+                <span style={{ borderBottom: '1px dotted rgba(148,163,184,0.3)' }}>{dd.label}</span>
+              </Link>
             ))}
           </div>
 
