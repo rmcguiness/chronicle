@@ -26,6 +26,8 @@ import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
+import WomenPage from './pages/WomenPage';
+import WomenButton from './components/WomenButton';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -60,6 +62,9 @@ function MainView() {
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
 
+      {/* Women in History button (toolbar) */}
+      <WomenButton />
+
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
 
@@ -83,6 +88,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/women" element={<WomenPage />} />
       </Routes>
     </QueryClientProvider>
   );
