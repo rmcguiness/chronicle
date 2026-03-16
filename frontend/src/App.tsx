@@ -30,6 +30,7 @@ import KoreanWarPage from './pages/KoreanWarPage';
 import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
 import MedievalJapanPage from './pages/MedievalJapanPage';
+import HistoryOfWarfare from './pages/HistoryOfWarfare';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -91,6 +92,7 @@ export default function App() {
         <Route path="/history-of-film" element={<HistoryOfFilmPage />} />
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
         <Route path="/medieval-japan" element={<MedievalJapanPage />} />
+        <Route path="/history-of-warfare" element={<HistoryOfWarfare />} />
       </Routes>
     </QueryClientProvider>
   );
