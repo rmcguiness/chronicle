@@ -32,6 +32,12 @@ import type { ConnectionType } from '../types';
 /** Minimum stroke width in screen pixels, prevents edges from vanishing at low zoom. */
 const MIN_STROKE_WIDTH_PX = 2;
 
+/**
+ * Base arrowhead size in screen pixels. The SVG marker scales inversely with
+ * zoom so arrows remain visible even at zoom < 0.3.
+ */
+const ARROW_SCREEN_PX = 14;
+
 /** Dash array length for the animated "causes" edges. */
 const CAUSES_DASH_LENGTH = 10;
 
@@ -155,8 +161,30 @@ function CausalityEdge({
   const isCauses = connectionType === 'causes';
   const isContext = connectionType === 'context';
 
+  // Scale-independent arrowhead: size in canvas units = desired screen px / zoom.
+  const arrowSize = ARROW_SCREEN_PX / zoom;
+  const markerId = `arrow-${id}`;
+
   return (
     <>
+      {/* Custom SVG marker — scales inversely with zoom so arrows stay visible */}
+      <defs>
+        <marker
+          id={markerId}
+          markerWidth={arrowSize}
+          markerHeight={arrowSize}
+          refX={arrowSize}
+          refY={arrowSize / 2}
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
+          <path
+            d={`M 0 0 L ${arrowSize} ${arrowSize / 2} L 0 ${arrowSize} Z`}
+            fill={hovered ? '#ffffff' : color}
+          />
+        </marker>
+      </defs>
+
       {/* Invisible wider hit area for hover */}
       <path
         d={edgePath}
@@ -185,7 +213,7 @@ function CausalityEdge({
       <BaseEdge
         id={id}
         path={edgePath}
-        markerEnd={markerEnd as string}
+        markerEnd={`url(#${markerId})`}
         style={{
           stroke: hovered ? '#ffffff' : color,
           strokeWidth: hovered ? strokeWidth + 1 : strokeWidth,

@@ -245,9 +245,7 @@ export default function SearchBar() {
             borderTop: 'none',
             borderRadius: '0 0 12px 12px',
             boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
-            /* Cap height and enable scrolling when many search results are returned */
-            maxHeight: SEARCH_RESULTS_MAX_HEIGHT_PX,
-            overflowY: 'auto',
+            /* Dropdown styling only — scrolling handled by inner results list */
           }}
         >
           {/* Semantic mode indicator */}
@@ -270,7 +268,8 @@ export default function SearchBar() {
               {isFetching ? 'Searching…' : 'No events found'}
             </div>
           ) : (
-            results.map((result, i) => {
+            <div style={{ maxHeight: '24rem', overflowY: 'auto' }}>
+            {results.map((result, i) => {
               const color = CATEGORY_COLORS[result.category] ?? '#6b7280';
               const icon = CATEGORY_ICONS[result.category] ?? '●';
               return (
@@ -334,7 +333,8 @@ export default function SearchBar() {
                   </span>
                 </button>
               );
-            })
+            })}
+            </div>
           )}
         </div>
       )}
