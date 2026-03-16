@@ -28,6 +28,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
 import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
+import HistoryOfSportPage from './pages/HistoryOfSportPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
 import { usePermalink } from './hooks/usePermalink';
 
@@ -88,6 +89,7 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/history-of-film" element={<HistoryOfFilmPage />} />
+        <Route path="/history-of-sport" element={<HistoryOfSportPage />} />
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
       </Routes>
     </QueryClientProvider>
