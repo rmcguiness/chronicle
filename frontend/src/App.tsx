@@ -29,6 +29,7 @@ import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
 import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
+import MedievalJapanPage from './pages/MedievalJapanPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -89,6 +90,7 @@ export default function App() {
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/history-of-film" element={<HistoryOfFilmPage />} />
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
+        <Route path="/medieval-japan" element={<MedievalJapanPage />} />
       </Routes>
     </QueryClientProvider>
   );
