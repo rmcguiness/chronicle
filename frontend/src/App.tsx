@@ -13,6 +13,7 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /quotes        → Historical quotes page
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -30,6 +31,7 @@ import KoreanWarPage from './pages/KoreanWarPage';
 import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
 import MedievalJapanPage from './pages/MedievalJapanPage';
+import QuotesPage from './pages/QuotesPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -91,6 +93,7 @@ export default function App() {
         <Route path="/history-of-film" element={<HistoryOfFilmPage />} />
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
         <Route path="/medieval-japan" element={<MedievalJapanPage />} />
+        <Route path="/quotes" element={<QuotesPage />} />
       </Routes>
     </QueryClientProvider>
   );
