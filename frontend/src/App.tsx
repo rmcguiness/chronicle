@@ -28,6 +28,7 @@ import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import CivilizationsPage from './pages/CivilizationsPage';
+import ParallelPage from './pages/ParallelPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -61,6 +62,33 @@ function MainView() {
 
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
+
+      {/* Parallel History nav link (toolbar) */}
+      <Link
+        to="/parallel"
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 440,
+          zIndex: 30,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '8px 14px',
+          borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(15,17,23,0.85)',
+          backdropFilter: 'blur(8px)',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 13,
+          fontWeight: 500,
+          fontFamily: "'Inter', sans-serif",
+          textDecoration: 'none',
+          transition: 'all 150ms ease',
+        }}
+      >
+        ⚡ Parallel
+      </Link>
 
       {/* Civilizations nav link (toolbar) */}
       <Link
@@ -112,6 +140,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/civilizations" element={<CivilizationsPage />} />
+        <Route path="/parallel" element={<ParallelPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </QueryClientProvider>
