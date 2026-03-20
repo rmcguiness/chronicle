@@ -108,6 +108,11 @@ class Event(Base):
     wikidata_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     wikipedia_slug: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
+    # Text region label (e.g., "Europe", "Asia")
+    region: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Wikipedia article summary cache
+    article_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     # Relationships
     perspectives: Mapped[List["Perspective"]] = relationship(
         back_populates="event", cascade="all, delete-orphan"
