@@ -517,6 +517,85 @@ export async function fetchArticle(slug: string): Promise<ArticleResponse | null
 export type { Perspective, ConnectedEvent };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Categories
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Featured event shown on category overview cards. */
+export interface FeaturedEventItem {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  importance_score: number;
+}
+
+/** Category summary with count and featured events. */
+export interface CategorySummary {
+  category: string;
+  count: number;
+  featured: FeaturedEventItem[];
+}
+
+/** Response from GET /api/categories. */
+export interface CategoriesResponse {
+  categories: CategorySummary[];
+}
+
+/** Single event in a category listing. */
+export interface CategoryEventItem {
+  id: string;
+  slug: string;
+  title: string;
+  year_approx: number | null;
+  region: string | null;
+  importance_score: number;
+  category: string | null;
+  short_description: string | null;
+  is_bce: boolean | null;
+}
+
+/** Century bucket for timeline visualisation. */
+export interface CenturyBucket {
+  century: number;
+  count: number;
+}
+
+/** Response from GET /api/categories/:category. */
+export interface CategoryDetailResponse {
+  category: string;
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+  events: CategoryEventItem[];
+  regions: string[];
+  timeline: CenturyBucket[];
+}
+
+/**
+ * Fetch all categories with counts and featured events.
+ * @returns CategoriesResponse
+ */
+export async function fetchCategories(): Promise<CategoriesResponse> {
+  const { data } = await api.get<CategoriesResponse>('/api/categories');
+  return data;
+}
+
+/**
+ * Fetch paginated events for a specific category.
+ * @param category - Category slug
+ * @param params - Filter/sort/pagination params
+ * @returns CategoryDetailResponse
+ */
+export async function fetchCategoryDetail(
+  category: string,
+  params: { era?: string; region?: string; sort?: string; page?: number; limit?: number } = {},
+): Promise<CategoryDetailResponse> {
+  const { data } = await api.get<CategoryDetailResponse>(`/api/categories/${category}`, { params });
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // On This Day
 // ─────────────────────────────────────────────────────────────────────────────
 
