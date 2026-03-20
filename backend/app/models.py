@@ -108,6 +108,10 @@ class Event(Base):
     wikidata_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     wikipedia_slug: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
+    # Region and article summary (used by parallel history feature)
+    region: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    article_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     # Relationships
     perspectives: Mapped[List["Perspective"]] = relationship(
         back_populates="event", cascade="all, delete-orphan"
