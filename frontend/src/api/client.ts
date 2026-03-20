@@ -605,6 +605,7 @@ export interface OnThisDayEvent {
   slug: string;
   title: string;
   year_approx: number | null;
+  is_bce: boolean;
   date_display: string | null;
   category: string | null;
   importance_score: number;
@@ -616,6 +617,10 @@ export interface OnThisDayEvent {
 export interface OnThisDayResponse {
   month: number;
   day: number;
+  total_count: number;
+  earliest_year: number | null;
+  latest_year: number | null;
+  regions: string[];
   events: OnThisDayEvent[];
 }
 

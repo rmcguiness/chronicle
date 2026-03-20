@@ -32,6 +32,7 @@ import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
 import MedievalJapanPage from './pages/MedievalJapanPage';
 import QuotesPage from './pages/QuotesPage';
+import OnThisDayPage from './pages/OnThisDayPage';
 import { usePermalink } from './hooks/usePermalink';
 
 /** React Query client — shared across both routes via context. */
@@ -94,6 +95,7 @@ export default function App() {
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
         <Route path="/medieval-japan" element={<MedievalJapanPage />} />
         <Route path="/quotes" element={<QuotesPage />} />
+        <Route path="/on-this-day" element={<OnThisDayPage />} />
       </Routes>
     </QueryClientProvider>
   );

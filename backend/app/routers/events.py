@@ -50,6 +50,7 @@ class OnThisDayEventItem(BaseModel):
     slug: str
     title: str
     year_approx: int | None
+    is_bce: bool
     date_display: str | None
     category: str | None
     importance_score: float
@@ -62,6 +63,10 @@ class OnThisDayResponse(BaseModel):
 
     month: int
     day: int
+    total_count: int
+    earliest_year: int | None
+    latest_year: int | None
+    regions: list[str]
     events: list[OnThisDayEventItem]
 
 
@@ -71,10 +76,11 @@ async def on_this_day(
     day: int | None = Query(default=None, ge=1, le=31, description="Day (1-31), defaults to today"),
     db: AsyncSession = Depends(get_db),
 ) -> OnThisDayResponse:
-    """Return up to 20 events that occurred on this month/day across all years.
+    """Return up to 50 events that occurred on this month/day across all years.
 
     Matches events whose ``date_exact`` column has the same month and day,
-    sorted by ``importance_score`` descending.
+    sorted by ``importance_score`` descending, then year.
+    Also returns aggregate stats: total_count, earliest/latest year, regions.
     """
     now = datetime.now(tz=timezone.utc)
     m = month or now.month
@@ -82,24 +88,47 @@ async def on_this_day(
 
     date_col = func.cast(Event._date_exact, func.DATE)
 
+    base_filter = [
+        Event._date_exact.isnot(None),
+        extract("month", date_col) == m,
+        extract("day", date_col) == d,
+        Event.review_status == "approved",
+    ]
+
+    # Aggregates
+    agg_stmt = select(
+        func.count().label("total"),
+        func.min(Event.year_approx).label("earliest"),
+        func.max(Event.year_approx).label("latest"),
+    ).where(*base_filter)
+    agg_result = await db.execute(agg_stmt)
+    agg = agg_result.one()
+
+    # Distinct regions
+    region_stmt = (
+        select(Event.geo_modern)
+        .where(*base_filter, Event.geo_modern.isnot(None))
+        .distinct()
+    )
+    region_result = await db.execute(region_stmt)
+    regions = [r[0] for r in region_result.fetchall()]
+
+    # Events (limit 50)
     stmt = (
         select(
             Event.id,
             Event.slug,
             Event.title,
             Event.year_approx,
+            Event.is_bce,
             Event.date_exact,
             Event.event_category,
             Event.importance_score,
             Event.geo_modern,
         )
-        .where(
-            Event._date_exact.isnot(None),
-            extract("month", date_col) == m,
-            extract("day", date_col) == d,
-        )
-        .order_by(Event.importance_score.desc())
-        .limit(20)
+        .where(*base_filter)
+        .order_by(Event.importance_score.desc(), Event.year_approx.asc())
+        .limit(50)
     )
 
     result = await db.execute(stmt)
@@ -111,6 +140,7 @@ async def on_this_day(
             slug=row.slug,
             title=row.title,
             year_approx=row.year_approx,
+            is_bce=row.is_bce or False,
             date_display=row.date_exact,
             category=row.event_category,
             importance_score=row.importance_score,
@@ -120,7 +150,15 @@ async def on_this_day(
         for row in rows
     ]
 
-    return OnThisDayResponse(month=m, day=d, events=events_out)
+    return OnThisDayResponse(
+        month=m,
+        day=d,
+        total_count=agg.total or 0,
+        earliest_year=agg.earliest,
+        latest_year=agg.latest,
+        regions=regions,
+        events=events_out,
+    )
 
 
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:
