@@ -1,0 +1,12 @@
+-- Cultural & Intellectual History Enrichment
+-- Added 2026-03-20
+-- 24 events: ancient philosophy, medieval literature, Renaissance art, modern movements
+-- 15 causality links: philosophy chains, literary lineages, art movement progression
+-- Events already applied to DB; this file is for reference/reproducibility
+
+-- See git log for full SQL used during enrichment
+-- Events added: Confucian Analects, Zhuangzi, Pali Canon, Ovid, Beowulf,
+-- Arabian Nights, Notre-Dame, Canterbury Tales, Vitruvian Man, Beethoven 9th,
+-- Pride & Prejudice, Frankenstein, Goya Black Paintings, Les Misérables,
+-- Nietzsche Zarathustra, Ulysses, Waste Land, Art Deco, Pollock/AbEx,
+-- Warhol/Pop Art, Beatles Sgt Pepper's, Star Wars, WWW, Spotify
