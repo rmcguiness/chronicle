@@ -28,6 +28,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
 import PeoplePage from './pages/PeoplePage';
 import QuizPage from './pages/QuizPage';
+import ChainsPage from './pages/ChainsPage';
 import { usePermalink } from './hooks/usePermalink';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,6 +77,21 @@ function MainView() {
           People
         </button>
         <button
+          onClick={() => navigate('/chains')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 14px', borderRadius: 8,
+            backgroundColor: 'rgba(7,14,34,0.9)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(167,139,250,0.25)', color: '#94a3b8',
+            cursor: 'pointer', fontSize: 13, fontWeight: 500,
+            fontFamily: 'inherit', transition: 'border-color 0.15s, color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.5)'; e.currentTarget.style.color = '#e2e8f0'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.25)'; e.currentTarget.style.color = '#94a3b8'; }}
+        >
+          Chains
+        </button>
+        <button
           onClick={() => navigate('/quiz')}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
@@ -121,6 +137,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
         <Route path="/people" element={<PeoplePage />} />
+        <Route path="/chains" element={<ChainsPage />} />
         <Route path="/quiz" element={<QuizPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
