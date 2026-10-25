@@ -36,12 +36,9 @@ const SLATE = '#64748b';
 const ASH = '#94a3b8';
 const TEAL = '#14b8a6';
 const PLUM = '#a855f7';
-const ROSE = '#f43f5e';
 const AMBER = '#d97706';
 const SKY = '#0ea5e9';
-const GREEN = '#22c55e';
 const STEEL = '#64748b';
-const COPPER = '#c2410c';
 const INK = '#1e293b';
 
 // ─────────────────────────────────────────────────────────────────────────────
