@@ -8,6 +8,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { searchEvents, searchEventsSemantic } from '../api/client';
 import { IS_DEMO_MODE } from '../config/demo';
+import { formatYear } from '../utils/format';
 import { useAppStore } from '../store';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import { MOCK_EVENTS } from '../api/client';
@@ -115,6 +116,7 @@ export default function SearchBar() {
   return (
     <div
       ref={containerRef}
+      role="search"
       style={{
         position: 'fixed',
         top: 20,
@@ -140,21 +142,28 @@ export default function SearchBar() {
         }}
       >
         <span
+          aria-hidden="true"
           style={{
             position: 'absolute',
             left: 14,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: '#475569',
+            color: '#64748b',
             fontSize: 16,
             pointerEvents: 'none',
           }}
         >
           🔍
         </span>
+        <label htmlFor="chronicle-search" className="sr-only">
+          Search historical events
+        </label>
         <input
+          id="chronicle-search"
           ref={inputRef}
-          type="text"
+          type="search"
+          autoComplete="off"
+          aria-describedby="chronicle-search-status"
           value={inputValue}
           onChange={(e) => { setInputValue(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
@@ -241,8 +250,16 @@ export default function SearchBar() {
       </div>
 
       {/* Dropdown */}
+      {/* Announce result counts to screen readers */}
+      <div id="chronicle-search-status" className="sr-only" aria-live="polite">
+        {showDropdown && !isFetching
+          ? `${results.length} result${results.length === 1 ? '' : 's'}`
+          : ''}
+      </div>
+
       {showDropdown && (
         <div
+          className="chronicle-fade-in"
           style={{
             backgroundColor: 'rgba(7, 14, 34, 0.97)',
             backdropFilter: 'blur(20px)',
@@ -271,8 +288,18 @@ export default function SearchBar() {
             </div>
           )}
           {results.length === 0 ? (
-            <div style={{ padding: '14px 16px', color: '#475569', fontSize: 13, textAlign: 'center' }}>
-              {isFetching ? 'Searching…' : 'No events found'}
+            <div
+              role="status"
+              style={{ padding: '14px 16px', color: '#94a3b8', fontSize: 13, textAlign: 'center' }}
+            >
+              {isFetching ? 'Searching…' : (
+                <>
+                  No events match “{debouncedQuery}”.
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                    Try a place, a person, or a broader word{IS_DEMO_MODE ? ' — the demo holds a 300-event sample' : ''}.
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             results.map((result, i) => {
@@ -281,6 +308,7 @@ export default function SearchBar() {
               return (
                 <button
                   key={result.id}
+                  type="button"
                   onClick={() => handleSelect(result)}
                   style={{
                     display: 'flex',
@@ -327,14 +355,14 @@ export default function SearchBar() {
                     <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {result.title}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
-                      {result.year_approx}
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                      {formatYear(result.year_approx)}
                       {result.geo_modern ? ` · ${result.geo_modern}` : ''}
                     </div>
                   </div>
 
                   {/* Fly-to indicator */}
-                  <span style={{ color: '#475569', fontSize: 12, flexShrink: 0 }}>
+                  <span aria-hidden="true" style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
                     ✈ fly to
                   </span>
                 </button>

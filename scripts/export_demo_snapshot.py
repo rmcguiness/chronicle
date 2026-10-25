@@ -25,6 +25,8 @@ Usage (from the repo root):
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import importlib.util
 import json
 import sys
@@ -89,17 +91,6 @@ CATEGORY_FALLBACK = {
     "disaster": "natural",
 }
 
-# Mirrors backend/scripts/compute_network_layout.py
-CATEGORY_BANDS = {
-    "war": 0.10,
-    "political": 0.25,
-    "religious": 0.40,
-    "cultural": 0.55,
-    "discovery": 0.70,
-    "disaster": 0.85,
-    "natural": 0.85,
-}
-
 # Frontend PerspectiveType values (viewpoint_type is passed through as perspective_type).
 PERSPECTIVE_TYPES = {
     "government", "civilian", "foreign", "academic", "nationalist",
@@ -139,9 +130,8 @@ def _norm_category(raw: Any) -> str:
     return CATEGORY_FALLBACK.get(cat, "cultural")
 
 
-def _network_y(raw_category: str, importance: float) -> float:
-    base = CATEGORY_BANDS.get(raw_category, 0.50)
-    return round(max(0.0, min(1.0, base + (importance - 0.5) * 0.12)), 4)
+# network_y is intentionally omitted: the DB value comes from scripts/compute_network_layout.py
+# (pixel offsets), and without it NetworkView computes the same tree layout client-side.
 
 
 def _year_label(year: int) -> str:
@@ -219,6 +209,70 @@ def collect_links(events: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     return list(links.values())
 
 
+VERBOSE = bool(os.environ.get("CHRONICLE_EXPORT_VERBOSE"))
+_STOPWORDS = {"the", "of", "and", "a", "an", "in", "on", "to", "for", "at", "by", "with", "from"}
+
+
+# Words too generic to identify an event on their own ("Battle of Midway — Turning Point"
+# vs "Battle of Stalingrad — Turning Point" are different events).
+_GENERIC = {
+    "battle", "turning", "point", "war", "wars", "settlement", "death", "rise", "founding",
+    "founds", "founded", "first", "end", "begins", "age", "empire", "kingdom", "great", "new",
+    "birth", "peak", "construction", "after", "under", "its",
+}
+
+
+def _title_words(title: str) -> set[str]:
+    words = re.findall(r"[a-z0-9]+", title.lower().replace("\u2019s", "").replace("'s", ""))
+    return {w for w in words if w not in _STOPWORDS}
+
+
+def merge_duplicates(
+    events: dict[str, dict[str, Any]], links: list[dict[str, Any]]
+) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
+    """Collapse near-duplicate events that different seed batches added under different slugs.
+
+    Two events are duplicates when they share a year and their title words overlap
+    (ignoring generic words, they share two or more words covering half of the shorter title,
+    or one title's words are a subset of the other's), e.g. "Revolutions of 1848 — The Springtime of Nations" and
+    "Revolutions of 1848 — Springtime of Peoples". The better-connected (then more
+    important) one is kept and links are re-pointed to it.
+    """
+    degree: dict[str, int] = defaultdict(int)
+    for link in links:
+        degree[link["cause"]] += 1
+        degree[link["effect"]] += 1
+    by_year: dict[int, list[str]] = defaultdict(list)
+    for slug, ev in events.items():
+        by_year[int(ev["year"])].append(slug)
+    rank = lambda s: (-degree.get(s, 0), -float(events[s].get("importance_score", 0.5)), s)  # noqa: E731
+    canonical: dict[str, str] = {}
+    for slugs in by_year.values():
+        kept: list[str] = []
+        for slug in sorted(slugs, key=rank):
+            words = _title_words(events[slug]["title"]) - _GENERIC
+            for k in kept:
+                other = _title_words(events[k]["title"]) - _GENERIC
+                if not words or not other:
+                    continue
+                shared = len(words & other)
+                subset = words <= other or other <= words
+                if (shared >= 2 and shared / min(len(words), len(other)) >= 0.5) or subset:
+                    canonical[slug] = k
+                    if VERBOSE:
+                        print(f"  merge: {events[slug]['title']!r} -> {events[k]['title']!r}", file=sys.stderr)
+                    break
+            else:
+                kept.append(slug)
+    merged_links: dict[tuple[str, str], dict[str, Any]] = {}
+    for link in links:
+        cause = canonical.get(link["cause"], link["cause"])
+        effect = canonical.get(link["effect"], link["effect"])
+        if cause != effect:
+            merged_links.setdefault((cause, effect), {**link, "cause": cause, "effect": effect})
+    return {s: e for s, e in events.items() if s not in canonical}, list(merged_links.values())
+
+
 def select_subset(
     events: dict[str, dict[str, Any]], links: list[dict[str, Any]], limit: int
 ) -> tuple[list[str], list[dict[str, Any]]]:
@@ -238,10 +292,14 @@ def select_subset(
     return ordered, kept
 
 
-def build_snapshot(limit: int) -> dict[str, Any]:
+def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
     _stub_db_modules()
     events = collect_events()
+    # The canvas spans 5000 BCE – 2100 CE (CANVAS_CONSTANTS); deep-prehistory events
+    # would never be visible in the demo, so leave them out.
+    events = {slug: ev for slug, ev in events.items() if int(ev["year"]) >= min_year}
     links = collect_links(events)
+    events, links = merge_duplicates(events, links)
     slugs, kept_links = select_subset(events, links, limit)
 
     out_events = []
@@ -293,7 +351,6 @@ def build_snapshot(limit: int) -> dict[str, Any]:
                 "category": _norm_category(raw_cat),
                 "importance_score": round(importance, 3),
                 "perspective_count": len(ev.get("perspectives") or []),
-                "network_y": _network_y(raw_cat, importance),
                 "is_bce": year < 0,
             }
         )
@@ -332,10 +389,11 @@ def build_snapshot(limit: int) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--limit", type=int, default=300, help="max events in the snapshot (default 300)")
+    parser.add_argument("--min-year", type=int, default=-5000, help="earliest year to include (default -5000)")
     parser.add_argument("--out", type=Path, default=OUT_PATH, help="output path")
     args = parser.parse_args()
 
-    snapshot = build_snapshot(args.limit)
+    snapshot = build_snapshot(args.min_year, args.limit)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(snapshot, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     s = snapshot["stats"]

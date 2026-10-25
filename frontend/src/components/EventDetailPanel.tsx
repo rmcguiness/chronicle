@@ -558,8 +558,22 @@ export default function EventDetailPanel() {
     setDetailPanelOpen(false);
   };
 
+  // Escape closes the panel (unless focus is in a text field, which handles Escape itself).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (e.key === 'Escape' && tag !== 'INPUT' && tag !== 'TEXTAREA') setDetailPanelOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, setDetailPanelOpen]);
+
   return (
-    <div
+    <aside
+      aria-label={event ? `Event details: ${event.title}` : 'Event details'}
+      aria-hidden={!isOpen}
+      inert={!isOpen}
       style={{
         position: 'fixed',
         top: 0,
@@ -618,7 +632,7 @@ export default function EventDetailPanel() {
                     {icon}
                   </span>
                   <div>
-                    <div
+                    <h2
                       style={{
                         fontSize: 20,
                         fontWeight: 800,
@@ -627,7 +641,7 @@ export default function EventDetailPanel() {
                       }}
                     >
                       {event.title}
-                    </div>
+                    </h2>
                     <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
                       {formatYear(event.year_approx, event.date_display)}
                     </div>
@@ -640,8 +654,10 @@ export default function EventDetailPanel() {
               </>
             )}
             {isLoading && (
-              <div style={{ color: '#64748b', fontSize: 14, padding: '8px 0' }}>
-                Loading event…
+              <div role="status" aria-live="polite" style={{ display: 'grid', gap: 10, padding: '4px 0' }}>
+                <span className="sr-only">Loading event…</span>
+                <div aria-hidden="true" className="chronicle-skeleton" style={{ height: 20, width: '70%' }} />
+                <div aria-hidden="true" className="chronicle-skeleton" style={{ height: 12, width: '30%' }} />
               </div>
             )}
           </div>
@@ -753,7 +769,7 @@ export default function EventDetailPanel() {
           </div>
         </div>
       )}
-    </div>
+    </aside>
   );
 }
 

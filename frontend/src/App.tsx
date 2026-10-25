@@ -16,6 +16,7 @@
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MotionConfig } from 'framer-motion';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
 import EventDetailPanel from './components/EventDetailPanel';
@@ -54,8 +55,15 @@ function MainView() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
+      <a className="skip-link" href="#chronicle-search">
+        Skip to search
+      </a>
+      <h1 className="sr-only">Chronicle — interactive timeline of historical events and their causes</h1>
+
       {/* Network causality graph — the primary view */}
-      <NetworkView />
+      <main aria-label="Event network">
+        <NetworkView />
+      </main>
 
       {/* Top search bar */}
       <SearchBar />
@@ -85,6 +93,8 @@ function MainView() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Framer Motion honours the OS "reduce motion" setting app-wide */}
+      <MotionConfig reducedMotion="user">
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
@@ -99,6 +109,7 @@ export default function App() {
       </Routes>
       {/* Demo-only notice (renders nothing in normal builds) */}
       <DemoBanner />
+      </MotionConfig>
     </QueryClientProvider>
   );
 }

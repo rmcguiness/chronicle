@@ -37,6 +37,7 @@ import NetworkTimeline from './NetworkTimeline';
 import { fetchTiles, fetchAllCausalityLinks } from '../api/client';
 import { CONNECTION_COLORS } from '../utils/categories';
 import { useAppStore } from '../store';
+import { IS_DEMO_MODE } from '../config/demo';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
 
@@ -79,6 +80,34 @@ const COLLISION_SPREAD_FACTOR = 2.5;
  * use DB positions instead of client-side tree layout.
  */
 const PRECOMPUTED_THRESHOLD = 0.8;
+
+/** Shared style for centered loading / error / empty overlays. */
+const OVERLAY_CARD_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 320,
+  maxWidth: 'calc(100vw - 32px)',
+  padding: '20px 24px',
+  borderRadius: 12,
+  backgroundColor: 'rgba(7,14,34,0.94)',
+  border: '1px solid rgba(96,165,250,0.25)',
+  boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+  textAlign: 'center',
+  zIndex: 20,
+};
+
+const OVERLAY_BUTTON_STYLE: React.CSSProperties = {
+  padding: '8px 16px',
+  borderRadius: 8,
+  border: '1px solid rgba(96,165,250,0.4)',
+  background: 'rgba(59,130,246,0.18)',
+  color: '#bfdbfe',
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+};
 
 const NODE_TYPES = { event: EventNode };
 const EDGE_TYPES = { causality: CausalityEdge };
@@ -602,20 +631,31 @@ function NetworkViewInner() {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Fetch all events via the tile endpoint with a broad viewport
-  const { data: tileData, isLoading: tilesLoading } = useQuery({
+  const {
+    data: tileData,
+    isLoading: tilesLoading,
+    isError: tilesError,
+    refetch: refetchTiles,
+  } = useQuery({
     queryKey: ['network-tiles'],
     queryFn: () => fetchTiles(FULL_VIEWPORT),
     staleTime: 5 * 60_000,
   });
 
   // Fetch all causality links
-  const { data: allLinks, isLoading: linksLoading } = useQuery({
+  const {
+    data: allLinks,
+    isLoading: linksLoading,
+    isError: linksError,
+    refetch: refetchLinks,
+  } = useQuery({
     queryKey: ['network-causality'],
     queryFn: fetchAllCausalityLinks,
     staleTime: 5 * 60_000,
   });
 
   const isLoading = tilesLoading || linksLoading;
+  const isError = tilesError || linksError;
 
   // All events from the data source (unfiltered)
   const allEvents: HistoricalEvent[] = useMemo(
@@ -818,61 +858,56 @@ function NetworkViewInner() {
         </div>
       </div>
 
-      {/* Loading indicator */}
+      {/* Loading state */}
       {isLoading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            padding: '6px 12px',
-            borderRadius: 8,
-            backgroundColor: 'rgba(7,14,34,0.9)',
-            border: '1px solid rgba(96,165,250,0.3)',
-            fontSize: 12,
-            color: '#60a5fa',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            zIndex: 20,
-          }}
-        >
-          <span
-            style={{
-              animation: 'spin 1s linear infinite',
-              display: 'inline-block',
+        <div role="status" aria-live="polite" className="chronicle-fade-in" style={OVERLAY_CARD_STYLE}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <span className="chronicle-spinner" aria-hidden="true" />
+            <span style={{ fontSize: 14, color: '#e2e8f0', fontWeight: 500 }}>Loading the timeline…</span>
+          </div>
+          <div aria-hidden="true" style={{ display: 'grid', gap: 8, marginTop: 16 }}>
+            <div className="chronicle-skeleton" style={{ height: 8, width: '90%' }} />
+            <div className="chronicle-skeleton" style={{ height: 8, width: '70%' }} />
+            <div className="chronicle-skeleton" style={{ height: 8, width: '80%' }} />
+          </div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {!isLoading && isError && (
+        <div role="alert" className="chronicle-fade-in" style={OVERLAY_CARD_STYLE}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>
+            Couldn’t load events
+          </div>
+          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 }}>
+            {IS_DEMO_MODE
+              ? 'The demo data file didn’t load. Check your connection and try again.'
+              : 'The API didn’t respond. Make sure the backend is running, then retry.'}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              void refetchTiles();
+              void refetchLinks();
             }}
+            style={OVERLAY_BUTTON_STYLE}
           >
-            ⟳
-          </span>
-          Loading network…
+            Try again
+          </button>
         </div>
       )}
 
       {/* Empty state when no events match the filter */}
-      {!isLoading && filteredEvents.length === 0 && allEvents.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            padding: '16px 24px',
-            borderRadius: 12,
-            backgroundColor: 'rgba(7,14,34,0.9)',
-            border: '1px solid rgba(96,165,250,0.2)',
-            fontSize: 14,
-            color: '#94a3b8',
-            textAlign: 'center',
-            zIndex: 20,
-          }}
-        >
-          <div style={{ fontSize: 24, marginBottom: 8 }}>🔍</div>
-          No events in the selected time range.
-          <br />
-          <span style={{ fontSize: 12, color: '#475569' }}>
-            Adjust the timeline scrubber to see events.
-          </span>
+      {!isLoading && !isError && filteredEvents.length === 0 && (
+        <div role="status" className="chronicle-fade-in" style={OVERLAY_CARD_STYLE}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>
+            {allEvents.length > 0 ? 'No events in this time range' : 'No events yet'}
+          </div>
+          <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.5 }}>
+            {allEvents.length > 0
+              ? 'Drag the timeline handles below to widen the range.'
+              : 'Seed the database (see the README) to populate the timeline.'}
+          </div>
         </div>
       )}
     </div>
