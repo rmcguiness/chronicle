@@ -6,10 +6,14 @@ const CATEGORIES: EventCategory[] = ['war', 'discovery', 'political', 'cultural'
 const CONNECTIONS: ConnectionType[] = ['causes', 'leads_to', 'enables', 'context'];
 
 export default function CategoryLegend() {
-  const [collapsed, setCollapsed] = useState(false);
+  // Start collapsed on narrow screens so the legend doesn't cover the canvas.
+  const [collapsed, setCollapsed] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 640px)').matches,
+  );
 
   return (
-    <div
+    <aside
+      aria-label="Legend"
       style={{
         position: 'fixed',
         top: 80,
@@ -27,7 +31,10 @@ export default function CategoryLegend() {
     >
       {/* Toggle */}
       <button
+        type="button"
         onClick={() => setCollapsed(!collapsed)}
+        aria-expanded={!collapsed}
+        aria-controls="chronicle-legend-body"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -46,14 +53,14 @@ export default function CategoryLegend() {
         }}
       >
         <span>Legend</span>
-        <span style={{ fontSize: 14 }}>{collapsed ? '▸' : '▾'}</span>
+        <span aria-hidden="true" style={{ fontSize: 14 }}>{collapsed ? '▸' : '▾'}</span>
       </button>
 
       {!collapsed && (
-        <>
+        <div id="chronicle-legend-body">
           {/* Event categories */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
               Event Type
             </div>
             {CATEGORIES.map((cat) => (
@@ -80,7 +87,7 @@ export default function CategoryLegend() {
 
           {/* Causality edges */}
           <div>
-            <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, fontWeight: 700 }}>
               Causality
             </div>
             {CONNECTIONS.map((conn) => (
@@ -101,8 +108,8 @@ export default function CategoryLegend() {
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </aside>
   );
 }

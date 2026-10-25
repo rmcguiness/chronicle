@@ -9,6 +9,7 @@
  */
 
 import { useAppStore } from '../store';
+import { IS_DEMO_MODE } from '../config/demo';
 
 /**
  * Toolbar button with a calendar icon that toggles the On This Day panel.
@@ -16,6 +17,9 @@ import { useAppStore } from '../store';
 export default function OnThisDayButton() {
   const open = useAppStore((s) => s.onThisDayOpen);
   const setOpen = useAppStore((s) => s.setOnThisDayOpen);
+
+  // The demo sample has years only (no calendar days), so On This Day is hidden.
+  if (IS_DEMO_MODE) return null;
 
   return (
     <button

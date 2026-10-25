@@ -7,6 +7,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { searchEvents, searchEventsSemantic } from '../api/client';
+import { IS_DEMO_MODE } from '../config/demo';
+import { formatYear } from '../utils/format';
 import { useAppStore } from '../store';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import { MOCK_EVENTS } from '../api/client';
@@ -53,6 +55,8 @@ export default function SearchBar() {
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>(() => {
+    // Semantic search needs the backend's embeddings; the static demo is keyword-only.
+    if (IS_DEMO_MODE) return 'keyword';
     const saved = localStorage.getItem(SEARCH_MODE_KEY);
     return saved === 'semantic' ? 'semantic' : 'keyword';
   });
@@ -112,6 +116,7 @@ export default function SearchBar() {
   return (
     <div
       ref={containerRef}
+      role="search"
       style={{
         position: 'fixed',
         top: 20,
@@ -137,21 +142,28 @@ export default function SearchBar() {
         }}
       >
         <span
+          aria-hidden="true"
           style={{
             position: 'absolute',
             left: 14,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: '#475569',
+            color: '#64748b',
             fontSize: 16,
             pointerEvents: 'none',
           }}
         >
           🔍
         </span>
+        <label htmlFor="chronicle-search" className="sr-only">
+          Search historical events
+        </label>
         <input
+          id="chronicle-search"
           ref={inputRef}
-          type="text"
+          type="search"
+          autoComplete="off"
+          aria-describedby="chronicle-search-status"
           value={inputValue}
           onChange={(e) => { setInputValue(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
@@ -161,7 +173,8 @@ export default function SearchBar() {
             : 'Search events, places, years…'}
           style={{
             width: '100%',
-            padding: '13px 140px 13px 42px',
+            padding: '13px 176px 13px 42px',
+            textOverflow: 'ellipsis',
             backgroundColor: 'transparent',
             border: 'none',
             outline: 'none',
@@ -194,6 +207,8 @@ export default function SearchBar() {
             label="Semantic"
             active={searchMode === 'semantic'}
             onClick={() => handleModeChange('semantic')}
+            disabled={IS_DEMO_MODE}
+            disabledReason="Semantic search needs the backend — not available in the demo"
           />
         </div>
 
@@ -236,8 +251,16 @@ export default function SearchBar() {
       </div>
 
       {/* Dropdown */}
+      {/* Announce result counts to screen readers */}
+      <div id="chronicle-search-status" className="sr-only" aria-live="polite">
+        {showDropdown && !isFetching
+          ? `${results.length} result${results.length === 1 ? '' : 's'}`
+          : ''}
+      </div>
+
       {showDropdown && (
         <div
+          className="chronicle-fade-in"
           style={{
             backgroundColor: 'rgba(7, 14, 34, 0.97)',
             backdropFilter: 'blur(20px)',
@@ -266,8 +289,18 @@ export default function SearchBar() {
             </div>
           )}
           {results.length === 0 ? (
-            <div style={{ padding: '14px 16px', color: '#475569', fontSize: 13, textAlign: 'center' }}>
-              {isFetching ? 'Searching…' : 'No events found'}
+            <div
+              role="status"
+              style={{ padding: '14px 16px', color: '#94a3b8', fontSize: 13, textAlign: 'center' }}
+            >
+              {isFetching ? 'Searching…' : (
+                <>
+                  No events match “{debouncedQuery}”.
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                    Try a place, a person, or a broader word{IS_DEMO_MODE ? ' — the demo holds a 300-event sample' : ''}.
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             results.map((result, i) => {
@@ -276,6 +309,7 @@ export default function SearchBar() {
               return (
                 <button
                   key={result.id}
+                  type="button"
                   onClick={() => handleSelect(result)}
                   style={{
                     display: 'flex',
@@ -322,14 +356,14 @@ export default function SearchBar() {
                     <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {result.title}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
-                      {result.year_approx}
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                      {formatYear(result.year_approx)}
                       {result.geo_modern ? ` · ${result.geo_modern}` : ''}
                     </div>
                   </div>
 
                   {/* Fly-to indicator */}
-                  <span style={{ color: '#475569', fontSize: 12, flexShrink: 0 }}>
+                  <span aria-hidden="true" style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
                     ✈ fly to
                   </span>
                 </button>
@@ -357,18 +391,35 @@ export default function SearchBar() {
  * @param props.active - Whether this mode is currently active
  * @param props.onClick - Click handler
  */
-function ModeButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function ModeButton({
+  label,
+  active,
+  onClick,
+  disabled = false,
+  disabledReason,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  disabledReason?: string;
+}) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      title={disabled ? disabledReason : undefined}
       style={{
         padding: '3px 8px',
         fontSize: 10,
         fontWeight: active ? 600 : 400,
-        color: active ? '#e0e7ff' : '#64748b',
+        color: active ? '#e0e7ff' : '#94a3b8',
         backgroundColor: active ? 'rgba(99,102,241,0.3)' : 'transparent',
         border: 'none',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
         transition: 'all 0.15s',
         whiteSpace: 'nowrap',
       }}

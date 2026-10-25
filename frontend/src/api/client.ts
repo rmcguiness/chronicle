@@ -10,6 +10,15 @@ import type {
   ConnectedEvent,
 } from '../types';
 import { importanceThreshold } from '../utils/categories';
+import { IS_DEMO_MODE } from '../config/demo';
+import {
+  loadDemoSnapshot,
+  demoTiles,
+  demoEventDetail,
+  demoConnections,
+  demoSearch,
+  demoCategories,
+} from './demo';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Axios instance — reads VITE_API_URL from environment (with localhost fallback)
@@ -282,6 +291,8 @@ let _backendAvailable: boolean | null = null;
 let _checkPromise: Promise<boolean> | null = null;
 
 async function isBackendAvailable(): Promise<boolean> {
+  // Demo builds never talk to a backend.
+  if (IS_DEMO_MODE) return false;
   if (_backendAvailable !== null) return _backendAvailable;
   if (_checkPromise) return _checkPromise;
 
@@ -300,10 +311,12 @@ async function isBackendAvailable(): Promise<boolean> {
 }
 
 // Reset cache every 30 s so the app can recover when the backend starts
-setInterval(() => {
-  _backendAvailable = null;
-  _checkPromise = null;
-}, 30_000);
+if (!IS_DEMO_MODE) {
+  setInterval(() => {
+    _backendAvailable = null;
+    _checkPromise = null;
+  }, 30_000);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // API helpers — normalise backend UUID fields to strings
@@ -317,6 +330,8 @@ setInterval(() => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse> {
+  if (IS_DEMO_MODE) return demoTiles(await loadDemoSnapshot(), viewport);
+
   const available = await isBackendAvailable();
 
   if (available) {
@@ -373,6 +388,12 @@ export async function fetchTiles(viewport: CanvasViewport): Promise<TileResponse
 }
 
 export async function fetchEventDetail(slug: string): Promise<EventDetail> {
+  if (IS_DEMO_MODE) {
+    const detail = demoEventDetail(await loadDemoSnapshot(), slug);
+    if (!detail) throw new Error(`Event not in demo sample: ${slug}`);
+    return detail;
+  }
+
   const available = await isBackendAvailable();
 
   if (available) {
@@ -408,6 +429,8 @@ export async function fetchEventDetail(slug: string): Promise<EventDetail> {
 }
 
 export async function fetchEventConnections(slug: string): Promise<CausalityLink[]> {
+  if (IS_DEMO_MODE) return demoConnections(await loadDemoSnapshot(), slug);
+
   const available = await isBackendAvailable();
 
   if (available) {
@@ -438,6 +461,8 @@ export async function fetchEventConnections(slug: string): Promise<CausalityLink
  */
 export async function searchEventsSemantic(q: string, limit = 20): Promise<SearchResult[]> {
   if (!q.trim()) return [];
+  // Semantic search needs the backend's embeddings — demo falls back to keyword search.
+  if (IS_DEMO_MODE) return searchEvents(q, limit);
 
   const available = await isBackendAvailable();
   if (!available) return searchEvents(q, limit);
@@ -454,6 +479,7 @@ export async function searchEventsSemantic(q: string, limit = 20): Promise<Searc
 
 export async function searchEvents(q: string, limit = 10): Promise<SearchResult[]> {
   if (!q.trim()) return [];
+  if (IS_DEMO_MODE) return demoSearch(await loadDemoSnapshot(), q, limit);
 
   const available = await isBackendAvailable();
 
@@ -503,6 +529,8 @@ export interface ArticleResponse {
  * Returns null if the backend is unavailable.
  */
 export async function fetchArticle(slug: string): Promise<ArticleResponse | null> {
+  // Wikipedia text is fetched and cached by the backend; the static demo does not include it.
+  if (IS_DEMO_MODE) return null;
   const available = await isBackendAvailable();
   if (!available) return null;
 
@@ -577,6 +605,7 @@ export interface CategoryDetailResponse {
  * @returns CategoriesResponse
  */
 export async function fetchCategories(): Promise<CategoriesResponse> {
+  if (IS_DEMO_MODE) return demoCategories(await loadDemoSnapshot());
   const { data } = await api.get<CategoriesResponse>('/api/categories');
   return data;
 }
@@ -624,6 +653,11 @@ export interface OnThisDayResponse {
  * Defaults to today's date when no params are provided.
  */
 export async function fetchOnThisDay(month?: number, day?: number): Promise<OnThisDayResponse> {
+  if (IS_DEMO_MODE) {
+    // The demo sample only has years, not calendar days.
+    const now = new Date();
+    return { month: month ?? now.getMonth() + 1, day: day ?? now.getDate(), events: [] };
+  }
   const params = new URLSearchParams();
   if (month !== undefined) params.set('month', String(month));
   if (day !== undefined) params.set('day', String(day));
@@ -636,6 +670,8 @@ export async function fetchOnThisDay(month?: number, day?: number): Promise<OnTh
  * Used by the Network view to render all edges in the force-directed graph.
  */
 export async function fetchAllCausalityLinks(): Promise<CausalityLink[]> {
+  if (IS_DEMO_MODE) return (await loadDemoSnapshot()).links;
+
   const available = await isBackendAvailable();
 
   if (available) {

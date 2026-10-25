@@ -8,6 +8,7 @@ import { useState, useCallback } from 'react';
 import type { FormEvent } from 'react';
 import { CATEGORY_LABELS } from '../utils/categories';
 import type { EventCategory } from '../types';
+import { IS_DEMO_MODE } from '../config/demo';
 
 /** Props for SubmitEventModal. */
 interface SubmitEventModalProps {
@@ -28,7 +29,13 @@ const MIN_DESC_LENGTH = 20;
  *
  * @param props - open/onClose controls
  */
-export default function SubmitEventModal({ open, onClose }: SubmitEventModalProps) {
+export default function SubmitEventModal(props: SubmitEventModalProps) {
+  // Read-only demo: submissions are disabled (there is no backend to receive them).
+  if (IS_DEMO_MODE) return null;
+  return <SubmitEventModalForm {...props} />;
+}
+
+function SubmitEventModalForm({ open, onClose }: SubmitEventModalProps) {
   const [title, setTitle] = useState('');
   const [yearApprox, setYearApprox] = useState('');
   const [lat, setLat] = useState('');

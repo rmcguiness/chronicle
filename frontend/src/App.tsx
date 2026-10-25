@@ -16,6 +16,7 @@
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MotionConfig } from 'framer-motion';
 import NetworkView from './components/NetworkView';
 import SearchBar from './components/SearchBar';
 import EventDetailPanel from './components/EventDetailPanel';
@@ -31,6 +32,8 @@ import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
 import MedievalJapanPage from './pages/MedievalJapanPage';
 import { usePermalink } from './hooks/usePermalink';
+import DemoBanner, { DemoUnavailable } from './components/DemoBanner';
+import { IS_DEMO_MODE } from './config/demo';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -52,8 +55,15 @@ function MainView() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
+      <a className="skip-link" href="#chronicle-search">
+        Skip to search
+      </a>
+      <h1 className="sr-only">Chronicle — interactive timeline of historical events and their causes</h1>
+
       {/* Network causality graph — the primary view */}
-      <NetworkView />
+      <main aria-label="Event network">
+        <NetworkView />
+      </main>
 
       {/* Top search bar */}
       <SearchBar />
@@ -83,15 +93,23 @@ function MainView() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Framer Motion honours the OS "reduce motion" setting app-wide */}
+      <MotionConfig reducedMotion="user">
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/admin"
+          element={IS_DEMO_MODE ? <DemoUnavailable feature="Admin review" /> : <AdminPage />}
+        />
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/history-of-film" element={<HistoryOfFilmPage />} />
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
         <Route path="/medieval-japan" element={<MedievalJapanPage />} />
       </Routes>
+      {/* Demo-only notice (renders nothing in normal builds) */}
+      <DemoBanner />
+      </MotionConfig>
     </QueryClientProvider>
   );
 }
