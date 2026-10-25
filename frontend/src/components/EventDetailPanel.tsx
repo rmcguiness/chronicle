@@ -471,6 +471,18 @@ function ArticleContent({ slug }: { slug: string }) {
           Read more on Wikipedia →
         </a>
       )}
+      <p style={{ fontSize: 10, color: '#64748b', margin: '6px 0 0' }}>
+        Text from Wikipedia, available under{' '}
+        <a
+          href="https://creativecommons.org/licenses/by-sa/4.0/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#64748b' }}
+        >
+          CC BY-SA 4.0
+        </a>
+        .
+      </p>
     </div>
   );
 }

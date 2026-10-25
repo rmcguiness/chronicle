@@ -124,7 +124,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)) -> CategoriesRespo
     # 1. counts
     count_stmt = (
         select(norm, func.count().label("cnt"))
-        .where(Event.event_category.isnot(None))
+        .where(Event.event_category.isnot(None), Event.review_status == "approved")
         .group_by(literal_column("norm_category"))
         .order_by(func.count().desc())
     )
@@ -142,7 +142,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)) -> CategoriesRespo
         # 2. top-3 featured events per category
         feat_stmt = (
             select(Event.id, Event.slug, Event.title, Event.year_approx, Event.importance_score)
-            .where(Event.event_category.in_(raw_cats))
+            .where(Event.event_category.in_(raw_cats), Event.review_status == "approved")
             .order_by(Event.importance_score.desc())
             .limit(3)
         )
@@ -185,7 +185,7 @@ async def get_category(
         canonical = CATEGORY_ALIASES[category]
         raw_cats = [canonical] + [alias for alias, canon in CATEGORY_ALIASES.items() if canon == canonical]
 
-    base = select(Event).where(Event.event_category.in_(raw_cats))
+    base = select(Event).where(Event.event_category.in_(raw_cats), Event.review_status == "approved")
 
     # Era filter
     if era and era in ERA_RANGES:
@@ -232,7 +232,7 @@ async def get_category(
     # Distinct regions for filter dropdown
     region_stmt = (
         select(Event.geo_modern)
-        .where(Event.event_category.in_(raw_cats), Event.geo_modern.isnot(None))
+        .where(Event.event_category.in_(raw_cats), Event.geo_modern.isnot(None), Event.review_status == "approved")
         .distinct()
         .order_by(Event.geo_modern)
     )
@@ -243,7 +243,7 @@ async def get_category(
     century_expr = func.floor(Event.year_approx / 100).label("century")
     timeline_stmt = (
         select(century_expr, func.count().label("cnt"))
-        .where(Event.event_category.in_(raw_cats), Event.year_approx.isnot(None))
+        .where(Event.event_category.in_(raw_cats), Event.year_approx.isnot(None), Event.review_status == "approved")
         .group_by(century_expr)
         .order_by(century_expr)
     )
