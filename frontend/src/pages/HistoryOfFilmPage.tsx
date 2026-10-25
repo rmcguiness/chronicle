@@ -26,7 +26,6 @@ import { motion } from 'framer-motion';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SILVER = '#c0c0c0';
-const RED = '#ef4444';
 const BLUE = '#3b82f6';
 const STEEL = '#64748b';
 const ASH = '#94a3b8';
@@ -40,8 +39,6 @@ const GOLD = '#f59e0b';
 const PURPLE = '#a855f7';
 const SLATE = '#64748b';
 const SKY = '#38bdf8';
-const WARM_WHITE = '#fef3c7';
-const NOIR = '#1e293b';
 const CINEMA_RED = '#b91c1c';
 
 // ─────────────────────────────────────────────────────────────────────────────
