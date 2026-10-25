@@ -93,8 +93,8 @@ in place of the API, so it can be hosted on any free static host with no databas
 | ![Search](docs/screenshots/search.webp) | ![Mobile](docs/screenshots/mobile.webp) |
 
 **What the demo includes:** about 300 of the highest-importance seed events from 3300 BCE onward, their
-causality links and perspectives, the network canvas, timeline scrubber, legend, keyword search,
-event detail panel and bookmarks/share links.
+causality links and perspectives, the network canvas, timeline scrubber, legend, keyword search
+and the event detail panel.
 
 **What it leaves out:** everything that needs the backend. That means Wikipedia article text (the
 panel links to Wikipedia instead), semantic search, "On This Day", event submission and the admin
