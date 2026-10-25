@@ -6,7 +6,10 @@ const CATEGORIES: EventCategory[] = ['war', 'discovery', 'political', 'cultural'
 const CONNECTIONS: ConnectionType[] = ['causes', 'leads_to', 'enables', 'context'];
 
 export default function CategoryLegend() {
-  const [collapsed, setCollapsed] = useState(false);
+  // Start collapsed on narrow screens so the legend doesn't cover the canvas.
+  const [collapsed, setCollapsed] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 640px)').matches,
+  );
 
   return (
     <aside

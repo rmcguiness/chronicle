@@ -173,7 +173,8 @@ export default function SearchBar() {
             : 'Search events, places, years…'}
           style={{
             width: '100%',
-            padding: '13px 140px 13px 42px',
+            padding: '13px 176px 13px 42px',
+            textOverflow: 'ellipsis',
             backgroundColor: 'transparent',
             border: 'none',
             outline: 'none',
