@@ -126,10 +126,11 @@ and embeds the data license.
 
 Use any static host with an SPA fallback to `index.html`:
 
-- **Vercel:** `vercel.demo.json` holds the demo config (build `npm run build:demo`, output
-  `frontend/dist`, SPA rewrites, security headers). Use it with `vercel --local-config vercel.demo.json`,
-  or copy its build/output settings into a separate Vercel project. The root `vercel.json` stays
-  the full-app config.
+- **Vercel:** the root `vercel.json` builds the frontend (`npm run build`, output `frontend/dist`)
+  with SPA rewrites and security headers. Set `VITE_DEMO_MODE=true` in the Vercel project to get
+  the static demo (that is how the private PR-preview project is set up); point `VITE_API_URL` at a
+  backend instead for the full app. `vercel.demo.json` is the same config with `build:demo`
+  hard-coded, for `vercel --local-config vercel.demo.json`.
 - **Cloudflare Pages / Netlify:** root directory `frontend`, build command `npm run build:demo`,
   output `dist`, and a SPA fallback (`/* /index.html 200` in `public/_redirects` on Netlify; Pages
   serves `index.html` for unknown routes by default).
