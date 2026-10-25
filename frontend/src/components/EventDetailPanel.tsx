@@ -11,6 +11,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
+import { IS_DEMO_MODE, wikipediaSearchUrl } from '../config/demo';
 import type { ArticleResponse } from '../api/client';
 import type { Perspective, ConnectedEvent, Source } from '../types';
 import { useAppStore } from '../store';
@@ -397,7 +398,7 @@ interface ArticleFetchState {
 }
 
 /** Renders the Wikipedia article content or a fallback message. */
-function ArticleContent({ slug }: { slug: string }) {
+function ArticleContent({ slug, title }: { slug: string; title?: string }) {
   const [fetchState, setFetchState] = useState<ArticleFetchState>({
     loading: true,
     notFound: false,
@@ -430,8 +431,25 @@ function ArticleContent({ slug }: { slug: string }) {
   if (loading) return <Spinner />;
 
   if (notFound) {
+    if (IS_DEMO_MODE) {
+      return (
+        <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0', lineHeight: 1.6 }}>
+          Wikipedia article text loads from the backend, so it isn't part of this read-only demo.{' '}
+          {title && (
+            <a
+              href={wikipediaSearchUrl(title)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#60a5fa' }}
+            >
+              Look it up on Wikipedia →
+            </a>
+          )}
+        </div>
+      );
+    }
     return (
-      <div style={{ fontSize: 13, color: '#64748b', fontStyle: 'italic', padding: '8px 0' }}>
+      <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic', padding: '8px 0' }}>
         No article available yet.
       </div>
     );
@@ -691,7 +709,7 @@ export default function EventDetailPanel() {
             {/* ── Article ───────────────────────────────────────────── */}
             <div style={{ marginBottom: 20 }}>
               <div style={sectionHeaderStyle}>Article</div>
-              <ArticleContent slug={event.slug} />
+              <ArticleContent slug={event.slug} title={event.title} />
             </div>
 
             {/* ── Perspectives ──────────────────────────────────────── */}

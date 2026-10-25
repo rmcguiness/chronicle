@@ -31,6 +31,8 @@ import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
 import AgeOfSailPage from './pages/AgeOfSailPage';
 import MedievalJapanPage from './pages/MedievalJapanPage';
 import { usePermalink } from './hooks/usePermalink';
+import DemoBanner, { DemoUnavailable } from './components/DemoBanner';
+import { IS_DEMO_MODE } from './config/demo';
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -86,12 +88,17 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/admin"
+          element={IS_DEMO_MODE ? <DemoUnavailable feature="Admin review" /> : <AdminPage />}
+        />
         <Route path="/korean-war" element={<KoreanWarPage />} />
         <Route path="/history-of-film" element={<HistoryOfFilmPage />} />
         <Route path="/age-of-sail" element={<AgeOfSailPage />} />
         <Route path="/medieval-japan" element={<MedievalJapanPage />} />
       </Routes>
+      {/* Demo-only notice (renders nothing in normal builds) */}
+      <DemoBanner />
     </QueryClientProvider>
   );
 }

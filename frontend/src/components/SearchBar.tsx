@@ -7,6 +7,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { searchEvents, searchEventsSemantic } from '../api/client';
+import { IS_DEMO_MODE } from '../config/demo';
 import { useAppStore } from '../store';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import { MOCK_EVENTS } from '../api/client';
@@ -53,6 +54,8 @@ export default function SearchBar() {
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>(() => {
+    // Semantic search needs the backend's embeddings; the static demo is keyword-only.
+    if (IS_DEMO_MODE) return 'keyword';
     const saved = localStorage.getItem(SEARCH_MODE_KEY);
     return saved === 'semantic' ? 'semantic' : 'keyword';
   });
@@ -194,6 +197,8 @@ export default function SearchBar() {
             label="Semantic"
             active={searchMode === 'semantic'}
             onClick={() => handleModeChange('semantic')}
+            disabled={IS_DEMO_MODE}
+            disabledReason="Semantic search needs the backend — not available in the demo"
           />
         </div>
 
@@ -357,18 +362,35 @@ export default function SearchBar() {
  * @param props.active - Whether this mode is currently active
  * @param props.onClick - Click handler
  */
-function ModeButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function ModeButton({
+  label,
+  active,
+  onClick,
+  disabled = false,
+  disabledReason,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  disabledReason?: string;
+}) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      title={disabled ? disabledReason : undefined}
       style={{
         padding: '3px 8px',
         fontSize: 10,
         fontWeight: active ? 600 : 400,
-        color: active ? '#e0e7ff' : '#64748b',
+        color: active ? '#e0e7ff' : '#94a3b8',
         backgroundColor: active ? 'rgba(99,102,241,0.3)' : 'transparent',
         border: 'none',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
         transition: 'all 0.15s',
         whiteSpace: 'nowrap',
       }}
