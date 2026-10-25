@@ -42,3 +42,24 @@ htmlcov/
 # Misc
 *.bak
 *.tmp
+
+# Secrets / env (keep examples)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+# Local data dumps
+*.sqlite
+*.sqlite3
+*.db
+!Dockerfile.db
+*.dump
+*.sql.gz
+pgdata/
+meili_data/
+# Frontend
+frontend/dist/
+.vercel/
+coverage/

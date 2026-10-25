@@ -7,11 +7,16 @@ PATCH /api/admin/events/{id}  — admin: approve/reject an event
 """
 from __future__ import annotations
 
+import logging
+import os
 import re
+import secrets
+import time
 import uuid
+from collections import defaultdict
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from geoalchemy2.functions import ST_MakePoint, ST_SetSRID
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select, update
@@ -24,7 +29,16 @@ from app.models import Event
 # Constants
 # ────────────────────────────────────────────
 
-ADMIN_KEY = "chronicle-admin"
+# Admin API key comes from the environment only. Admin endpoints are disabled when it is
+# unset or too short. Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"
+ADMIN_KEY = os.getenv("ADMIN_KEY", "")
+if ADMIN_KEY and len(ADMIN_KEY) < 24:
+    logging.getLogger(__name__).warning("ADMIN_KEY is shorter than 24 characters; admin endpoints disabled")
+    ADMIN_KEY = ""
+
+# Anonymous submissions: per-client limit (in memory, per worker).
+SUBMIT_RATE_LIMIT = int(os.getenv("SUBMIT_RATE_LIMIT_PER_HOUR", "10"))
+_submit_requests: dict[str, list[float]] = defaultdict(list)
 
 VALID_CATEGORIES = {"war", "discovery", "political", "cultural", "natural", "person"}
 
@@ -38,12 +52,12 @@ VALID_REVIEW_STATUSES = {"pending", "approved", "rejected"}
 class SubmitEventRequest(BaseModel):
     """Payload for submitting a new historical event."""
     title: str = Field(..., min_length=1, max_length=300)
-    year_approx: int
+    year_approx: int = Field(..., ge=-10000, le=2100)
     lat: float = Field(..., ge=-90, le=90)
     lng: float = Field(..., ge=-180, le=180)
     category: str
     description: str = Field(..., min_length=20, max_length=5000)
-    source_url: Optional[str] = None
+    source_url: Optional[str] = Field(default=None, max_length=2000, pattern=r"^https?://")
 
     @field_validator("category")
     @classmethod
@@ -103,9 +117,25 @@ def _slugify(title: str, year: int) -> str:
 
 
 def _require_admin(x_admin_key: Optional[str]) -> None:
-    """Raise 403 if the admin key header is missing or wrong."""
-    if x_admin_key != ADMIN_KEY:
+    """Raise 403 if the admin key header is missing or wrong (constant-time compare)."""
+    if not ADMIN_KEY:
+        raise HTTPException(status_code=503, detail="Admin API is not configured")
+    if not x_admin_key or not secrets.compare_digest(x_admin_key.encode(), ADMIN_KEY.encode()):
         raise HTTPException(status_code=403, detail="Invalid or missing admin key")
+
+
+def _check_submit_rate_limit(client: str) -> None:
+    now = time.time()
+    window_start = now - 3600.0
+    recent = [t for t in _submit_requests[client] if t > window_start]
+    if len(recent) >= SUBMIT_RATE_LIMIT:
+        _submit_requests[client] = recent
+        raise HTTPException(status_code=429, detail="Too many submissions. Please try again later.")
+    recent.append(now)
+    _submit_requests[client] = recent
+    if len(_submit_requests) > 10_000:
+        for k in [k for k, v in _submit_requests.items() if not v or v[-1] <= window_start]:
+            del _submit_requests[k]
 
 
 # ────────────────────────────────────────────
@@ -119,6 +149,7 @@ admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
 @submit_router.post("/submit", response_model=SubmitEventResponse)
 async def submit_event(
     body: SubmitEventRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> SubmitEventResponse:
     """
@@ -126,6 +157,7 @@ async def submit_event(
 
     Inserts with review_status='pending'. Returns the generated id and slug.
     """
+    _check_submit_rate_limit(request.client.host if request.client else "unknown")
     slug = _slugify(body.title, body.year_approx)
 
     # Ensure slug uniqueness by appending a short suffix if needed

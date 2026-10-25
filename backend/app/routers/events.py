@@ -94,6 +94,7 @@ async def on_this_day(
             Event.geo_modern,
         )
         .where(
+            Event.review_status == "approved",
             Event._date_exact.isnot(None),
             extract("month", date_col) == m,
             extract("day", date_col) == d,
@@ -126,7 +127,7 @@ async def on_this_day(
 async def _get_event_by_slug(slug: str, db: AsyncSession) -> Event:
     stmt = (
         select(Event)
-        .where(Event.slug == slug)
+        .where(Event.slug == slug, Event.review_status == "approved")
         .options(
             selectinload(Event.perspectives).selectinload(Perspective.sources)
         )
@@ -211,10 +212,11 @@ async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetai
         CausalityLink.strength,
         CausalityLink.description,
     ).where(
+        CausalityLink.review_status == "approved",
         or_(
             CausalityLink.cause_event_id == event.id,
             CausalityLink.effect_event_id == event.id,
-        )
+        ),
     )
     link_result = await db.execute(link_stmt)
     raw_links = link_result.fetchall()
@@ -228,7 +230,8 @@ async def get_event(slug: str, db: AsyncSession = Depends(get_db)) -> EventDetai
     connected_events_out: list[ConnectedEventItem] = []
     if connected_ids:
         ev_stmt = select(Event.id, Event.slug, Event.title, Event.year_approx).where(
-            Event.id.in_(list(connected_ids))
+            Event.id.in_(list(connected_ids)),
+            Event.review_status == "approved",
         )
         ev_result = await db.execute(ev_stmt)
         id_to_ev = {row.id: row for row in ev_result.fetchall()}
@@ -293,7 +296,7 @@ async def get_connections(
     Returns all causality connections for this event.
     Field names match the frontend CausalityLink type.
     """
-    event_stmt = select(Event.id).where(Event.slug == slug)
+    event_stmt = select(Event.id).where(Event.slug == slug, Event.review_status == "approved")
     result = await db.execute(event_stmt)
     row = result.fetchone()
     if not row:
@@ -308,10 +311,11 @@ async def get_connections(
         CausalityLink.strength,
         CausalityLink.description,
     ).where(
+        CausalityLink.review_status == "approved",
         or_(
             CausalityLink.cause_event_id == event_id,
             CausalityLink.effect_event_id == event_id,
-        )
+        ),
     )
     links_result = await db.execute(link_stmt)
     links = links_result.fetchall()
@@ -336,6 +340,7 @@ async def get_connections(
 # ─────────────────────────────────────────────────────────────────────────────
 
 _article_cache: dict[str, "ArticleResponse"] = {}
+_ARTICLE_CACHE_MAX = 1000  # bound memory; oldest entries are evicted first
 
 
 class ArticleSection(BaseModel):
@@ -402,6 +407,8 @@ async def get_event_article(
             source="wikipedia",
         )
 
+    if len(_article_cache) >= _ARTICLE_CACHE_MAX:
+        _article_cache.pop(next(iter(_article_cache)))
     _article_cache[slug] = result
     return result
 
@@ -426,7 +433,7 @@ async def get_event_wiki(
     2. The event ``slug`` itself (hyphens converted to underscores)
     """
     # ── 1. Verify event exists ───────────────────────────────────────────────
-    ev_stmt = select(Event.wikipedia_slug).where(Event.slug == slug)
+    ev_stmt = select(Event.wikipedia_slug).where(Event.slug == slug, Event.review_status == "approved")
     ev_result = await db.execute(ev_stmt)
     ev_row = ev_result.fetchone()
     if ev_row is None:

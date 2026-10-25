@@ -143,12 +143,20 @@ backend/
 
 ---
 
+## Security
+
+Please report vulnerabilities privately; see [SECURITY.md](./SECURITY.md). Admin endpoints
+require an `ADMIN_KEY` environment variable (24+ random characters) and are disabled without it.
+
 ## License
 
-- Code: MIT
-- Data (events, perspectives, sources): ODBL 1.0
-- Content text (narratives): CC-BY-SA 4.0
+- Code: [MIT](./LICENSE) © 2026 Ryan McGuiness
+- Data (events, perspectives, sources): [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/)
+- Content text (narratives): [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+- Wikipedia text shown in the app: CC BY-SA 4.0, © Wikipedia contributors
+
+Details in [LICENSE-DATA.md](./LICENSE-DATA.md).
 
 ---
 
-*Built as a proof of concept. Full architecture in `docs/architecture.md`.*
+*Built as a proof of concept.*

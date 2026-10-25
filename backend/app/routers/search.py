@@ -13,7 +13,8 @@ import time
 from collections import defaultdict
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from starlette.concurrency import run_in_threadpool
 from geoalchemy2.functions import ST_X, ST_Y
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -97,7 +98,7 @@ def get_meili_client():
 
 @router.get("/search", response_model=SearchResponse)
 async def search(
-    q: str = Query(..., description="Search query"),
+    q: str = Query(..., max_length=200, description="Search query"),
     limit: int = Query(default=20, ge=1, le=100),
     category: Optional[str] = Query(default=None, description="Filter by category"),
     year_min: Optional[int] = Query(default=None, description="Filter by minimum year"),
@@ -253,7 +254,7 @@ async def _search_meili(
             ST_X(Event.geo_point).label("lng"),
             ST_Y(Event.geo_point).label("lat"),
         )
-        .where(Event.slug.in_(slugs))
+        .where(Event.slug.in_(slugs), Event.review_status == "approved")
     )
     ev_result = await db.execute(ev_stmt)
     ev_map = {row.slug: row for row in ev_result.fetchall()}
@@ -265,21 +266,8 @@ async def _search_meili(
             continue
         ev = ev_map.get(slug)
         if ev is None:
-            # Use data from Meilisearch hit directly (no geo)
-            results.append(
-                SearchResultItem(
-                    id=str(hit.get("id", "")),
-                    slug=slug,
-                    title=hit.get("title", ""),
-                    year_approx=hit.get("year_approx"),
-                    geo_modern=hit.get("geo_modern"),
-                    category=hit.get("category"),
-                    importance_score=float(hit.get("importance_score") or 0.5),
-                    lat=None,
-                    lng=None,
-                    score=float(hit.get("_rankingScore", 1.0)),
-                )
-            )
+            # Not (or no longer) an approved event in the database: don't trust the
+            # possibly stale search index.
             continue
         results.append(
             SearchResultItem(
@@ -336,6 +324,9 @@ def _check_rate_limit(client_ip: str) -> None:
     _semantic_requests[client_ip] = [
         t for t in _semantic_requests[client_ip] if t > window_start
     ]
+    if len(_semantic_requests) > 10_000:  # drop idle clients so memory stays bounded
+        for ip in [k for k, v in _semantic_requests.items() if not v or v[-1] <= window_start]:
+            del _semantic_requests[ip]
     if len(_semantic_requests[client_ip]) >= SEMANTIC_RATE_LIMIT:
         raise HTTPException(status_code=429, detail="Rate limit exceeded (30 req/min)")
     _semantic_requests[client_ip].append(now)
@@ -343,7 +334,8 @@ def _check_rate_limit(client_ip: str) -> None:
 
 @router.get("/search/semantic", response_model=SearchResponse)
 async def semantic_search(
-    q: str = Query(..., description="Natural language search query"),
+    request: Request,
+    q: str = Query(..., max_length=200, description="Natural language search query"),
     limit: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ) -> SearchResponse:
@@ -355,8 +347,9 @@ async def semantic_search(
     if not q.strip():
         return SearchResponse(results=[])
 
-    # Rate limit (use a fixed key since we don't have request object)
-    _check_rate_limit("global")
+    # Rate limit per client so one caller can't exhaust semantic search for everyone.
+    # Behind a proxy, run uvicorn with --proxy-headers/--forwarded-allow-ips so this is the real client.
+    _check_rate_limit(request.client.host if request.client else "unknown")
 
     # Check if any embeddings exist
     count_result = await db.execute(
@@ -370,7 +363,8 @@ async def semantic_search(
 
     # Encode query
     model = _get_embedding_model()
-    query_embedding = model.encode([q])[0]
+    # encode() is CPU-bound; keep it off the event loop.
+    query_embedding = (await run_in_threadpool(model.encode, [q]))[0]
     vec_str = "[" + ",".join(str(float(x)) for x in query_embedding) + "]"
 
     # pgvector cosine similarity search

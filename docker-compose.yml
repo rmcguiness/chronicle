@@ -1,3 +1,5 @@
+# Local development only. Ports are bound to 127.0.0.1 and the credentials are dev
+# defaults; override them via environment variables and never expose these services.
 version: "3.9"
 
 services:
@@ -8,10 +10,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: chronicle
-      POSTGRES_PASSWORD: chronicle
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chronicle}
       POSTGRES_DB: chronicle
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"  # localhost only: dev credentials below
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -24,10 +26,10 @@ services:
     image: getmeili/meilisearch:v1.7
     restart: unless-stopped
     environment:
-      MEILI_MASTER_KEY: chronicle_meili_master_key
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-chronicle_meili_master_key}
       MEILI_ENV: development
     ports:
-      - "7700:7700"
+      - "127.0.0.1:7700:7700"
     volumes:
       - meilidata:/meili_data
     healthcheck:
@@ -43,11 +45,12 @@ services:
       - ./backend:/app
     command: bash -c "pip install -r requirements.txt -q && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://chronicle:chronicle@db:5432/chronicle
       MEILI_URL: http://meilisearch:7700
-      MEILI_MASTER_KEY: chronicle_meili_master_key
+      ADMIN_KEY: ${ADMIN_KEY:-}
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-chronicle_meili_master_key}
     depends_on:
       db:
         condition: service_healthy
@@ -55,7 +58,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "5173:80"
+      - "127.0.0.1:5173:80"
     environment:
       VITE_API_URL: http://localhost:8000
     depends_on:

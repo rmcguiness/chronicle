@@ -35,7 +35,7 @@ _TIMEOUT = httpx.Timeout(5.0, read=10.0)
 # Polite User-Agent as recommended by Wikipedia API guidelines
 _USER_AGENT = (
     "ChronicleHistoricalTimeline/0.1 "
-    "(https://github.com/chronicle; contact via repo issues)"
+    "(https://github.com/rmcguiness/chronicle; contact via repo issues)"
 )
 
 

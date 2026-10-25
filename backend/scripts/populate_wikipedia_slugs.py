@@ -32,7 +32,7 @@ BATCH_SIZE = 50
 REQUEST_DELAY = 0.1  # seconds between Wikipedia requests
 
 SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "Chronicle/1.0 (historical-timeline-app; contact@example.com)"})
+SESSION.headers.update({"User-Agent": "Chronicle/1.0 (https://github.com/rmcguiness/chronicle; contact via repo issues)"})
 
 
 def title_variants(title: str) -> list[str]:
