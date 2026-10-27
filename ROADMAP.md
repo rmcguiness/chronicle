@@ -12,7 +12,6 @@ A high-level view of where Chronicle is headed. Task-sized items with implementa
   Escape to close the detail panel.
 - **Security hardening.** `ADMIN_KEY` required for moderation, rate limits on submission and
   search, a CI secret scan and Dependabot. See SECURITY.md.
-- **Branch previews.** Every pull request gets a Vercel preview deployment.
 
 ## Now (in review)
 
@@ -21,6 +20,10 @@ A high-level view of where Chronicle is headed. Task-sized items with implementa
 - **Dependency upgrade pass** (#271): React 19.3, deck.gl 9.4, ESLint 10, Vitest 5,
   sentence-transformers 6, and CI on Node 22.
 - **Contributor docs.** CONTRIBUTING.md, a code of conduct, and issue and PR templates.
+- **Vercel preview config** (#265): a preview deployment of the static demo for each pull request.
+- **Feature backlog** (#231–#247): open PRs for topic deep-dive pages and browsers (people, causal
+  chains, parallel history, year in review, categories, quotes, on-this-day) plus a canvas fix,
+  waiting for review.
 
 ## Next
 
