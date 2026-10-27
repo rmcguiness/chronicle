@@ -53,7 +53,13 @@ export default function AdminPage() {
     }
   }, [adminKey, statusFilter]);
 
-  useEffect(() => { fetchEvents(); }, [fetchEvents]);
+  // Defer the fetch out of the effect body so state updates happen in a
+  // callback (react-hooks/set-state-in-effect); the cleanup also drops a
+  // pending fetch when the key or filter changes before it starts.
+  useEffect(() => {
+    const id = setTimeout(() => { void fetchEvents(); }, 0);
+    return () => clearTimeout(id);
+  }, [fetchEvents]);
 
   const handleReview = useCallback(async (id: string, review_status: string) => {
     try {
