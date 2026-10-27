@@ -8,7 +8,8 @@ Infinite canvas historical timeline app. X axis = time, Y axis = geographic lati
 |---|---|
 | Framework | React 19 + TypeScript + Vite |
 | Canvas | @xyflow/react (react-flow v12) |
-| Map | MapLibre GL JS (free Mapbox fork) |
+| Rendering | deck.gl layers |
+| Routing | React Router |
 | State | Zustand |
 | Data fetching | TanStack React Query |
 | HTTP | Axios |
@@ -16,45 +17,34 @@ Infinite canvas historical timeline app. X axis = time, Y axis = geographic lati
 
 ## Getting Started
 
+Requires Node.js 22.
+
 ```bash
 cd frontend
-npm install
-npm run dev         # → http://localhost:5173
+cp .env.example .env   # VITE_API_URL, defaults to http://localhost:8000
+npm ci
+npm run dev            # full app, needs the backend: http://localhost:5173
+npm run dev:demo       # read-only demo on public/demo/snapshot.json, no backend
 ```
 
-## Architecture
+Checks (the same ones CI runs): `npm run lint`, `npm run build`, `npm run build:demo`, `npm test`.
+
+## Layout
 
 ```
 src/
-├── api/
-│   └── client.ts         Axios instance + mock data fallback
-├── components/
-│   ├── Canvas.tsx        Main canvas (MapLibre + ReactFlow)
-│   ├── CategoryLegend.tsx  Left sidebar legend
-│   ├── CausalityEdge.tsx  Custom edge for causality chains
-│   ├── DetailPanel.tsx    Right slide-in panel on event click
-│   ├── EventNode.tsx      Custom circular event node
-│   ├── SearchBar.tsx      Top-center search with dropdown
-│   └── TimelineScrubber.tsx  Bottom timeline with drag handles
-├── store/
-│   └── index.ts          Zustand app state + coordinate math
-├── types/
-│   └── index.ts          TypeScript interfaces
-└── utils/
-    └── categories.ts     Color/icon/label maps per category
+├── api/client.ts     Axios client; demo mode reads the JSON snapshot instead
+├── components/       Canvas and NetworkView, EventNode, CausalityEdge, SearchBar,
+│                     DetailPanel, TimelineScrubber, OnThisDay, SubmitEventModal, ...
+├── pages/            Event page, /admin moderation queue, curated topic pages
+├── config/demo.ts    IS_DEMO_MODE flag
+├── hooks/            usePermalink
+├── store/            Zustand app state + coordinate math
+├── types/            TypeScript interfaces
+└── utils/            Category colours, icons and labels
 ```
 
-## Features
-
-- **Infinite 2D canvas**: Pan left/right = time travel, scroll = time resolution
-- **MapLibre GL background**: OpenStreetMap tiles filtered to dark navy aesthetic
-- **10 mock events**: 1850–1950, spanning wars, politics, science, culture
-- **Causality chains**: Coloured curved edges with arrows connecting cause → effect
-- **Level of Detail**: Higher importance events visible at lower zoom levels
-- **Event detail panel**: Perspective cards sorted by evidence score, expandable narratives, source citations
-- **Search**: 300ms debounced search with flyover animation to target event
-- **Timeline scrubber**: Draggable range handles, click-to-jump
-- **Mock data fallback**: Works standalone — no backend required
+See the root [README](../README.md) for the full feature list and the demo mode details.
 
 ## Backend Integration
 
@@ -66,6 +56,8 @@ When backend is running at `http://localhost:8000`, the app automatically fetche
 | `GET /api/canvas/tiles` | Events for current viewport |
 | `GET /api/events/{slug}` | Full event detail with perspectives |
 | `GET /api/search?q=` | Full-text event search |
+
+The root README lists every endpoint.
 
 Mock data is used as fallback when the backend is unavailable. The "📡 Mock data" badge shows when mock data is active.
 
