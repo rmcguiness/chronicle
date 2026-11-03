@@ -20,12 +20,30 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Event
+from app.models import Event, Person
 from app.schemas import SearchResponse, SearchResultItem
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["search"])
+
+# ── Ensure pg_trgm extension is available ─────────────────────────────────────
+_pg_trgm_initialized = False
+
+
+async def _ensure_pg_trgm(db: AsyncSession) -> None:
+    """Create pg_trgm extension if it doesn't exist (idempotent)."""
+    global _pg_trgm_initialized
+    if _pg_trgm_initialized:
+        return
+    try:
+        await db.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+        await db.commit()
+        _pg_trgm_initialized = True
+    except Exception as exc:
+        logger.warning("Could not enable pg_trgm extension: %s", exc)
+        await db.rollback()
+        _pg_trgm_initialized = True  # don't retry every request
 
 # ── Rate limiting for semantic search ─────────────────────────────────────────
 SEMANTIC_RATE_LIMIT = 30  # requests per minute
@@ -131,7 +149,14 @@ async def _search_postgres(
     year_max: Optional[int],
     db: AsyncSession,
 ) -> SearchResponse:
-    """PostgreSQL tsvector search fallback — includes lat/lng."""
+    """
+    PostgreSQL search with trigram fuzzy matching + FTS fallback.
+    Searches event titles, geo fields, and perspective narratives.
+    Also searches the people table for person results.
+    """
+    await _ensure_pg_trgm(db)
+
+    # ── Event search: trigram similarity + ILIKE + FTS (union for recall) ──────
     tsq = func.plainto_tsquery("english", q)
     tsvec = func.to_tsvector(
         "english",
@@ -141,10 +166,26 @@ async def _search_postgres(
         + " "
         + func.coalesce(Event.geo_era_label, ""),
     )
-    rank = func.ts_rank(tsvec, tsq).label("rank")
+    ilike_pattern = f"%{q}%"
+
+    # Trigram similarity on title (fuzzy typo-tolerant matching)
+    trgm_score = func.similarity(Event.title, q).label("trgm_score")
+    fts_rank = func.ts_rank(tsvec, tsq).label("fts_rank")
+
+    # Combined relevance: max of trigram similarity and FTS rank
+    combined_rank = func.greatest(trgm_score, fts_rank).label("rank")
+
+    # Match if ANY of: trigram similar, ILIKE title, ILIKE geo, or FTS matches
+    match_condition = (
+        (func.similarity(Event.title, q) > 0.3)
+        | Event.title.ilike(ilike_pattern)
+        | Event.geo_modern.ilike(ilike_pattern)
+        | Event.geo_era_label.ilike(ilike_pattern)
+        | tsvec.op("@@")(tsq)
+    )
 
     conditions = [
-        tsvec.op("@@")(tsq),
+        match_condition,
         Event.review_status == "approved",
     ]
     if category:
@@ -165,33 +206,84 @@ async def _search_postgres(
             Event.importance_score,
             ST_X(Event.geo_point).label("lng"),
             ST_Y(Event.geo_point).label("lat"),
-            rank,
+            combined_rank,
         )
         .where(*conditions)
-        .order_by(rank.desc(), Event.importance_score.desc())
+        .order_by(combined_rank.desc(), Event.importance_score.desc())
         .limit(limit)
     )
 
     result = await db.execute(stmt)
     rows = result.fetchall()
 
-    return SearchResponse(
-        results=[
+    results: list[SearchResultItem] = [
+        SearchResultItem(
+            id=str(row.id),
+            slug=row.slug,
+            title=row.title,
+            year_approx=row.year_approx,
+            geo_modern=row.geo_modern,
+            category=row.event_category,
+            importance_score=row.importance_score or 0.5,
+            lat=float(row.lat) if row.lat is not None else None,
+            lng=float(row.lng) if row.lng is not None else None,
+            score=float(row.rank) if row.rank else 0.0,
+            result_type="event",
+        )
+        for row in rows
+    ]
+
+    # ── Person search: trigram similarity on name ─────────────────────────────
+    person_trgm = func.similarity(Person.name, q).label("person_score")
+    person_match = (
+        (func.similarity(Person.name, q) > 0.3)
+        | Person.name.ilike(ilike_pattern)
+    )
+
+    person_stmt = (
+        select(
+            Person.id,
+            Person.name,
+            Person.birth_year,
+            Person.death_year,
+            Person.description,
+            person_trgm,
+        )
+        .where(person_match)
+        .order_by(person_trgm.desc())
+        .limit(min(limit, 5))  # cap person results
+    )
+
+    person_result = await db.execute(person_stmt)
+    person_rows = person_result.fetchall()
+
+    for row in person_rows:
+        # Build a display string for geo_modern from lifespan
+        lifespan = ""
+        if row.birth_year and row.death_year:
+            lifespan = f"{row.birth_year}–{row.death_year}"
+        elif row.birth_year:
+            lifespan = f"b. {row.birth_year}"
+
+        results.append(
             SearchResultItem(
                 id=str(row.id),
-                slug=row.slug,
-                title=row.title,
-                year_approx=row.year_approx,
-                geo_modern=row.geo_modern,
-                category=row.event_category,
-                importance_score=row.importance_score or 0.5,
-                lat=float(row.lat) if row.lat is not None else None,
-                lng=float(row.lng) if row.lng is not None else None,
-                score=float(row.rank) if row.rank else 0.0,
+                slug=f"person-{row.id}",
+                title=row.name,
+                year_approx=row.birth_year,
+                geo_modern=lifespan or None,
+                category="person",
+                importance_score=0.5,
+                lat=None,
+                lng=None,
+                score=float(row.person_score) if row.person_score else 0.0,
+                result_type="person",
             )
-            for row in rows
-        ]
-    )
+        )
+
+    # Sort combined results by score descending
+    results.sort(key=lambda r: r.score, reverse=True)
+    return SearchResponse(results=results[:limit])
 
 
 async def _search_meili(
