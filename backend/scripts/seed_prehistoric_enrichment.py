@@ -108,23 +108,6 @@ EVENTS: list[dict[str, Any]] = [
     # MIGRATIONS
     # ═══════════════════════════════════════════════════════════════════════
     {
-        "slug": "settlement-australia-first-peoples",
-        "title": "Settlement of Australia by First Peoples",
-        "year": -65000, "lat": -12.45, "lng": 132.89,
-        "geo_modern": "Madjedbebe Rock Shelter, Northern Territory, Australia",
-        "geo_era_label": "Pleistocene Australia",
-        "category": "cultural", "importance_score": 0.9, "zoom_min": 1, "is_bce": True,
-        "perspectives": [
-            {"label": "Indigenous Australian perspective", "culture_code": "au", "viewpoint_type": "indigenous",
-             "narrative": "Aboriginal Australians are the oldest continuous civilization on Earth, having settled the continent at least 65,000 years ago. This required maritime crossing of the Wallace Line — the earliest known ocean voyage. Aboriginal peoples developed sophisticated land management, complex kinship systems, and the world's oldest continuing artistic and spiritual traditions.",
-             "summary": "The earliest known ocean crossing and settlement of an entire continent.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "Human occupation of northern Australia by 65,000 years ago", "author": "Chris Clarkson et al.", "publication": "Nature",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2017}
-             ]},
-        ],
-    },
-    {
         "slug": "migration-into-europe",
         "title": "Homo Sapiens Migration into Europe",
         "year": -45000, "lat": 43.5, "lng": 24.5,
@@ -854,23 +837,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "norte-chico-civilization",
-        "title": "Norte Chico (Caral) Civilization — Americas' First Complex Society",
-        "year": -3000, "lat": -10.89, "lng": -77.52,
-        "geo_modern": "Supe Valley, Lima Region, Peru",
-        "geo_era_label": "Preceramic Andes",
-        "category": "political", "importance_score": 0.75, "zoom_min": 3, "is_bce": True,
-        "perspectives": [
-            {"label": "Archaeological perspective", "culture_code": "pe", "viewpoint_type": "academic",
-             "narrative": "The Norte Chico (Caral) civilization (~3000–1800 BCE) in coastal Peru was the earliest known complex society in the Americas. It featured monumental pyramids, sunken circular plazas, and complex irrigation systems — all without pottery, writing, or evidence of warfare. It was contemporary with early Mesopotamian and Egyptian civilizations.",
-             "summary": "The oldest civilization in the Americas, contemporary with Sumer and Egypt.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "Dating Caral, a Preceramic Site in the Supe Valley on the Central Coast of Peru", "author": "Ruth Shady Solís et al.", "publication": "Science",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2001}
-             ]},
-        ],
-    },
-    {
         "slug": "sumerian-city-states-peak",
         "title": "Sumerian City-States — Peak of Early Urban Civilization",
         "year": -2800, "lat": 31.32, "lng": 45.64,
@@ -999,7 +965,7 @@ CAUSALITY_LINKS: list[dict[str, Any]] = [
     {"cause": "homo-sapiens-emergence-africa", "effect": "control-of-fire-early-humans", "type": "contributing", "strength": 0.6, "desc": "Early Homo sapiens inherited and refined fire use from earlier hominins"},
     {"cause": "homo-sapiens-emergence-africa", "effect": "homo-sapiens-migration-out-of-africa", "type": "direct", "strength": 0.9, "desc": "Homo sapiens emerged in Africa before migrating out"},
     {"cause": "control-of-fire-early-humans", "effect": "cognitive-revolution-symbolic-thought", "type": "contributing", "strength": 0.6, "desc": "Fire enabled cooking (brain growth) and social gathering (language development)"},
-    {"cause": "homo-sapiens-migration-out-of-africa", "effect": "settlement-australia-first-peoples", "type": "direct", "strength": 0.9, "desc": "Out of Africa migration eventually led to settlement of Australia"},
+    {"cause": "homo-sapiens-migration-out-of-africa", "effect": "aboriginal-australia-arrival", "type": "direct", "strength": 0.9, "desc": "Out of Africa migration eventually led to settlement of Australia"},
     {"cause": "homo-sapiens-migration-out-of-africa", "effect": "migration-into-europe", "type": "direct", "strength": 0.9, "desc": "Out of Africa migration led to colonization of Europe"},
     {"cause": "homo-sapiens-migration-out-of-africa", "effect": "migration-east-asia-settlement", "type": "direct", "strength": 0.9, "desc": "Out of Africa migration led to settlement of East Asia"},
     {"cause": "homo-sapiens-migration-out-of-africa", "effect": "first-human-settlement-americas-beringia", "type": "direct", "strength": 0.8, "desc": "Out of Africa migration eventually led to the Americas via Beringia"},

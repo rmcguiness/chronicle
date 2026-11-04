@@ -109,50 +109,8 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [{"title": "The House of Wisdom", "author": "Jim Al-Khalili", "publication": "Penguin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2011}]},
         ],
     },
-    {
-        "slug": "al-khwarizmi-algebra",
-        "title": "Al-Khwarizmi Publishes the Foundations of Algebra",
-        "year": 820, "lat": 33.31, "lng": 44.37,
-        "geo_modern": "Baghdad, Iraq",
-        "geo_era_label": "Abbasid Caliphate",
-        "category": "discovery", "importance_score": 0.85, "zoom_min": 2,
-        "perspectives": [
-            {"label": "History of mathematics perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Al-Khwarizmi's treatise 'Al-Kitab al-Mukhtasar fi Hisab al-Jabr wal-Muqabala' (c. 820) systematized the solving of linear and quadratic equations. The word 'algebra' derives from al-jabr, and 'algorithm' from his Latinized name — Algoritmi.",
-             "summary": "The founding text of algebra, one of mathematics' most important works.", "evidence_score": 0.90,
-             "sources": [{"title": "Al-Khwarizmi: The Father of Algebra", "author": "Roshdi Rashed", "publication": "UNESCO", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}]},
-        ],
-    },
-    {
-        "slug": "avicenna-canon-of-medicine",
-        "title": "Avicenna Writes The Canon of Medicine",
-        "year": 1025, "lat": 32.65, "lng": 51.68,
-        "geo_modern": "Isfahan, Iran",
-        "geo_era_label": "Islamic Golden Age",
-        "category": "discovery", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "History of medicine perspective", "culture_code": "ir", "viewpoint_type": "academic",
-             "narrative": "Ibn Sina (Avicenna) completed The Canon of Medicine around 1025. This encyclopedic work synthesized Greco-Roman medicine with Islamic medical advances and remained the standard medical textbook in both Islamic and European universities for over 500 years.",
-             "summary": "The most influential medical textbook in history, used for five centuries.", "evidence_score": 0.88,
-             "sources": [{"title": "Avicenna: His Life and Works", "author": "Soheil Afnan", "publication": "Allen & Unwin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1958}]},
-        ],
-    },
 
     # --- Crusades ---
-    {
-        "slug": "first-crusade-1095",
-        "title": "First Crusade — Pope Urban II's Call to Arms",
-        "year": 1095, "lat": 45.78, "lng": 3.08,
-        "geo_modern": "Clermont, France",
-        "geo_era_label": "Medieval Europe",
-        "category": "war", "importance_score": 0.85, "zoom_min": 1,
-        "perspectives": [
-            {"label": "European historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Pope Urban II's call at the Council of Clermont in 1095 launched the First Crusade. European knights captured Jerusalem in 1099, establishing Crusader states in the Levant and inaugurating two centuries of religious warfare that reshaped Christian-Muslim relations.",
-             "summary": "The launch of the Crusades, transforming European and Middle Eastern history.", "evidence_score": 0.88,
-             "sources": [{"title": "The First Crusade: A New History", "author": "Thomas Asbridge", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2004}]},
-        ],
-    },
     {
         "slug": "third-crusade-1189",
         "title": "Third Crusade — Richard the Lionheart vs Saladin",
@@ -165,20 +123,6 @@ EVENTS: list[dict[str, Any]] = [
              "narrative": "The Third Crusade (1189–1192) pitted Europe's greatest kings — Richard I of England, Philip II of France — against Saladin. Despite recapturing Acre, Richard failed to retake Jerusalem. The truce allowed Christian pilgrim access to the holy city.",
              "summary": "The legendary clash between Richard the Lionheart and Saladin.", "evidence_score": 0.85,
              "sources": [{"title": "The Crusades: The Authoritative History", "author": "Thomas Asbridge", "publication": "Ecco", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2010}]},
-        ],
-    },
-    {
-        "slug": "fourth-crusade-sack-of-constantinople",
-        "title": "Fourth Crusade — Sack of Constantinople",
-        "year": 1204, "lat": 41.01, "lng": 28.98,
-        "geo_modern": "Istanbul, Turkey",
-        "geo_era_label": "Late Byzantine Empire",
-        "category": "war", "importance_score": 0.75, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Byzantine historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The Fourth Crusade (1202–1204) was diverted from its Egyptian target to Constantinople, which Crusaders sacked in 1204. The destruction of the Christian Byzantine capital by fellow Christians fatally weakened the empire and deepened the East-West Christian schism.",
-             "summary": "Crusaders sack the greatest Christian city, fatally weakening Byzantium.", "evidence_score": 0.87,
-             "sources": [{"title": "The Fourth Crusade", "author": "Jonathan Phillips", "publication": "Viking", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2004}]},
         ],
     },
 
@@ -209,20 +153,6 @@ EVENTS: list[dict[str, Any]] = [
              "narrative": "In 1054, mutual excommunications between the Patriarch of Constantinople and the Papal legate formalized the split between Roman Catholic and Eastern Orthodox Christianity. Theological, political, and cultural differences had been building for centuries.",
              "summary": "The definitive split between Catholic and Orthodox Christianity.", "evidence_score": 0.87,
              "sources": [{"title": "The Orthodox Church", "author": "Timothy Ware", "publication": "Penguin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1993}]},
-        ],
-    },
-    {
-        "slug": "fall-of-constantinople-1453",
-        "title": "Fall of Constantinople to the Ottoman Turks",
-        "year": 1453, "lat": 41.01, "lng": 28.98,
-        "geo_modern": "Istanbul, Turkey",
-        "geo_era_label": "Late Medieval",
-        "category": "war", "importance_score": 0.9, "zoom_min": 1,
-        "perspectives": [
-            {"label": "Historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Sultan Mehmed II's conquest of Constantinople on May 29, 1453, ended the 1,100-year Byzantine Empire. Greek scholars fled west, catalyzing the Italian Renaissance. The Ottoman Empire gained control of the crucial East-West trade routes, motivating European maritime exploration.",
-             "summary": "The end of the Roman/Byzantine Empire and a catalyst for the Renaissance and Age of Exploration.", "evidence_score": 0.92,
-             "sources": [{"title": "1453: The Holy War for Constantinople", "author": "Roger Crowley", "publication": "Hyperion", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2005}]},
         ],
     },
 
@@ -300,34 +230,6 @@ EVENTS: list[dict[str, Any]] = [
 
     # --- Viking Age ---
     {
-        "slug": "viking-age-begins-lindisfarne",
-        "title": "Viking Age Begins — Raid on Lindisfarne",
-        "year": 793, "lat": 55.67, "lng": -1.80,
-        "geo_modern": "Lindisfarne, Northumberland, England",
-        "geo_era_label": "Viking Age",
-        "category": "war", "importance_score": 0.75, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Medieval history perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "The 793 CE raid on the monastery at Lindisfarne shocked Christendom and is conventionally considered the start of the Viking Age. Norse raiders, traders, and settlers would reshape the political map of Europe over the next three centuries.",
-             "summary": "The attack that inaugurated the Viking Age.", "evidence_score": 0.88,
-             "sources": [{"title": "The Vikings: A History", "author": "Robert Ferguson", "publication": "Viking/Penguin", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2009}]},
-        ],
-    },
-    {
-        "slug": "leif-eriksson-reaches-north-america",
-        "title": "Leif Eriksson Reaches North America — Vinland",
-        "year": 1000, "lat": 51.59, "lng": -55.53,
-        "geo_modern": "L'Anse aux Meadows, Newfoundland, Canada",
-        "geo_era_label": "Viking Age",
-        "category": "discovery", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Archaeological perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Around 1000 CE, Leif Eriksson led a Norse expedition to North America, establishing a settlement at L'Anse aux Meadows in Newfoundland — nearly 500 years before Columbus. Archaeological evidence confirms this as the earliest known European presence in the Americas.",
-             "summary": "The first confirmed European contact with the Americas.", "evidence_score": 0.90,
-             "sources": [{"title": "The Viking Discovery of America", "author": "Helge Ingstad & Anne Stine Ingstad", "publication": "Checkmark Books", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2001}]},
-        ],
-    },
-    {
         "slug": "battle-of-hastings-1066",
         "title": "Battle of Hastings — Norman Conquest of England",
         "year": 1066, "lat": 50.91, "lng": 0.49,
@@ -343,20 +245,6 @@ EVENTS: list[dict[str, Any]] = [
     },
 
     # --- Feudal Europe ---
-    {
-        "slug": "charlemagne-crowned-holy-roman-emperor",
-        "title": "Charlemagne Crowned Holy Roman Emperor",
-        "year": 800, "lat": 41.90, "lng": 12.45,
-        "geo_modern": "Rome, Italy",
-        "geo_era_label": "Carolingian Empire",
-        "category": "political", "importance_score": 0.85, "zoom_min": 2,
-        "perspectives": [
-            {"label": "European historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Pope Leo III crowned Charlemagne Emperor of the Romans on Christmas Day 800 CE, reviving the concept of a Western Roman Empire. Charlemagne united much of Western Europe, promoted literacy and learning (the Carolingian Renaissance), and established the political framework of medieval Christendom.",
-             "summary": "The coronation that created the framework for medieval European politics.", "evidence_score": 0.90,
-             "sources": [{"title": "Charlemagne: Father of a Continent", "author": "Alessandro Barbero", "publication": "University of California Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2004}]},
-        ],
-    },
     {
         "slug": "magna-carta-1215",
         "title": "Magna Carta Signed — Foundation of Constitutional Law",
@@ -400,20 +288,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "joan-of-arc-siege-of-orleans",
-        "title": "Joan of Arc Lifts the Siege of Orléans",
-        "year": 1429, "lat": 47.90, "lng": 1.90,
-        "geo_modern": "Orléans, France",
-        "geo_era_label": "Late Medieval France",
-        "category": "war", "importance_score": 0.75, "zoom_min": 2,
-        "perspectives": [
-            {"label": "French historical perspective", "culture_code": "fr", "viewpoint_type": "academic",
-             "narrative": "In 1429, the teenage peasant Joan of Arc inspired French forces to break the English siege of Orléans, turning the tide of the Hundred Years' War. Her capture, trial for heresy, and execution at age 19 made her a martyr and enduring symbol of French resistance.",
-             "summary": "A peasant girl's military triumph that saved France.", "evidence_score": 0.88,
-             "sources": [{"title": "Joan of Arc: A History", "author": "Helen Castor", "publication": "Harper", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2015}]},
-        ],
-    },
-    {
         "slug": "peasants-revolt-england-1381",
         "title": "Peasants' Revolt in England",
         "year": 1381, "lat": 51.51, "lng": -0.12,
@@ -429,20 +303,6 @@ EVENTS: list[dict[str, Any]] = [
     },
 
     # --- Mongol Empire ---
-    {
-        "slug": "genghis-khan-unites-mongols",
-        "title": "Genghis Khan Unites the Mongol Tribes",
-        "year": 1206, "lat": 48.0, "lng": 107.0,
-        "geo_modern": "Khentii Province, Mongolia",
-        "geo_era_label": "Mongol Empire",
-        "category": "political", "importance_score": 0.9, "zoom_min": 1,
-        "perspectives": [
-            {"label": "Historical perspective", "culture_code": "mn", "viewpoint_type": "academic",
-             "narrative": "In 1206, Temüjin was proclaimed Genghis Khan (Universal Ruler) at a great assembly of Mongol tribes. He created the largest contiguous land empire in history, establishing the Yasa law code, religious tolerance, and a meritocratic military system that conquered from China to Eastern Europe.",
-             "summary": "The founding of the largest contiguous land empire in history.", "evidence_score": 0.88,
-             "sources": [{"title": "Genghis Khan and the Making of the Modern World", "author": "Jack Weatherford", "publication": "Crown", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2004}]},
-        ],
-    },
     {
         "slug": "mongol-destruction-of-baghdad",
         "title": "Mongol Destruction of Baghdad — End of the Abbasid Caliphate",
@@ -474,20 +334,6 @@ EVENTS: list[dict[str, Any]] = [
 
     # --- African Kingdoms ---
     {
-        "slug": "mansa-musa-pilgrimage-1324",
-        "title": "Mansa Musa's Pilgrimage to Mecca — Richest Man in History",
-        "year": 1324, "lat": 12.65, "lng": -8.0,
-        "geo_modern": "Timbuktu / Niani, Mali",
-        "geo_era_label": "Mali Empire",
-        "category": "cultural", "importance_score": 0.85, "zoom_min": 2,
-        "perspectives": [
-            {"label": "African historical perspective", "culture_code": "ml", "viewpoint_type": "academic",
-             "narrative": "In 1324, Mansa Musa of the Mali Empire embarked on a hajj to Mecca with an entourage of 60,000 and so much gold that he crashed the Egyptian economy for a decade. Often called the richest person in history, his pilgrimage put West Africa on European and Arab maps.",
-             "summary": "The richest person in history displayed Mali's extraordinary wealth to the world.", "evidence_score": 0.85,
-             "sources": [{"title": "Mansa Musa and the Empire of Mali", "author": "P. James Oliver", "publication": "CreateSpace", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2013}]},
-        ],
-    },
-    {
         "slug": "great-zimbabwe-flourishes",
         "title": "Great Zimbabwe — Peak of a Southern African Kingdom",
         "year": 1300, "lat": -20.27, "lng": 30.93,
@@ -503,34 +349,6 @@ EVENTS: list[dict[str, Any]] = [
     },
 
     # --- Americas ---
-    {
-        "slug": "classic-maya-collapse",
-        "title": "Classic Maya Civilization Collapse",
-        "year": 900, "lat": 17.22, "lng": -89.62,
-        "geo_modern": "Tikal, Petén, Guatemala",
-        "geo_era_label": "Classic Maya Period",
-        "category": "cultural", "importance_score": 0.75, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Archaeological perspective", "culture_code": "gt", "viewpoint_type": "academic",
-             "narrative": "Around 900 CE, the great Maya cities of the southern lowlands were abandoned in a collapse likely driven by prolonged drought, warfare, deforestation, and political fragmentation. However, Maya civilization persisted in the northern Yucatán at sites like Chichén Itzá.",
-             "summary": "The mysterious abandonment of one of the Americas' greatest civilizations.", "evidence_score": 0.82,
-             "sources": [{"title": "The Classic Maya Collapse", "author": "T. Patrick Culbert", "publication": "University of New Mexico Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1973}]},
-        ],
-    },
-    {
-        "slug": "aztec-founding-tenochtitlan",
-        "title": "Aztec Founding of Tenochtitlan",
-        "year": 1325, "lat": 19.43, "lng": -99.13,
-        "geo_modern": "Mexico City, Mexico",
-        "geo_era_label": "Aztec Empire",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Mesoamerican historical perspective", "culture_code": "mx", "viewpoint_type": "academic",
-             "narrative": "According to Aztec tradition, the Mexica people founded Tenochtitlan in 1325 on an island in Lake Texcoco, where they saw an eagle perched on a cactus — an image now on Mexico's flag. By 1500, Tenochtitlan was one of the world's largest cities with over 200,000 inhabitants.",
-             "summary": "The founding of what would become one of the world's greatest pre-Columbian cities.", "evidence_score": 0.85,
-             "sources": [{"title": "The Aztecs", "author": "Michael Smith", "publication": "Blackwell", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2012}]},
-        ],
-    },
     {
         "slug": "inca-empire-expansion",
         "title": "Inca Empire Rapid Expansion under Pachacuti",
@@ -609,62 +427,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "ottoman-empire-suleiman-magnificent",
-        "title": "Suleiman the Magnificent — Ottoman Empire at Its Zenith",
-        "year": 1520, "lat": 41.01, "lng": 28.98,
-        "geo_modern": "Istanbul, Turkey",
-        "geo_era_label": "Ottoman Empire",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Ottoman historical perspective", "culture_code": "tr", "viewpoint_type": "academic",
-             "narrative": "Suleiman the Magnificent (r. 1520–1566) presided over the Ottoman Empire at its peak, controlling southeastern Europe, the Middle East, and North Africa. His legal reforms, architectural patronage, and military campaigns made the Ottoman Empire a dominant world power.",
-             "summary": "The zenith of Ottoman power, rivaling any contemporary European state.", "evidence_score": 0.87,
-             "sources": [{"title": "Suleiman the Magnificent", "author": "André Clot", "publication": "Saqi Books", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2005}]},
-        ],
-    },
-    {
-        "slug": "martin-luther-95-theses",
-        "title": "Martin Luther Posts the 95 Theses — Protestant Reformation",
-        "year": 1517, "lat": 51.87, "lng": 12.64,
-        "geo_modern": "Wittenberg, Saxony-Anhalt, Germany",
-        "geo_era_label": "Early Modern Europe",
-        "category": "cultural", "importance_score": 0.9, "zoom_min": 1,
-        "perspectives": [
-            {"label": "Religious history perspective", "culture_code": "de", "viewpoint_type": "academic",
-             "narrative": "Martin Luther's posting of his 95 Theses on October 31, 1517, challenged papal authority and the sale of indulgences, sparking the Protestant Reformation. Enabled by the printing press, his ideas spread rapidly, permanently fracturing Western Christianity and reshaping European politics.",
-             "summary": "The act that shattered Western Christian unity and remade European civilization.", "evidence_score": 0.92,
-             "sources": [{"title": "Martin Luther: Renegade and Prophet", "author": "Lyndal Roper", "publication": "Random House", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2017}]},
-        ],
-    },
-    {
-        "slug": "magellan-circumnavigation",
-        "title": "Magellan's Expedition — First Circumnavigation of the Globe",
-        "year": 1519, "lat": 36.53, "lng": -6.29,
-        "geo_modern": "Sanlúcar de Barrameda, Spain",
-        "geo_era_label": "Age of Exploration",
-        "category": "discovery", "importance_score": 0.85, "zoom_min": 1,
-        "perspectives": [
-            {"label": "Maritime history perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Ferdinand Magellan departed Spain in 1519 with five ships. Though Magellan was killed in the Philippines in 1521, Juan Sebastián Elcano completed the circumnavigation in 1522 with one surviving ship. The voyage proved the Earth's spherical shape and revealed the true scale of the Pacific.",
-             "summary": "The first voyage around the world, proving the globe's true scale.", "evidence_score": 0.90,
-             "sources": [{"title": "Over the Edge of the World", "author": "Laurence Bergreen", "publication": "Morrow", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2003}]},
-        ],
-    },
-    {
-        "slug": "copernicus-heliocentric-model",
-        "title": "Copernicus Publishes Heliocentric Model",
-        "year": 1543, "lat": 53.77, "lng": 20.47,
-        "geo_modern": "Frombork, Poland",
-        "geo_era_label": "Scientific Revolution",
-        "category": "discovery", "importance_score": 0.9, "zoom_min": 1,
-        "perspectives": [
-            {"label": "History of science perspective", "culture_code": "pl", "viewpoint_type": "academic",
-             "narrative": "Nicolaus Copernicus published 'De revolutionibus orbium coelestium' in 1543, proposing that the Earth and planets orbit the Sun. This heliocentric model overturned 1,400 years of geocentric astronomy, launching the Scientific Revolution that transformed humanity's understanding of the cosmos.",
-             "summary": "The book that displaced Earth from the center of the universe.", "evidence_score": 0.92,
-             "sources": [{"title": "The Book Nobody Read", "author": "Owen Gingerich", "publication": "Walker & Company", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2004}]},
-        ],
-    },
-    {
         "slug": "spanish-armada-defeated",
         "title": "Spanish Armada Defeated by England",
         "year": 1588, "lat": 50.37, "lng": -4.14,
@@ -721,34 +483,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "thirty-years-war",
-        "title": "Thirty Years' War — Europe's Deadliest Religious Conflict",
-        "year": 1618, "lat": 50.09, "lng": 14.42,
-        "geo_modern": "Prague, Czech Republic",
-        "geo_era_label": "Early Modern Europe",
-        "category": "war", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "European historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The Thirty Years' War (1618–1648), triggered by the Defenestration of Prague, devastated Central Europe with religious and dynastic warfare. Germany lost up to a third of its population. The Peace of Westphalia (1648) established the modern system of sovereign nation-states.",
-             "summary": "The catastrophic war that gave birth to the modern international system.", "evidence_score": 0.88,
-             "sources": [{"title": "The Thirty Years' War: Europe's Tragedy", "author": "Peter Wilson", "publication": "Harvard University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2009}]},
-        ],
-    },
-    {
-        "slug": "peace-of-westphalia",
-        "title": "Peace of Westphalia — Birth of the Nation-State System",
-        "year": 1648, "lat": 52.03, "lng": 7.63,
-        "geo_modern": "Osnabrück / Münster, Germany",
-        "geo_era_label": "Early Modern Europe",
-        "category": "political", "importance_score": 0.85, "zoom_min": 1,
-        "perspectives": [
-            {"label": "International relations perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The 1648 Peace of Westphalia ended the Thirty Years' War and established the principle of state sovereignty — that each nation controls its own territory and religion without external interference. This Westphalian system remains the foundation of international relations.",
-             "summary": "The treaties that created the modern system of sovereign nation-states.", "evidence_score": 0.88,
-             "sources": [{"title": "The Peace of Westphalia", "author": "Derek Croxton", "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2013}]},
-        ],
-    },
-    {
         "slug": "english-civil-war",
         "title": "English Civil War — Parliament vs Crown",
         "year": 1642, "lat": 52.52, "lng": -1.47,
@@ -760,34 +494,6 @@ EVENTS: list[dict[str, Any]] = [
              "narrative": "The English Civil War (1642–1651) pitted Parliamentarians against Royalists over the limits of royal power. King Charles I was executed in 1649 — a revolutionary act that established the precedent that rulers are accountable to their people.",
              "summary": "The war that established parliamentary supremacy in England.", "evidence_score": 0.88,
              "sources": [{"title": "The English Civil War", "author": "Diane Purkiss", "publication": "HarperCollins", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2006}]},
-        ],
-    },
-    {
-        "slug": "newton-principia-mathematica",
-        "title": "Newton's Principia Mathematica — Laws of Motion and Gravity",
-        "year": 1687, "lat": 52.20, "lng": 0.12,
-        "geo_modern": "Cambridge, England",
-        "geo_era_label": "Scientific Revolution",
-        "category": "discovery", "importance_score": 0.95, "zoom_min": 1,
-        "perspectives": [
-            {"label": "History of science perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "Isaac Newton's 'Philosophiæ Naturalis Principia Mathematica' (1687) laid out the three laws of motion and the law of universal gravitation, unifying terrestrial and celestial mechanics. It is arguably the most important single work in the history of science.",
-             "summary": "The work that unified physics and launched the modern scientific age.", "evidence_score": 0.95,
-             "sources": [{"title": "Never at Rest: A Biography of Isaac Newton", "author": "Richard Westfall", "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1980}]},
-        ],
-    },
-    {
-        "slug": "mughal-empire-akbar-golden-age",
-        "title": "Akbar the Great — Mughal Empire's Golden Age",
-        "year": 1556, "lat": 27.18, "lng": 78.02,
-        "geo_modern": "Agra, India",
-        "geo_era_label": "Mughal India",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "South Asian historical perspective", "culture_code": "in", "viewpoint_type": "academic",
-             "narrative": "Akbar the Great (r. 1556–1605) expanded the Mughal Empire across most of the Indian subcontinent while promoting religious tolerance, administrative reform, and cultural synthesis. His reign produced remarkable art, architecture, and literature blending Hindu and Islamic traditions.",
-             "summary": "The architect of Mughal India's greatest era of tolerance and cultural brilliance.", "evidence_score": 0.87,
-             "sources": [{"title": "Akbar and His India", "author": "Irfan Habib", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1997}]},
         ],
     },
     {
@@ -805,20 +511,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "ming-dynasty-zheng-he-voyages",
-        "title": "Zheng He's Treasure Voyages — Ming China's Naval Expeditions",
-        "year": 1405, "lat": 32.06, "lng": 118.78,
-        "geo_modern": "Nanjing, China",
-        "geo_era_label": "Ming Dynasty China",
-        "category": "discovery", "importance_score": 0.8, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Chinese maritime history perspective", "culture_code": "cn", "viewpoint_type": "academic",
-             "narrative": "Between 1405 and 1433, Admiral Zheng He led seven massive naval expeditions with fleets of up to 300 ships and 27,000 men, reaching Southeast Asia, India, Arabia, and East Africa. These voyages showcased Ming China's naval supremacy decades before European exploration began.",
-             "summary": "China's extraordinary naval expeditions, decades before Columbus.", "evidence_score": 0.85,
-             "sources": [{"title": "When China Ruled the Seas", "author": "Louise Levathes", "publication": "Oxford University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1994}]},
-        ],
-    },
-    {
         "slug": "act-of-union-great-britain",
         "title": "Act of Union — Great Britain Formed",
         "year": 1707, "lat": 55.95, "lng": -3.19,
@@ -830,20 +522,6 @@ EVENTS: list[dict[str, Any]] = [
              "narrative": "The Acts of Union in 1707 merged the kingdoms of England and Scotland into the Kingdom of Great Britain, creating a unified parliament in Westminster. This political union enabled the combined resources and talents that would build the British Empire.",
              "summary": "The merger that created Great Britain as a unified state.", "evidence_score": 0.87,
              "sources": [{"title": "The Union of 1707", "author": "Christopher Whatley", "publication": "Edinburgh University Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2006}]},
-        ],
-    },
-    {
-        "slug": "american-declaration-of-independence",
-        "title": "American Declaration of Independence",
-        "year": 1776, "lat": 39.95, "lng": -75.15,
-        "geo_modern": "Philadelphia, Pennsylvania, USA",
-        "geo_era_label": "American Revolution",
-        "category": "political", "importance_score": 0.95, "zoom_min": 1,
-        "perspectives": [
-            {"label": "American historical perspective", "culture_code": "us", "viewpoint_type": "academic",
-             "narrative": "On July 4, 1776, the Continental Congress adopted the Declaration of Independence, drafted primarily by Thomas Jefferson. Its assertion that 'all men are created equal' with 'unalienable rights' to 'life, liberty, and the pursuit of happiness' became a foundational statement of democratic ideals worldwide.",
-             "summary": "The founding document of American democracy and a global declaration of human rights.", "evidence_score": 0.95,
-             "sources": [{"title": "American Scripture: Making the Declaration of Independence", "author": "Pauline Maier", "publication": "Knopf", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1997}]},
         ],
     },
     {
@@ -861,34 +539,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "napoleon-seizes-power",
-        "title": "Napoleon Seizes Power — Coup of 18 Brumaire",
-        "year": 1799, "lat": 48.86, "lng": 2.35,
-        "geo_modern": "Paris, France",
-        "geo_era_label": "Napoleonic Era",
-        "category": "political", "importance_score": 0.85, "zoom_min": 1,
-        "perspectives": [
-            {"label": "French historical perspective", "culture_code": "fr", "viewpoint_type": "academic",
-             "narrative": "Napoleon Bonaparte's coup d'état on November 9, 1799, ended the French Revolution and established the Consulate. Napoleon would crown himself Emperor in 1804, reshape European borders, spread revolutionary ideals through conquest, and introduce the Napoleonic Code that still underpins legal systems worldwide.",
-             "summary": "The military genius who ended the Revolution and remade Europe.", "evidence_score": 0.90,
-             "sources": [{"title": "Napoleon: A Life", "author": "Andrew Roberts", "publication": "Viking", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2014}]},
-        ],
-    },
-    {
-        "slug": "columbian-exchange-begins",
-        "title": "Columbus Reaches the Americas — Columbian Exchange Begins",
-        "year": 1492, "lat": 24.05, "lng": -74.53,
-        "geo_modern": "San Salvador, Bahamas",
-        "geo_era_label": "Age of Exploration",
-        "category": "discovery", "importance_score": 0.95, "zoom_min": 1,
-        "perspectives": [
-            {"label": "Global historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Christopher Columbus's 1492 voyage initiated the Columbian Exchange — the massive transfer of plants, animals, diseases, and people between the Old and New Worlds. While devastating for indigenous populations through disease and colonization, it created the interconnected global world we inhabit today.",
-             "summary": "The voyage that connected two hemispheres and reshaped the entire world.", "evidence_score": 0.92,
-             "sources": [{"title": "1493: Uncovering the New World Columbus Created", "author": "Charles Mann", "publication": "Knopf", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2011}]},
-        ],
-    },
-    {
         "slug": "atlantic-slave-trade-peak",
         "title": "Atlantic Slave Trade — Forced Migration of Millions",
         "year": 1700, "lat": 6.3, "lng": 2.6,
@@ -900,20 +550,6 @@ EVENTS: list[dict[str, Any]] = [
              "narrative": "The Atlantic slave trade forcibly transported an estimated 12.5 million Africans to the Americas between the 16th and 19th centuries, peaking around 1700–1800. This massive forced migration fueled colonial economies, devastated African societies, and created the African diaspora that shapes the Americas today.",
              "summary": "The largest forced migration in history, reshaping three continents.", "evidence_score": 0.90,
              "sources": [{"title": "The Slave Trade: The Story of the Atlantic Slave Trade", "author": "Hugh Thomas", "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1997}]},
-        ],
-    },
-    {
-        "slug": "qing-dynasty-conquers-china",
-        "title": "Qing Dynasty Conquers China — Manchu Rule Established",
-        "year": 1644, "lat": 39.91, "lng": 116.39,
-        "geo_modern": "Beijing, China",
-        "geo_era_label": "Qing Dynasty China",
-        "category": "political", "importance_score": 0.75, "zoom_min": 2,
-        "perspectives": [
-            {"label": "Chinese historical perspective", "culture_code": "cn", "viewpoint_type": "academic",
-             "narrative": "The Manchu conquest of Ming China in 1644 established the Qing Dynasty, which would rule until 1912. The Qing expanded China to its largest territorial extent, incorporating Tibet, Xinjiang, and Mongolia, while presiding over both cultural flourishing and eventual decline.",
-             "summary": "The last imperial dynasty, which expanded China to its greatest extent.", "evidence_score": 0.87,
-             "sources": [{"title": "The Qing Dynasty and Traditional Chinese Culture", "author": "Richard Smith", "publication": "Rowman & Littlefield", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2015}]},
         ],
     },
     {
@@ -952,11 +588,11 @@ EVENTS: list[dict[str, Any]] = [
 
 CAUSALITY_LINKS: list[dict[str, Any]] = [
     # Gutenberg → Reformation → Religious wars → Westphalia
-    {"cause": "gutenberg-printing-press", "effect": "martin-luther-95-theses",
+    {"cause": "gutenberg-printing-press", "effect": "martin-luther-95-theses-1517",
      "link_type": "direct", "strength": 0.9, "description": "The printing press enabled rapid dissemination of Luther's ideas across Europe"},
-    {"cause": "martin-luther-95-theses", "effect": "thirty-years-war",
+    {"cause": "martin-luther-95-theses-1517", "effect": "thirty-years-war-1618-1648",
      "link_type": "direct", "strength": 0.85, "description": "The Protestant Reformation sparked the religious conflicts that escalated into the Thirty Years' War"},
-    {"cause": "thirty-years-war", "effect": "peace-of-westphalia",
+    {"cause": "thirty-years-war-1618-1648", "effect": "thirty-years-war-peace-westphalia-1648",
      "link_type": "direct", "strength": 0.95, "description": "The Thirty Years' War's devastation led directly to the Peace of Westphalia"},
 
     # Black Death → labor scarcity → peasant revolts → end of feudalism
@@ -964,45 +600,45 @@ CAUSALITY_LINKS: list[dict[str, Any]] = [
      "link_type": "direct", "strength": 0.85, "description": "Post-plague labor shortages empowered surviving peasants, triggering revolts against feudal obligations"},
 
     # Mongol Baghdad → Islamic Golden Age ends → Renaissance
-    {"cause": "mongol-destruction-of-baghdad", "effect": "fall-of-constantinople-1453",
+    {"cause": "mongol-destruction-of-baghdad", "effect": "fall-constantinople-1453",
      "link_type": "indirect", "strength": 0.5, "description": "Mongol destabilization weakened the broader Islamic world, altering regional power dynamics"},
-    {"cause": "fall-of-constantinople-1453", "effect": "gutenberg-printing-press",
+    {"cause": "fall-constantinople-1453", "effect": "gutenberg-printing-press",
      "link_type": "contributing", "strength": 0.6, "description": "Greek scholars fleeing Constantinople brought classical knowledge westward, stimulating Renaissance learning and demand for books"},
 
     # Columbus → Columbian Exchange → Slave Trade → Colonial empires
-    {"cause": "columbian-exchange-begins", "effect": "atlantic-slave-trade-peak",
+    {"cause": "columbus-reaches-americas-1492", "effect": "atlantic-slave-trade-peak",
      "link_type": "direct", "strength": 0.85, "description": "European colonization of the Americas created demand for enslaved labor to work plantations"},
-    {"cause": "columbian-exchange-begins", "effect": "east-india-company-founded",
+    {"cause": "columbus-reaches-americas-1492", "effect": "east-india-company-founded",
      "link_type": "contributing", "strength": 0.7, "description": "Columbus's success inspired further European maritime expansion and colonial ventures"},
 
     # Scientific Revolution chain: Copernicus → Galileo → Newton
-    {"cause": "copernicus-heliocentric-model", "effect": "galileo-telescope-observations",
+    {"cause": "copernicus-publishes-de-revolutionibus", "effect": "galileo-telescope-observations",
      "link_type": "direct", "strength": 0.9, "description": "Galileo sought to confirm Copernicus's heliocentric theory through telescopic observation"},
-    {"cause": "galileo-telescope-observations", "effect": "newton-principia-mathematica",
+    {"cause": "galileo-telescope-observations", "effect": "newton-principia-1687",
      "link_type": "direct", "strength": 0.8, "description": "Galileo's empirical methods and findings provided the foundation Newton built upon"},
-    {"cause": "newton-principia-mathematica", "effect": "enlightenment-age-of-reason",
+    {"cause": "newton-principia-1687", "effect": "enlightenment-age-of-reason",
      "link_type": "direct", "strength": 0.85, "description": "Newton's rational mechanics inspired Enlightenment thinkers to apply reason to all domains"},
 
     # Enlightenment → French/American Revolutions
-    {"cause": "enlightenment-age-of-reason", "effect": "american-declaration-of-independence",
+    {"cause": "enlightenment-age-of-reason", "effect": "american-declaration-independence",
      "link_type": "direct", "strength": 0.9, "description": "Enlightenment ideals of natural rights and consent of the governed directly inspired the Declaration"},
     {"cause": "enlightenment-age-of-reason", "effect": "french-revolution-bastille",
      "link_type": "direct", "strength": 0.85, "description": "Enlightenment philosophy provided the intellectual foundation for revolutionary ideals"},
-    {"cause": "american-declaration-of-independence", "effect": "french-revolution-bastille",
+    {"cause": "american-declaration-independence", "effect": "french-revolution-bastille",
      "link_type": "contributing", "strength": 0.7, "description": "The American Revolution's success inspired French revolutionaries"},
-    {"cause": "french-revolution-bastille", "effect": "napoleon-seizes-power",
+    {"cause": "french-revolution-bastille", "effect": "napoleon-rise-to-power",
      "link_type": "direct", "strength": 0.9, "description": "Revolutionary instability and foreign wars created conditions for Napoleon's rise"},
 
     # House of Wisdom → Al-Khwarizmi
-    {"cause": "house-of-wisdom-baghdad", "effect": "al-khwarizmi-algebra",
+    {"cause": "house-of-wisdom-baghdad", "effect": "al-khwarizmi-algebra-820",
      "link_type": "direct", "strength": 0.85, "description": "Al-Khwarizmi worked at the House of Wisdom, which provided the scholarly environment for his breakthroughs"},
-    {"cause": "house-of-wisdom-baghdad", "effect": "avicenna-canon-of-medicine",
+    {"cause": "house-of-wisdom-baghdad", "effect": "avicenna-canon-medicine-1025",
      "link_type": "contributing", "strength": 0.7, "description": "The translation movement centered at the House of Wisdom preserved the Greek medical texts Avicenna built upon"},
 
     # Genghis Khan → Pax Mongolica → destruction of Baghdad
-    {"cause": "genghis-khan-unites-mongols", "effect": "mongol-destruction-of-baghdad",
+    {"cause": "mongol-conquests-1206-1279", "effect": "mongol-destruction-of-baghdad",
      "link_type": "direct", "strength": 0.9, "description": "Genghis Khan's empire-building set in motion the Mongol conquests that destroyed Baghdad under his grandson"},
-    {"cause": "genghis-khan-unites-mongols", "effect": "pax-mongolica-trade-flourishes",
+    {"cause": "mongol-conquests-1206-1279", "effect": "pax-mongolica-trade-flourishes",
      "link_type": "direct", "strength": 0.85, "description": "Mongol unification of Eurasia created the conditions for transcontinental peace and trade"},
 
     # Battle of Hastings → Magna Carta
@@ -1012,11 +648,11 @@ CAUSALITY_LINKS: list[dict[str, Any]] = [
     # Magna Carta → English Civil War → American Revolution
     {"cause": "magna-carta-1215", "effect": "english-civil-war",
      "link_type": "indirect", "strength": 0.65, "description": "Magna Carta's principle that the king is subject to law was invoked by Parliament against Charles I"},
-    {"cause": "english-civil-war", "effect": "american-declaration-of-independence",
+    {"cause": "english-civil-war", "effect": "american-declaration-independence",
      "link_type": "indirect", "strength": 0.6, "description": "English revolutionary precedents informed American colonists' claims to self-governance"},
 
     # First Crusade → Fourth Crusade
-    {"cause": "first-crusade-1095", "effect": "fourth-crusade-sack-of-constantinople",
+    {"cause": "first-crusade-1095-1099", "effect": "fourth-crusade-sack-constantinople-1204",
      "link_type": "indirect", "strength": 0.6, "description": "The crusading movement launched in 1095 devolved into the catastrophic Fourth Crusade"},
 
     # Gunpowder → transformation of warfare
@@ -1028,7 +664,7 @@ CAUSALITY_LINKS: list[dict[str, Any]] = [
      "link_type": "direct", "strength": 0.8, "description": "Tang cosmopolitanism and stability enabled the Silk Road to reach its commercial peak"},
 
     # Charlemagne → University system
-    {"cause": "charlemagne-crowned-holy-roman-emperor", "effect": "university-of-bologna-founded",
+    {"cause": "charlemagne-coronation-800", "effect": "university-of-bologna-founded",
      "link_type": "indirect", "strength": 0.55, "description": "The Carolingian Renaissance's revival of learning laid groundwork for medieval universities"},
 ]
 

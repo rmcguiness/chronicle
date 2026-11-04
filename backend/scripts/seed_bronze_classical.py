@@ -126,60 +126,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "minoan-eruption-thera-1628bce",
-        "title": "Minoan Eruption of Thera — Catastrophic Volcanic Disaster",
-        "year": -1628, "lat": 36.40, "lng": 25.40,
-        "geo_modern": "Santorini, Greece",
-        "geo_era_label": "Bronze Age Aegean",
-        "category": "disaster", "importance_score": 0.83, "zoom_min": 2, "is_bce": True,
-        "perspectives": [
-            {"label": "Volcanological perspective", "culture_code": "gr", "viewpoint_type": "academic",
-             "narrative": "The eruption of Thera (modern Santorini) around 1628 BCE was one of the largest volcanic events in recorded history, ejecting an estimated 60 cubic kilometers of material. The resulting tsunami and ash fall devastated Minoan settlements across Crete and may have inspired the Atlantis legend. Radiocarbon and ice-core dating place the event in the mid-17th century BCE.",
-             "summary": "One of history's largest eruptions — contributed to Minoan decline and possibly the Atlantis myth.",
-             "evidence_score": 0.78,
-             "sources": [
-                 {"title": "The End of Atlantis", "author": "J.V. Luce", "publication": "Thames & Hudson",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1969}
-             ]},
-        ],
-    },
-    {
-        "slug": "shang-dynasty-oracle-bones-1250bce",
-        "title": "Shang Dynasty Oracle Bone Writing — Earliest Chinese Script",
-        "year": -1250, "lat": 36.12, "lng": 114.35,
-        "geo_modern": "Anyang, Henan, China",
-        "geo_era_label": "Shang Dynasty China",
-        "category": "cultural", "importance_score": 0.82, "zoom_min": 2, "is_bce": True,
-        "perspectives": [
-            {"label": "Chinese historical perspective", "culture_code": "cn", "viewpoint_type": "academic",
-             "narrative": "Oracle bones from the reign of Wu Ding (c. 1250 BCE) represent the earliest substantial corpus of Chinese writing. Shang diviners inscribed questions to ancestors on turtle shells and ox scapulae, then interpreted the cracks produced by heating. Over 150,000 fragments have been recovered from Yinxu, preserving the roots of the Chinese writing system still in use today.",
-             "summary": "The oldest Chinese writing — divination inscriptions that connect to modern Chinese characters.",
-             "evidence_score": 0.88,
-             "sources": [
-                 {"title": "Sources of Shang History: The Oracle-Bone Inscriptions of Bronze Age China", "author": "David Keightley",
-                  "publication": "University of California Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1978}
-             ]},
-        ],
-    },
-    {
-        "slug": "mycenaean-greece-rise-1600bce",
-        "title": "Rise of Mycenaean Greece — Shaft Graves and Warrior Elite",
-        "year": -1600, "lat": 37.73, "lng": 22.76,
-        "geo_modern": "Mycenae, Greece",
-        "geo_era_label": "Bronze Age Greece",
-        "category": "political", "importance_score": 0.76, "zoom_min": 3, "is_bce": True,
-        "perspectives": [
-            {"label": "Archaeological perspective", "culture_code": "gr", "viewpoint_type": "academic",
-             "narrative": "The shaft graves at Mycenae, dating to around 1600 BCE, reveal the sudden emergence of a wealthy warrior aristocracy in mainland Greece. The gold death masks, bronze weapons, and luxury imports show a society already engaged in long-distance trade networks spanning the Mediterranean.",
-             "summary": "Mycenaean warrior elite emerges — Greece's first great civilization.",
-             "evidence_score": 0.84,
-             "sources": [
-                 {"title": "The Mycenaeans", "author": "William Taylour", "publication": "Thames & Hudson",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1983}
-             ]},
-        ],
-    },
-    {
         "slug": "linear-b-writing-mycenaean-1450bce",
         "title": "Linear B Writing System — Mycenaean Greek Administration",
         "year": -1450, "lat": 35.30, "lng": 25.16,
@@ -915,24 +861,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "founding-roman-republic-509bce",
-        "title": "Founding of the Roman Republic — End of Monarchy",
-        "year": -509, "lat": 41.89, "lng": 12.49,
-        "geo_modern": "Rome, Italy",
-        "geo_era_label": "Early Roman Republic",
-        "category": "political", "importance_score": 0.84, "zoom_min": 2, "is_bce": True,
-        "perspectives": [
-            {"label": "Roman history perspective", "culture_code": "it", "viewpoint_type": "academic",
-             "narrative": "According to Roman tradition, the Republic was founded in 509 BCE when the Romans expelled king Tarquinius Superbus and replaced monarchy with elected consuls serving one-year terms. The new system of checks and balances — Senate, assemblies, and magistrates — created a model of republican government that later inspired the American Founders and modern democratic constitutions.",
-             "summary": "Rome becomes a republic — the governance model that inspired modern democracies.",
-             "evidence_score": 0.76,
-             "sources": [
-                 {"title": "The Beginnings of Rome", "author": "T.J. Cornell", "publication": "Routledge",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1995}
-             ]},
-        ],
-    },
-    {
         "slug": "pythagoras-school-croton-530bce",
         "title": "Pythagoras Establishes His School at Croton — Mathematics and Philosophy",
         "year": -530, "lat": 39.08, "lng": 17.12,
@@ -1019,24 +947,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Persepolis: The Archaeology of Parsa", "author": "Donald N. Wilber",
                   "publication": "Darwin Press", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1989}
-             ]},
-        ],
-    },
-    {
-        "slug": "olmec-colossal-heads-san-lorenzo-1200bce",
-        "title": "Olmec Civilization Emerges at San Lorenzo — Mesoamerica Begins",
-        "year": -1200, "lat": 17.75, "lng": -94.76,
-        "geo_modern": "San Lorenzo, Veracruz, Mexico",
-        "geo_era_label": "Early Preclassic Mesoamerica",
-        "category": "cultural", "importance_score": 0.75, "zoom_min": 3, "is_bce": True,
-        "perspectives": [
-            {"label": "Mesoamerican archaeology perspective", "culture_code": "mx", "viewpoint_type": "academic",
-             "narrative": "San Lorenzo, flourishing from about 1200 BCE, was the earliest major Olmec center and possibly the first city in Mesoamerica. Its ten colossal basalt heads — each weighing up to 50 tons and transported from mountains 80 km away — are among the most iconic artworks of the ancient Americas. The site's monumental architecture and drainage systems reveal a complex society with organized labor.",
-             "summary": "The first city of Mesoamerica — massive stone heads and the birth of complex society in the Americas.",
-             "evidence_score": 0.80,
-             "sources": [
-                 {"title": "San Lorenzo and the Olmec Civilization", "author": "Ann Cyphers", "publication": "Cambridge University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2004}
              ]},
         ],
     },
@@ -1131,24 +1041,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "vedic-rigveda-composition-1500bce",
-        "title": "Composition of the Rigveda — Oldest Sacred Text of Hinduism",
-        "year": -1500, "lat": 31.50, "lng": 72.33,
-        "geo_modern": "Punjab, Pakistan/India",
-        "geo_era_label": "Early Vedic Period",
-        "category": "cultural", "importance_score": 0.80, "zoom_min": 2, "is_bce": True,
-        "perspectives": [
-            {"label": "Indian literary perspective", "culture_code": "in", "viewpoint_type": "academic",
-             "narrative": "The Rigveda, composed between approximately 1500 and 1200 BCE, is the oldest known religious text still in continuous use. Its 1,028 hymns praise deities like Indra, Agni, and Varuna, document early Indo-Aryan society, and contain the Nasadiya Sukta — a creation hymn that remarkably questions whether even the gods know how the universe began. Its oral transmission through precise memorization techniques is considered one of humanity's greatest intellectual achievements.",
-             "summary": "The world's oldest continuously used sacred text — hymns, philosophy, and the mystery of creation.",
-             "evidence_score": 0.78,
-             "sources": [
-                 {"title": "The Rig Veda: An Anthology", "author": "Wendy Doniger", "publication": "Penguin Classics",
-                  "source_type": "primary", "reliability_tier": 1, "peer_reviewed": False, "year": 1981}
-             ]},
-        ],
-    },
-    {
         "slug": "iron-age-begins-near-east-1200bce",
         "title": "Iron Age Begins in the Near East — The New Metal Transforms Warfare",
         "year": -1200, "lat": 39.93, "lng": 32.86,
@@ -1167,24 +1059,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "bantu-expansion-africa-1000bce",
-        "title": "Bantu Expansion Across Sub-Saharan Africa — The Great Migration",
-        "year": -1000, "lat": 4.00, "lng": 12.00,
-        "geo_modern": "Cameroon / Central-Southern Africa",
-        "geo_era_label": "Iron Age Africa",
-        "category": "political", "importance_score": 0.78, "zoom_min": 2, "is_bce": True,
-        "perspectives": [
-            {"label": "African history perspective", "culture_code": "cm", "viewpoint_type": "academic",
-             "narrative": "Starting around 1000 BCE and continuing for over a millennium, Bantu-speaking peoples migrated from their homeland in the Cameroon-Nigeria border region across most of sub-Saharan Africa. They brought iron smelting, agriculture, and a family of closely related languages that now has over 500 members spoken by 350 million people. This was one of the largest and most consequential population movements in human history.",
-             "summary": "One of history's greatest migrations — Bantu peoples reshape sub-Saharan Africa.",
-             "evidence_score": 0.76,
-             "sources": [
-                 {"title": "The Bantu Languages", "author": "Derek Nurse and Gérard Philippson",
-                  "publication": "Routledge", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2003}
-             ]},
-        ],
-    },
-    {
         "slug": "kingdom-kush-rises-1070bce",
         "title": "Rise of the Kingdom of Kush — Nubian Power on the Nile",
         "year": -1070, "lat": 18.54, "lng": 31.82,
@@ -1199,24 +1073,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Kingdom of Kush", "author": "Derek Welsby", "publication": "British Museum Press",
                   "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": False, "year": 1996}
-             ]},
-        ],
-    },
-    {
-        "slug": "lapita-people-pacific-expansion-1500bce",
-        "title": "Lapita People Expand into the Pacific — Ancestors of Polynesians",
-        "year": -1500, "lat": -13.83, "lng": 171.75,
-        "geo_modern": "Samoa / Western Pacific Islands",
-        "geo_era_label": "Pacific Neolithic",
-        "category": "cultural", "importance_score": 0.72, "zoom_min": 3, "is_bce": True,
-        "perspectives": [
-            {"label": "Pacific archaeology perspective", "culture_code": "ws", "viewpoint_type": "academic",
-             "narrative": "From about 1500 BCE, the Lapita people — identified by their distinctive dentate-stamped pottery — expanded from the Bismarck Archipelago across the previously uninhabited islands of Melanesia and western Polynesia. These master navigators sailed double-hulled canoes across thousands of kilometers of open ocean, establishing the cultural foundations of Polynesian, Melanesian, and Micronesian civilizations.",
-             "summary": "The greatest seafarers of the ancient world — Lapita navigators settle the Pacific.",
-             "evidence_score": 0.78,
-             "sources": [
-                 {"title": "The Lapita Peoples", "author": "Patrick Kirch", "publication": "Blackwell",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1997}
              ]},
         ],
     },

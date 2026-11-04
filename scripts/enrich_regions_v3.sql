@@ -152,7 +152,7 @@ VALUES
  1300, '1300-01-01', '1300-12-31', false,
  ST_SetSRID(ST_MakePoint(30.93, -20.27), 4326), 'Masvingo, Zimbabwe', 'Medieval Southern Africa', 'political', 0.7, 'Great_Zimbabwe', 'seed-script:regional-enrichment-v3', 'pending', '{architecture,trade,southern-africa}'),
 
-('mansa-musa-pilgrimage-1324', 'Mansa Musa''s Pilgrimage — Richest Man in History',
+('mansa-musa-hajj-1324', 'Mansa Musa''s Pilgrimage — Richest Man in History',
  'In 1324, Mansa Musa of the Mali Empire undertook a famous hajj to Mecca with an entourage of 60,000 people and an estimated 12 tons of gold. His lavish spending in Cairo caused a decade-long gold price crash, demonstrating the extraordinary wealth of West Africa to the Mediterranean world.',
  1324, '1324-01-01', '1325-12-31', false,
  ST_SetSRID(ST_MakePoint(-8.0, 12.65), 4326), 'Niani, Mali', 'Mali Empire', 'economic', 0.8, 'Mansa_Musa', 'seed-script:regional-enrichment-v3', 'pending', '{wealth,pilgrimage,mali-empire}'),
@@ -172,12 +172,12 @@ VALUES
  1816, '1816-01-01', '1828-09-22', false,
  ST_SetSRID(ST_MakePoint(31.42, -28.32), 4326), 'KwaZulu-Natal, South Africa', 'Pre-Colonial Southern Africa', 'military', 0.7, 'Shaka', 'seed-script:regional-enrichment-v3', 'pending', '{military-innovation,zulu,mfecane}'),
 
-('berlin-conference-scramble-africa-1884', 'Berlin Conference — Scramble for Africa',
+('berlin-conference-africa-partition-1884', 'Berlin Conference — Scramble for Africa',
  'The Berlin Conference of 1884-1885 established rules for European colonization of Africa, with no African representatives present. European powers divided the continent into arbitrary borders with no regard for existing ethnic, linguistic, or political boundaries, creating problems that persist to this day.',
  1884, '1884-11-15', '1885-02-26', false,
  ST_SetSRID(ST_MakePoint(13.38, 52.52), 4326), 'Berlin, Germany', 'Scramble for Africa', 'political', 0.85, 'Berlin_Conference', 'seed-script:regional-enrichment-v3', 'pending', '{colonialism,imperialism,partition}'),
 
-('battle-of-adwa-1896', 'Battle of Adwa — Ethiopia Defeats Italy',
+('battle-adwa-ethiopia-1896', 'Battle of Adwa — Ethiopia Defeats Italy',
  'On March 1, 1896, Emperor Menelik II''s Ethiopian forces decisively defeated the Italian army at the Battle of Adwa, preserving Ethiopian sovereignty during the Scramble for Africa. This was the most significant African military victory over a European colonial power and inspired anti-colonial movements across the continent.',
  1896, '1896-03-01', '1896-03-01', false,
  ST_SetSRID(ST_MakePoint(38.98, 14.18), 4326), 'Adwa, Tigray, Ethiopia', 'Scramble for Africa', 'military', 0.75, 'Battle_of_Adwa', 'seed-script:regional-enrichment-v3', 'pending', '{anti-colonialism,ethiopia,military-victory}'),
@@ -319,7 +319,7 @@ ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
 SELECT c.id, e.id, 'direct', 0.8, 'Berlin Conference partition of Africa led to Italian colonial ambitions in Ethiopia, resulting in the Battle of Adwa', 'seed-script:regional-enrichment-v3', 'approved'
 FROM events c, events e
-WHERE c.slug = 'berlin-conference-scramble-africa-1884' AND e.slug = 'battle-of-adwa-1896'
+WHERE c.slug = 'berlin-conference-africa-partition-1884' AND e.slug = 'battle-adwa-ethiopia-1896'
 ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 
 -- Mandela release -> Year of Africa / decolonization connection
@@ -333,7 +333,7 @@ ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
 SELECT c.id, e.id, 'indirect', 0.5, 'Mali Empire''s wealth attracted rivals; its gradual decline after Mansa Musa enabled Songhai conquest', 'seed-script:regional-enrichment-v3', 'approved'
 FROM events c, events e
-WHERE c.slug = 'mansa-musa-pilgrimage-1324' AND e.slug = 'songhai-empire-timbuktu-1468'
+WHERE c.slug = 'mansa-musa-hajj-1324' AND e.slug = 'songhai-empire-timbuktu-1468'
 ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 
 -- Great Zimbabwe -> Zimbabwe gold trade
@@ -410,7 +410,7 @@ ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
 SELECT c.id, e.id, 'direct', 0.8, 'Berlin Conference awarded Congo to King Leopold II; brutal colonial legacy led to the turbulent independence crisis', 'seed-script:regional-enrichment-v3', 'approved'
 FROM events c, events e
-WHERE c.slug = 'berlin-conference-scramble-africa-1884' AND e.slug = 'congo-independence-crisis-1960'
+WHERE c.slug = 'berlin-conference-africa-partition-1884' AND e.slug = 'congo-independence-lumumba-1960'
 ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 
 -- Rwanda genocide -> African Union (never again motivation)

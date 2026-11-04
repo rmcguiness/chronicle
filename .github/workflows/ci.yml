@@ -33,6 +33,9 @@ jobs:
             find . -name "*.py" -exec python -m py_compile {} +
           fi
 
+      - name: Check seed data for duplicate events
+        run: python backend/scripts/duplicate_events.py --check
+
   frontend-build:
     runs-on: ubuntu-latest
     steps:

@@ -84,7 +84,7 @@ NEW_EVENTS = [
     ("Treaty of Wedmore — Danelaw Established", 878, "political", "United Kingdom", 51.2406, -2.8131, 0.55, "treaty-of-wedmore-danelaw-878"),
     ("Normandy Granted to Viking Leader Rollo", 911, "political", "France", 49.4432, 1.0993, 0.65, "normandy-granted-rollo-911"),
     ("Erik the Red Explores Greenland", 985, "discovery", "Greenland", 61.0, -45.0, 0.60, "erik-red-greenland-985"),
-    ("Leif Erikson Reaches North America — Vinland", 1000, "discovery", "Canada", 51.5964, -55.5339, 0.70, "leif-erikson-vinland-1000"),
+    ("Leif Erikson Reaches North America — Vinland", 1000, "discovery", "Canada", 51.5964, -55.5339, 0.70, "viking-discovery-north-america-1000"),
 
     # ═══════════════════════════════════════════════════════════════════════
     # CHARLEMAGNE & CAROLINGIANS
@@ -92,7 +92,7 @@ NEW_EVENTS = [
     ("Charles Martel Unites Frankish Kingdom", 718, "political", "France", 49.2542, 4.0347, 0.60, "charles-martel-unites-franks-718"),
     ("Pepin the Short Founds Carolingian Dynasty", 751, "political", "France", 49.2542, 4.0347, 0.60, "pepin-short-carolingian-dynasty-751"),
     ("Charlemagne Conquers Lombard Kingdom", 774, "war", "Italy", 45.4642, 9.1900, 0.60, "charlemagne-conquers-lombards-774"),
-    ("Charlemagne Crowned Holy Roman Emperor", 800, "political", "Italy", 41.9028, 12.4964, 0.85, "charlemagne-crowned-emperor-800"),
+    ("Charlemagne Crowned Holy Roman Emperor", 800, "political", "Italy", 41.9028, 12.4964, 0.85, "charlemagne-coronation-800"),
     ("Carolingian Renaissance — Revival of Learning", 800, "cultural", "France", 49.2127, 2.3523, 0.65, "carolingian-renaissance-800"),
     ("Treaty of Verdun — Division of Carolingian Empire", 843, "political", "France", 49.1613, 5.3825, 0.75, "treaty-of-verdun-843"),
     ("Donation of Pepin — Papal States Created", 756, "political", "Italy", 41.9028, 12.4964, 0.55, "donation-of-pepin-756"),

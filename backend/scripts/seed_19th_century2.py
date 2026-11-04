@@ -84,11 +84,11 @@ NEW_EVENTS = [
 
     ("Berlin Conference — Scramble for Africa", 1884, "political",
      "Berlin, Germany", "Scramble for Africa",
-     52.52, 13.41, 0.85, "berlin-conference-scramble-africa-1884"),
+     52.52, 13.41, 0.85, "berlin-conference-africa-partition-1884"),
 
     ("Battle of Adwa — Ethiopia Defeats Italy", 1896, "war",
      "Adwa, Ethiopia", "Scramble for Africa",
-     14.17, 38.90, 0.80, "battle-of-adwa-1896"),
+     14.17, 38.90, 0.80, "battle-adwa-ethiopia-1896"),
 
     ("Second Boer War Begins", 1899, "war",
      "South Africa", "Boer Wars",

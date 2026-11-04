@@ -88,7 +88,7 @@ ON CONFLICT (slug) DO NOTHING;
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
 SELECT c.id, e.id, 'contributing', 0.7, 'Silk Road trade routes facilitated the spread of bubonic plague to Europe', 'enrichment-bot', 'approved'
 FROM events c, events e
-WHERE c.slug = 'silk-road-established-han-dynasty-130bce' AND e.slug = 'black-death-1347-1351'
+WHERE c.slug = 'silk-road-established-han-dynasty-130bce' AND e.slug = 'black-death-arrives-europe'
 ON CONFLICT (cause_event_id, effect_event_id) DO NOTHING;
 
 -- Medici Bank → Renaissance patronage

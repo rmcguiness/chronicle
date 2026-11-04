@@ -35,25 +35,6 @@ EVENTS: list[dict[str, Any]] = [
     # SUB-SAHARAN AFRICA
     # ═══════════════════════════════════════════════════════════════════════
     {
-        "slug": "kingdom-of-kush-rise",
-        "title": "Rise of the Kingdom of Kush",
-        "year": -1070, "is_bce": True,
-        "lat": 18.55, "lng": 31.82,
-        "geo_modern": "Meroë, Sudan",
-        "geo_era_label": "Nubia",
-        "category": "political", "importance_score": 0.7, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "African civilizational perspective", "culture_code": "sd", "viewpoint_type": "academic",
-             "narrative": "The Kingdom of Kush emerged as a major Nubian power after the decline of New Kingdom Egypt's control over Upper Nubia. Centered at Napata and later Meroë, Kush developed its own writing system, ironworking industry, and monumental architecture including distinctive steep pyramids.",
-             "summary": "A powerful Nubian kingdom that rivaled and at times conquered Egypt.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "The Kingdom of Kush: Handbook of the Napatan-Meroitic Civilization", "author": "László Török",
-                  "publication": "Brill", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1997}
-             ]},
-        ],
-    },
-    {
         "slug": "nok-culture-west-africa",
         "title": "Nok Culture — Earliest Sub-Saharan Sculpture Tradition",
         "year": -500, "is_bce": True,
@@ -88,25 +69,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Rise and Fall of the Aksumite Empire", "author": "Stuart Munro-Hay",
                   "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1991}
-             ]},
-        ],
-    },
-    {
-        "slug": "bantu-expansion",
-        "title": "Bantu Expansion Across Sub-Saharan Africa",
-        "year": -1000, "is_bce": True,
-        "lat": 4.0, "lng": 10.0,
-        "geo_modern": "Cameroon / Central Africa",
-        "geo_era_label": "Iron Age Africa",
-        "category": "social", "importance_score": 0.8, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Linguistic-archaeological perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Starting around 1000 BCE from the Cameroon-Nigeria border region, Bantu-speaking peoples spread across central, eastern, and southern Africa over two millennia, carrying iron-smelting technology, agriculture, and related languages that today are spoken by over 300 million people.",
-             "summary": "One of the largest and most consequential human migrations in history.", "evidence_score": 0.83,
-             "sources": [
-                 {"title": "The Bantu Expansion", "author": "Koen Bostoen",
-                  "publication": "Oxford Research Encyclopedia of African History", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2018}
              ]},
         ],
     },
@@ -168,25 +130,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "mansa-musa-pilgrimage",
-        "title": "Mansa Musa's Pilgrimage to Mecca",
-        "year": 1324, "is_bce": False,
-        "lat": 12.65, "lng": -8.0,
-        "geo_modern": "Mali Empire (Niani to Cairo to Mecca)",
-        "geo_era_label": "Mali Empire",
-        "category": "economic", "importance_score": 0.85, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Economic-historical perspective", "culture_code": "ml", "viewpoint_type": "academic",
-             "narrative": "Mansa Musa's 1324 hajj with an entourage of 60,000 people and tons of gold caused inflation in Cairo's gold market for over a decade. His legendary wealth drew European attention to West Africa and he appears on the 1375 Catalan Atlas. He is often cited as the wealthiest person in history.",
-             "summary": "The richest person in history crossed the Sahara, destabilizing gold markets.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "Caravans of Gold, Fragments in Time", "author": "Kathleen Bickford Berzock",
-                  "publication": "Princeton University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2019}
-             ]},
-        ],
-    },
-    {
         "slug": "swahili-coast-city-states",
         "title": "Swahili Coast City-States Flourish",
         "year": 1200, "is_bce": False,
@@ -202,25 +145,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Swahili: The Social Landscape of a Mercantile Society", "author": "Mark Horton & John Middleton",
                   "publication": "Blackwell", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2000}
-             ]},
-        ],
-    },
-    {
-        "slug": "songhai-empire-peak",
-        "title": "Songhai Empire Under Askia Muhammad",
-        "year": 1493, "is_bce": False,
-        "lat": 16.27, "lng": -0.05,
-        "geo_modern": "Gao / Timbuktu, Mali",
-        "geo_era_label": "Songhai Empire",
-        "category": "political", "importance_score": 0.75, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "West African imperial perspective", "culture_code": "ml", "viewpoint_type": "academic",
-             "narrative": "Under Askia Muhammad (r. 1493–1528), the Songhai Empire became the largest empire in African history, stretching across West Africa. He established a professional bureaucracy, standardized weights and measures, and made Timbuktu a world center of Islamic scholarship with the University of Sankore.",
-             "summary": "The largest empire in African history and a center of Islamic learning.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "Timbuktu and the Songhay Empire", "author": "John O. Hunwick",
-                  "publication": "Brill", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2003}
              ]},
         ],
     },
@@ -259,63 +183,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Kingdom of Kongo: Civil War and Transition", "author": "John K. Thornton",
                   "publication": "University of Wisconsin Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1983}
-             ]},
-        ],
-    },
-    {
-        "slug": "zulu-kingdom-shaka",
-        "title": "Rise of the Zulu Kingdom Under Shaka",
-        "year": 1818, "is_bce": False,
-        "lat": -28.53, "lng": 30.9,
-        "geo_modern": "KwaZulu-Natal, South Africa",
-        "geo_era_label": "Zulu Kingdom",
-        "category": "military", "importance_score": 0.75, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Southern African military perspective", "culture_code": "za", "viewpoint_type": "academic",
-             "narrative": "Shaka kaSenzangakhona transformed the small Zulu chiefdom into a powerful military kingdom through revolutionary tactics including the iklwa short spear and bull-horn formation. The resulting Mfecane upheaval reshaped southern African politics, displacing populations across the subcontinent.",
-             "summary": "Military revolution that transformed southern Africa's political landscape.", "evidence_score": 0.8,
-             "sources": [
-                 {"title": "The Washing of the Spears", "author": "Donald R. Morris",
-                  "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1965}
-             ]},
-        ],
-    },
-    {
-        "slug": "scramble-for-africa-berlin-conference",
-        "title": "Berlin Conference — Scramble for Africa",
-        "year": 1884, "is_bce": False,
-        "lat": 52.52, "lng": 13.41,
-        "geo_modern": "Berlin, Germany (affecting all of Africa)",
-        "geo_era_label": "Colonial Africa",
-        "category": "political", "importance_score": 0.9, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Anti-colonial perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The Berlin Conference of 1884–85 formalized European colonial claims to African territory, partitioning the continent with no African representation. By 1914, only Ethiopia and Liberia remained independent. The arbitrary borders drawn at Berlin continue to affect African politics and identity today.",
-             "summary": "European powers carved up Africa, setting borders that endure today.", "evidence_score": 0.9,
-             "sources": [
-                 {"title": "The Scramble for Africa", "author": "Thomas Pakenham",
-                  "publication": "Random House", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1991}
-             ]},
-        ],
-    },
-    {
-        "slug": "ethiopian-victory-adwa",
-        "title": "Battle of Adwa — Ethiopia Defeats Italy",
-        "year": 1896, "is_bce": False,
-        "lat": 14.18, "lng": 38.90,
-        "geo_modern": "Adwa, Tigray, Ethiopia",
-        "geo_era_label": "Ethiopian Empire",
-        "category": "military", "importance_score": 0.8, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Pan-African perspective", "culture_code": "et", "viewpoint_type": "academic",
-             "narrative": "Emperor Menelik II's decisive victory over Italy at Adwa in 1896 preserved Ethiopian independence during the Scramble for Africa. The battle became a symbol of African resistance to colonialism and inspired anti-colonial movements worldwide, from the Pan-African movement to the Rastafari faith.",
-             "summary": "Africa's most significant military victory against European colonialism.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Battle of Adwa: African Victory in the Age of Empire", "author": "Raymond Jonas",
-                  "publication": "Harvard University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2011}
              ]},
         ],
     },
@@ -570,44 +437,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "haitian-revolution",
-        "title": "Haitian Revolution — First Successful Slave Revolt",
-        "year": 1791, "is_bce": False,
-        "lat": 19.76, "lng": -72.33,
-        "geo_modern": "Cap-Haïtien, Haiti",
-        "geo_era_label": "Colonial Saint-Domingue",
-        "category": "military", "importance_score": 0.85, "zoom_min": 2,
-        "region": "south-america",
-        "perspectives": [
-            {"label": "Revolutionary perspective", "culture_code": "ht", "viewpoint_type": "academic",
-             "narrative": "The Haitian Revolution (1791–1804) was the only successful large-scale slave revolt in history, resulting in the creation of the first Black republic. Led by Toussaint Louverture and Jean-Jacques Dessalines, enslaved people defeated French, Spanish, and British armies, fundamentally challenging the institution of slavery worldwide.",
-             "summary": "The only successful slave revolution, creating the first Black republic.", "evidence_score": 0.9,
-             "sources": [
-                 {"title": "The Black Jacobins", "author": "C.L.R. James",
-                  "publication": "Secker & Warburg", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1938}
-             ]},
-        ],
-    },
-    {
-        "slug": "simon-bolivar-liberation",
-        "title": "Simón Bolívar's Liberation of South America",
-        "year": 1819, "is_bce": False,
-        "lat": 4.71, "lng": -74.07,
-        "geo_modern": "Bogotá, Colombia",
-        "geo_era_label": "Gran Colombia",
-        "category": "military", "importance_score": 0.85, "zoom_min": 2,
-        "region": "south-america",
-        "perspectives": [
-            {"label": "Latin American independence perspective", "culture_code": "co", "viewpoint_type": "academic",
-             "narrative": "Simón Bolívar's daring crossing of the Andes and victory at Boyacá in 1819 established Gran Colombia and catalyzed the liberation of Venezuela, Colombia, Ecuador, Peru, and Bolivia from Spanish rule. His vision of a unified Latin America, though ultimately unrealized, continues to inspire the region's political imagination.",
-             "summary": "The Liberator who freed six South American nations from Spanish rule.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "Bolívar: American Liberator", "author": "Marie Arana",
-                  "publication": "Simon & Schuster", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2013}
-             ]},
-        ],
-    },
-    {
         "slug": "brazilian-independence",
         "title": "Brazilian Independence",
         "year": 1822, "is_bce": False,
@@ -642,25 +471,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The War of the Pacific", "author": "William F. Sater",
                   "publication": "University of Nebraska Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2007}
-             ]},
-        ],
-    },
-    {
-        "slug": "brazilian-abolition-slavery",
-        "title": "Brazil Abolishes Slavery — Last in the Americas",
-        "year": 1888, "is_bce": False,
-        "lat": -22.91, "lng": -43.17,
-        "geo_modern": "Rio de Janeiro, Brazil",
-        "geo_era_label": "Empire of Brazil",
-        "category": "social", "importance_score": 0.75, "zoom_min": 3,
-        "region": "south-america",
-        "perspectives": [
-            {"label": "Abolitionist perspective", "culture_code": "br", "viewpoint_type": "academic",
-             "narrative": "Princess Isabel signed the Lei Áurea (Golden Law) on May 13, 1888, making Brazil the last country in the Western Hemisphere to abolish slavery. Over its 350-year history, Brazil had imported more enslaved Africans than any other country — approximately 4.9 million people — leaving a profound legacy in Brazilian culture and society.",
-             "summary": "The end of the Western Hemisphere's last and largest slave system.", "evidence_score": 0.9,
-             "sources": [
-                 {"title": "The Abolition of the Brazilian Slave Trade", "author": "Leslie Bethell",
-                  "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1970}
              ]},
         ],
     },
@@ -801,25 +611,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "pagan-kingdom-myanmar",
-        "title": "Pagan Kingdom Unifies Burma",
-        "year": 1044, "is_bce": False,
-        "lat": 21.17, "lng": 94.87,
-        "geo_modern": "Bagan, Myanmar",
-        "geo_era_label": "Pagan Kingdom",
-        "category": "political", "importance_score": 0.65, "zoom_min": 3,
-        "region": "southeast-asia",
-        "perspectives": [
-            {"label": "Myanmar historical perspective", "culture_code": "mm", "viewpoint_type": "academic",
-             "narrative": "King Anawrahta founded the Pagan Empire in 1044, unifying Burma for the first time and establishing Theravada Buddhism as the dominant religion. Over the next 200 years, the Pagan dynasty built over 10,000 Buddhist temples and monasteries across the Bagan plain, creating one of the world's most remarkable archaeological landscapes.",
-             "summary": "The kingdom that unified Burma and built 10,000 temples at Bagan.", "evidence_score": 0.8,
-             "sources": [
-                 {"title": "The Pagan Kingdom of Burma", "author": "Michael Aung-Thwin",
-                  "publication": "University of Hawaii Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1985}
-             ]},
-        ],
-    },
-    {
         "slug": "majapahit-empire-peak",
         "title": "Majapahit Empire at Its Peak",
         "year": 1350, "is_bce": False,
@@ -949,44 +740,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Indonesian Destinies", "author": "Theodore Friend",
                   "publication": "Harvard University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2003}
-             ]},
-        ],
-    },
-    {
-        "slug": "fall-of-saigon-1975",
-        "title": "Fall of Saigon — End of the Vietnam War",
-        "year": 1975, "is_bce": False,
-        "lat": 10.78, "lng": 106.70,
-        "geo_modern": "Ho Chi Minh City (Saigon), Vietnam",
-        "geo_era_label": "Vietnam",
-        "category": "military", "importance_score": 0.85, "zoom_min": 2,
-        "region": "southeast-asia",
-        "perspectives": [
-            {"label": "Vietnamese reunification perspective", "culture_code": "vn", "viewpoint_type": "academic",
-             "narrative": "The fall of Saigon on April 30, 1975 marked the end of the Vietnam War and the reunification of Vietnam under communist rule. The war had killed over 3 million Vietnamese and 58,000 Americans, and its legacy reshaped US foreign policy, Southeast Asian geopolitics, and global anti-war movements.",
-             "summary": "The end of America's longest war and Vietnam's reunification.", "evidence_score": 0.9,
-             "sources": [
-                 {"title": "Vietnam: A History", "author": "Stanley Karnow",
-                  "publication": "Viking", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1983}
-             ]},
-        ],
-    },
-    {
-        "slug": "khmer-rouge-genocide",
-        "title": "Khmer Rouge Genocide in Cambodia",
-        "year": 1975, "is_bce": False,
-        "lat": 11.55, "lng": 104.92,
-        "geo_modern": "Phnom Penh, Cambodia",
-        "geo_era_label": "Democratic Kampuchea",
-        "category": "social", "importance_score": 0.8, "zoom_min": 3,
-        "region": "southeast-asia",
-        "perspectives": [
-            {"label": "Human rights perspective", "culture_code": "kh", "viewpoint_type": "academic",
-             "narrative": "Under Pol Pot's Khmer Rouge regime (1975–1979), approximately 1.7–2.5 million Cambodians — a quarter of the population — died from executions, forced labor, and starvation in the pursuit of an agrarian utopia. The regime emptied cities, abolished money, and targeted intellectuals, ethnic minorities, and perceived enemies.",
-             "summary": "One of the 20th century's worst genocides, killing a quarter of Cambodia's people.", "evidence_score": 0.92,
-             "sources": [
-                 {"title": "First They Killed My Father", "author": "Loung Ung",
-                  "publication": "HarperCollins", "source_type": "primary", "reliability_tier": 2, "peer_reviewed": False, "year": 2000}
              ]},
         ],
     },
@@ -1491,25 +1244,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "great-enclosure-mapungubwe",
-        "title": "Mapungubwe — Southern Africa's First State",
-        "year": 1075, "is_bce": False,
-        "lat": -22.19, "lng": 29.25,
-        "geo_modern": "Limpopo Province, South Africa",
-        "geo_era_label": "Kingdom of Mapungubwe",
-        "category": "political", "importance_score": 0.6, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Southern African archaeological perspective", "culture_code": "za", "viewpoint_type": "academic",
-             "narrative": "Mapungubwe (1075–1220 CE) was the first state-level society in southern Africa, situated at the confluence of the Limpopo and Shashe rivers. Its golden rhinoceros figurine symbolizes the wealth generated from trade with the Swahili coast. Mapungubwe's social hierarchy and trade networks laid the foundations for the later Kingdom of Zimbabwe.",
-             "summary": "The precursor to Great Zimbabwe and southern Africa's earliest kingdom.", "evidence_score": 0.78,
-             "sources": [
-                 {"title": "Mapungubwe: Ancient African Civilisation on the Limpopo", "author": "Thomas Huffman",
-                  "publication": "Wits University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2005}
-             ]},
-        ],
-    },
-    {
         "slug": "australian-stolen-generations-apology",
         "title": "Australia's Apology to the Stolen Generations",
         "year": 2008, "is_bce": False,
@@ -1525,25 +1259,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Bringing Them Home: Report of the National Inquiry into the Separation of Aboriginal and Torres Strait Islander Children from Their Families", "author": "Human Rights and Equal Opportunity Commission",
                   "publication": "Australian Government", "source_type": "primary", "reliability_tier": 1, "peer_reviewed": False, "year": 1997}
-             ]},
-        ],
-    },
-    {
-        "slug": "chavin-de-huantar",
-        "title": "Chavín de Huántar — Mother Culture of the Andes",
-        "year": -900, "is_bce": True,
-        "lat": -9.59, "lng": -77.18,
-        "geo_modern": "Áncash, Peru",
-        "geo_era_label": "Chavín Culture",
-        "category": "religious", "importance_score": 0.7, "zoom_min": 3,
-        "region": "south-america",
-        "perspectives": [
-            {"label": "Andean archaeological perspective", "culture_code": "pe", "viewpoint_type": "academic",
-             "narrative": "Chavín de Huántar (900–200 BCE) was a major ceremonial center and pilgrimage site in the Peruvian highlands. Its underground galleries, elaborate stone carvings of supernatural beings, and acoustic architecture suggest it served as an oracle site. Chavín's art style and religious influence spread across Peru, earning it the title 'mother culture of the Andes.'",
-             "summary": "The religious center that unified early Andean civilization.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "Chavín and the Origins of Andean Civilization", "author": "Richard Burger",
-                  "publication": "Thames & Hudson", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1992}
              ]},
         ],
     },
