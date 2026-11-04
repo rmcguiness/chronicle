@@ -32,7 +32,8 @@ import {
 const PANEL_WIDTH = 480;
 
 /** Z-index — must be above the timeline scrubber (z-index 100). */
-const PANEL_Z_INDEX = 110;
+/** Above the legend (150) and demo banner (110) so a full-width panel on phones covers them. */
+const PANEL_Z_INDEX = 160;
 
 /**
  * Height of the TimelineScrubber bar at the bottom of the screen (px).
@@ -579,7 +580,7 @@ export default function EventDetailPanel() {
         top: 0,
         right: 0,
         bottom: SCRUBBER_HEIGHT,
-        width: PANEL_WIDTH,
+        width: `min(${PANEL_WIDTH}px, 100vw)`,
         backgroundColor: BG_COLOR,
         backdropFilter: 'blur(16px)',
         borderLeft: `1px solid ${BORDER_COLOR}`,
@@ -587,7 +588,7 @@ export default function EventDetailPanel() {
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
-        transform: isOpen ? 'translateX(0)' : `translateX(${PANEL_WIDTH}px)`,
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
         transition: SLIDE_TRANSITION,
         pointerEvents: isOpen ? 'auto' : 'none',
       }}

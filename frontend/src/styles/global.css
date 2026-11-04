@@ -140,3 +140,24 @@ a:focus:not(:focus-visible) {
     stroke-dasharray: none;
   }
 }
+
+/* Search bar: centred, and moved out of the way of the 480px event detail panel. */
+.chronicle-searchbar {
+  left: 50%;
+  width: 480px;
+  max-width: calc(100vw - 40px);
+  transition: left 0.3s ease, width 0.3s ease, opacity 0.2s ease;
+}
+@media (min-width: 1000px) {
+  .chronicle-searchbar[data-panel-open='true'] {
+    left: calc((100vw - 480px) / 2);
+    width: min(480px, calc(100vw - 520px));
+  }
+}
+@media (max-width: 999px) {
+  /* The panel covers most of a small screen; hide search until it closes. */
+  .chronicle-searchbar[data-panel-open='true'] {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
