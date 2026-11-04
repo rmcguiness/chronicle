@@ -3,17 +3,29 @@
 A high-level view of where Chronicle is headed. Task-sized items with implementation notes are in
 [TODO.md](./TODO.md). This file covers direction and priorities.
 
-## Now
+## Done
 
 - **Static demo mode.** A read-only build backed by a seed-data snapshot (`npm run build:demo`),
   for showing the project without running the backend. See the README.
 - **UI polish and accessibility.** Shared design tokens, loading/error/empty states,
   `prefers-reduced-motion` support, labelled controls, keyboard focus styles, a skip link and
   Escape to close the detail panel.
+- **Security hardening.** `ADMIN_KEY` required for moderation, rate limits on submission and
+  search, a CI secret scan and Dependabot. See SECURITY.md.
 - **Search.** Keyboard navigation through results (arrow keys, Home/End, Enter) using the ARIA
   combobox pattern, and highlighting of the matching words.
 - **Demo data quality.** The demo exporter catches more duplicate seed events, and CI checks that
   the committed snapshot matches the exporter output.
+- **Dependency upgrade pass** (#271): React 19.3, deck.gl 9.4, ESLint 10, Vitest 5,
+  sentence-transformers 6, and CI on Node 22.
+- **Vercel preview config** (#265): a preview deployment of the static demo for each pull request.
+
+## Now (in review)
+
+- **Contributor docs.** CONTRIBUTING.md, a code of conduct, and issue and PR templates.
+- **Feature backlog** (#231–#247): open PRs for topic deep-dive pages and browsers (people, causal
+  chains, parallel history, year in review, categories, quotes, on-this-day) plus a canvas fix,
+  waiting for review.
 
 ## Next
 

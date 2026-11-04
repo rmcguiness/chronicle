@@ -21,6 +21,10 @@ An infinite canvas where history is explored spatially — time on the X axis, g
 ### Prerequisites
 - Docker + Docker Compose
 - Python 3.11+
+- Node.js 22 (for the frontend)
+
+Only want to look at the UI? Skip to [Static demo mode](#static-demo-mode-no-backend). It needs
+Node only.
 
 ### 1. Start the database and search engine
 
@@ -79,6 +83,19 @@ OpenAPI docs: **http://localhost:8000/docs**
 > **Note:** The docker-compose maps PostgreSQL to **port 5433** (not 5432) to avoid conflicts
 > with local PostgreSQL installations. The `.env` defaults are pre-configured for this.
 > If port 5433 is free and you have no local PostgreSQL, you can change it to 5432.
+
+### 7. Start the frontend
+
+```bash
+cd frontend
+cp .env.example .env   # VITE_API_URL=http://localhost:8000
+npm ci
+npm run dev            # http://localhost:5173
+```
+
+Semantic search needs embeddings (`python scripts/generate_embeddings.py` in `backend/`) and the
+search index (`python scripts/index_meilisearch.py`). The moderation queue at `/admin` needs
+`ADMIN_KEY` set in `backend/.env`.
 
 ---
 
@@ -152,9 +169,21 @@ attribution (see `LICENSE-DATA.md`), and so does the banner.
 |--------|----------|-------------|
 | GET | `/api/health` | Health check |
 | GET | `/api/canvas/tiles` | Spatial+temporal tile query for canvas |
+| GET | `/api/events/on-this-day` | Events that happened on today's date |
 | GET | `/api/events/{slug}` | Full event with perspectives |
 | GET | `/api/events/{slug}/connections` | Causality connections |
-| GET | `/api/search?q=query` | Full-text search |
+| GET | `/api/events/{slug}/article` | Wikipedia article text for an event |
+| GET | `/api/events/{slug}/wiki` | Short Wikipedia summary |
+| POST | `/api/events/submit` | Submit a new event for review (rate limited) |
+| GET | `/api/search?q=query` | Full-text search (Meilisearch) |
+| GET | `/api/search/semantic?q=query` | Semantic search (pgvector embeddings) |
+| GET | `/api/categories` | Categories with event counts |
+| GET | `/api/categories/{category}` | Events in one category |
+| GET | `/api/causality` | Causality links |
+| GET | `/api/admin/events` | Moderation queue (needs `ADMIN_KEY`) |
+| PATCH | `/api/admin/events/{event_id}` | Approve or reject a submission (needs `ADMIN_KEY`) |
+
+The full, current list is at http://localhost:8000/docs when the API is running.
 
 ### Canvas tile query example
 
@@ -180,19 +209,33 @@ backend/
 │   ├── schemas.py       # Pydantic v2 response schemas
 │   ├── database.py      # Async SQLAlchemy engine + session
 │   └── routers/
-│       ├── canvas.py    # /api/canvas/tiles
-│       ├── events.py    # /api/events/{slug}
-│       └── search.py    # /api/search
+│       ├── canvas.py      # /api/canvas/tiles
+│       ├── categories.py  # /api/categories
+│       ├── causality.py   # /api/causality
+│       ├── events.py      # /api/events/* (detail, connections, article, on-this-day)
+│       ├── search.py      # /api/search, /api/search/semantic
+│       └── submit.py      # /api/events/submit, /api/admin/*
 ├── alembic/             # Database migrations
-├── scripts/
-│   └── seed_events.py   # 500-event seed script
+├── scripts/             # Seed, enrichment, embedding and indexing scripts
 ├── requirements.txt
 └── .env.example
+
+frontend/                # React 19 + TypeScript + Vite
+├── src/
+│   ├── api/             # Axios client (demo mode reads a JSON snapshot)
+│   ├── components/      # Canvas, network view, search, detail panel, scrubber, ...
+│   ├── pages/           # Event page, admin queue, curated topic pages
+│   └── store/           # Zustand state
+└── public/demo/         # Static demo snapshot
+
+seeds/                   # Seed data used by the demo snapshot exporter
+scripts/                 # Data enrichment and export_demo_snapshot.py
 ```
 
 **Database:** PostgreSQL 16 + PostGIS (geo) + pgvector (semantic search)  
 **Search:** Meilisearch (full-text, instant)  
-**API:** FastAPI + SQLAlchemy 2.x async + Pydantic v2
+**API:** FastAPI + SQLAlchemy 2.x async + Pydantic v2  
+**Frontend:** React 19, @xyflow/react, deck.gl, Zustand, TanStack Query
 
 ---
 
@@ -206,6 +249,12 @@ backend/
 - **edit_log** — immutable append-only audit trail
 
 ---
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup and the
+checks to run, [ROADMAP.md](./ROADMAP.md) for direction, and the
+[Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## Security
 

@@ -1,0 +1,53 @@
+name: Bug report
+description: Something in Chronicle is broken or wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For security problems, please use private vulnerability reporting instead (see SECURITY.md).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where is the problem?
+      options:
+        - Canvas / timeline UI
+        - Search
+        - Event detail panel
+        - Static demo
+        - Backend API
+        - Historical data (wrong date, place, link or text)
+        - Docs / setup
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the demo
+        2. Search for "..."
+        3. Click ...
+  - type: textarea
+    id: source
+    attributes:
+      label: Source (for data issues)
+      description: A citation that supports the correction.
+  - type: input
+    id: env
+    attributes:
+      label: Browser / OS / commit
+      placeholder: Firefox 131 on macOS, main @ abc1234
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or logs
+      description: Please use demo or made-up data only.
