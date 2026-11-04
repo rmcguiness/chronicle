@@ -218,8 +218,17 @@ _STOPWORDS = {"the", "of", "and", "a", "an", "in", "on", "to", "for", "at", "by"
 _GENERIC = {
     "battle", "turning", "point", "war", "wars", "settlement", "death", "rise", "founding",
     "founds", "founded", "first", "end", "begins", "age", "empire", "kingdom", "great", "new",
-    "birth", "peak", "construction", "after", "under", "its",
+    "birth", "peak", "construction", "after", "under", "its", "publishes", "published",
 }
+
+
+# Words are cut to this many characters before comparing, a cheap stand-in for stemming
+# ("decolonize" / "decolonization", "conquers" / "conquest").
+_STEM_CHARS = 6
+
+# Seed batches sometimes date the same event a year or two apart (start vs. end of a
+# conquest). Near-identical titles within this many years are treated as one event.
+NEAR_YEAR_WINDOW = 3
 
 
 def _title_words(title: str) -> set[str]:
@@ -227,43 +236,57 @@ def _title_words(title: str) -> set[str]:
     return {w for w in words if w not in _STOPWORDS}
 
 
+def _key_words(title: str) -> set[str]:
+    """Distinctive, roughly stemmed title words used to spot duplicates."""
+    return {w[:_STEM_CHARS] for w in _title_words(title) - _GENERIC}
+
+
+def is_duplicate(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """True when two seed events describe the same thing.
+
+    Same year: the titles share two or more key words covering half of the shorter title,
+    or one title's key words are a subset of the other's. Up to NEAR_YEAR_WINDOW years
+    apart: one title's key words (at least two of them) are a subset of the other's.
+    """
+    gap = abs(int(a["year"]) - int(b["year"]))
+    if gap > NEAR_YEAR_WINDOW:
+        return False
+    words, other = _key_words(a["title"]), _key_words(b["title"])
+    if not words or not other:
+        return False
+    shared = len(words & other)
+    subset = words <= other or other <= words
+    if gap == 0:
+        return (shared >= 2 and shared / min(len(words), len(other)) >= 0.5) or subset
+    return subset and min(len(words), len(other)) >= 2
+
+
 def merge_duplicates(
     events: dict[str, dict[str, Any]], links: list[dict[str, Any]]
 ) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     """Collapse near-duplicate events that different seed batches added under different slugs.
 
-    Two events are duplicates when they share a year and their title words overlap
-    (ignoring generic words, they share two or more words covering half of the shorter title,
-    or one title's words are a subset of the other's), e.g. "Revolutions of 1848 — The Springtime of Nations" and
-    "Revolutions of 1848 — Springtime of Peoples". The better-connected (then more
-    important) one is kept and links are re-pointed to it.
+    See ``is_duplicate`` for the matching rule, e.g. "Revolutions of 1848 — The Springtime
+    of Nations" and "Revolutions of 1848 — Springtime of Peoples" (same year), or
+    "Spanish Conquest of the Aztec Empire" dated 1519 in one batch and 1521 in another.
+    The better-connected (then more important) one is kept and links are re-pointed to it.
     """
     degree: dict[str, int] = defaultdict(int)
     for link in links:
         degree[link["cause"]] += 1
         degree[link["effect"]] += 1
-    by_year: dict[int, list[str]] = defaultdict(list)
-    for slug, ev in events.items():
-        by_year[int(ev["year"])].append(slug)
     rank = lambda s: (-degree.get(s, 0), -float(events[s].get("importance_score", 0.5)), s)  # noqa: E731
     canonical: dict[str, str] = {}
-    for slugs in by_year.values():
-        kept: list[str] = []
-        for slug in sorted(slugs, key=rank):
-            words = _title_words(events[slug]["title"]) - _GENERIC
-            for k in kept:
-                other = _title_words(events[k]["title"]) - _GENERIC
-                if not words or not other:
-                    continue
-                shared = len(words & other)
-                subset = words <= other or other <= words
-                if (shared >= 2 and shared / min(len(words), len(other)) >= 0.5) or subset:
-                    canonical[slug] = k
-                    if VERBOSE:
-                        print(f"  merge: {events[slug]['title']!r} -> {events[k]['title']!r}", file=sys.stderr)
-                    break
-            else:
-                kept.append(slug)
+    kept: list[str] = []
+    for slug in sorted(events, key=rank):
+        for k in kept:
+            if is_duplicate(events[slug], events[k]):
+                canonical[slug] = k
+                if VERBOSE:
+                    print(f"  merge: {events[slug]['title']!r} -> {events[k]['title']!r}", file=sys.stderr)
+                break
+        else:
+            kept.append(slug)
     merged_links: dict[tuple[str, str], dict[str, Any]] = {}
     for link in links:
         cause = canonical.get(link["cause"], link["cause"])

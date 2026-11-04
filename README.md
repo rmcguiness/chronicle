@@ -111,6 +111,7 @@ in place of the API, so it can be hosted on any free static host with no databas
 
 **What the demo includes:** about 300 of the highest-importance seed events from 3300 BCE onward, their
 causality links and perspectives, the network canvas, timeline scrubber, legend, keyword search
+(arrow keys and Enter pick a result, matching words are highlighted)
 and the event detail panel.
 
 **What it leaves out:** everything that needs the backend. That means Wikipedia article text (the
@@ -128,7 +129,7 @@ The normal `npm run build` is unchanged. Demo code is tree-shaken out and `dist/
 
 ### Regenerating the snapshot
 
-The snapshot is built from the files in `seeds/` (no database needed):
+The snapshot is built from the seed scripts in `backend/scripts/` (no database needed):
 
 ```bash
 python3 scripts/export_demo_snapshot.py               # defaults: --limit 300 --min-year -5000
@@ -137,16 +138,22 @@ python3 scripts/export_demo_snapshot.py --limit 500 --min-year -3000
 
 It writes `frontend/public/demo/snapshot.json`, which keeps only links where both ends are in the
 sample, merges obvious duplicate seed events (set `CHRONICLE_EXPORT_VERBOSE=1` to list merges)
-and embeds the data license.
+and embeds the data license. CI fails if the committed snapshot doesn't match the exporter output.
+The duplicate-matching rules have tests:
+
+```bash
+python3 -m unittest discover -s scripts -p "test_*.py"
+```
 
 ### Hosting the demo for free
 
 Use any static host with an SPA fallback to `index.html`:
 
-- **Vercel:** `vercel.demo.json` holds the demo config (build `npm run build:demo`, output
-  `frontend/dist`, SPA rewrites, security headers). Use it with `vercel --local-config vercel.demo.json`,
-  or copy its build/output settings into a separate Vercel project. The root `vercel.json` stays
-  the full-app config.
+- **Vercel:** the root `vercel.json` builds the frontend (`npm run build`, output `frontend/dist`)
+  with SPA rewrites and security headers. Set `VITE_DEMO_MODE=true` in the Vercel project to get
+  the static demo (that is how the private PR-preview project is set up); point `VITE_API_URL` at a
+  backend instead for the full app. `vercel.demo.json` is the same config with `build:demo`
+  hard-coded, for `vercel --local-config vercel.demo.json`.
 - **Cloudflare Pages / Netlify:** root directory `frontend`, build command `npm run build:demo`,
   output `dist`, and a SPA fallback (`/* /index.html 200` in `public/_redirects` on Netlify; Pages
   serves `index.html` for unknown routes by default).

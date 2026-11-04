@@ -3,12 +3,16 @@
  *
  * Owns: search input, mode toggle (Keyword/Semantic), result dropdown.
  * Does NOT own: event detail display, map navigation logic.
+ *
+ * Keyboard: ArrowUp/ArrowDown (and Home/End) move through results, Enter flies to the
+ * highlighted result, Escape clears. Follows the ARIA combobox + listbox pattern.
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { searchEvents, searchEventsSemantic } from '../api/client';
 import { IS_DEMO_MODE } from '../config/demo';
 import { formatYear } from '../utils/format';
+import { highlightParts, nextActiveIndex } from '../utils/searchNav';
 import { useAppStore } from '../store';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/categories';
 import { MOCK_EVENTS } from '../api/client';
@@ -25,6 +29,10 @@ const MIN_QUERY_LENGTH = 2;
 
 /** localStorage key for search mode preference. */
 const SEARCH_MODE_KEY = 'chronicle-search-mode';
+
+/** DOM ids used to wire the combobox to its listbox. */
+const LISTBOX_ID = 'chronicle-search-results';
+const optionId = (i: number) => `chronicle-search-option-${i}`;
 
 /** Search mode type. */
 type SearchMode = 'keyword' | 'semantic';
@@ -54,6 +62,9 @@ function useDebounce<T>(value: T, delay: number): T {
 export default function SearchBar() {
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
+  // Highlighted option, tagged with the result list it belongs to so it resets
+  // to "none" whenever the query or mode changes (no effect needed).
+  const [active, setActive] = useState<{ key: string; index: number }>({ key: '', index: -1 });
   const [searchMode, setSearchMode] = useState<SearchMode>(() => {
     // Semantic search needs the backend's embeddings; the static demo is keyword-only.
     if (IS_DEMO_MODE) return 'keyword';
@@ -65,6 +76,7 @@ export default function SearchBar() {
 
   const setFlyToEvent = useAppStore((s) => s.setFlyToEvent);
   const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
+  const detailPanelOpen = useAppStore((s) => s.detailPanelOpen);
 
   const debouncedQuery = useDebounce(inputValue, DEBOUNCE_DELAY_MS);
 
@@ -76,6 +88,19 @@ export default function SearchBar() {
     enabled: debouncedQuery.length >= MIN_QUERY_LENGTH,
     staleTime: 2 * 60 * 1000,
   });
+
+  const resultsKey = `${searchMode}:${debouncedQuery}:${results.length}`;
+  const activeIndex = active.key === resultsKey ? active.index : -1;
+  const setActiveIndex = useCallback(
+    (index: number) => setActive({ key: resultsKey, index }),
+    [resultsKey],
+  );
+
+  // Keep the highlighted option scrolled into view.
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    document.getElementById(optionId(activeIndex))?.scrollIntoView?.({ block: 'nearest' });
+  }, [activeIndex]);
 
   // Persist mode preference
   const handleModeChange = useCallback((mode: SearchMode) => {
@@ -103,28 +128,48 @@ export default function SearchBar() {
     inputRef.current?.blur();
   }, [setFlyToEvent, setSelectedEvent]);
 
+  const showDropdown = open && debouncedQuery.length >= MIN_QUERY_LENGTH;
+  const hasOptions = showDropdown && results.length > 0;
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       setInputValue('');
       setOpen(false);
       inputRef.current?.blur();
+      return;
+    }
+    if (!showDropdown || results.length === 0) {
+      if (e.key === 'ArrowDown' && debouncedQuery.length >= MIN_QUERY_LENGTH) setOpen(true);
+      return;
+    }
+    if (e.key === 'Enter') {
+      const pick = results[activeIndex >= 0 ? activeIndex : 0];
+      if (pick) {
+        e.preventDefault();
+        handleSelect(pick);
+      }
+      return;
+    }
+    // Home/End keep their usual caret behaviour until an option is highlighted.
+    if ((e.key === 'Home' || e.key === 'End') && activeIndex < 0) return;
+    const next = nextActiveIndex(activeIndex, results.length, e.key);
+    if (next !== activeIndex) {
+      e.preventDefault();
+      setActiveIndex(next);
     }
   };
-
-  const showDropdown = open && debouncedQuery.length >= MIN_QUERY_LENGTH;
 
   return (
     <div
       ref={containerRef}
       role="search"
+      className="chronicle-searchbar"
+      data-panel-open={detailPanelOpen}
       style={{
         position: 'fixed',
         top: 20,
-        left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 300,
-        width: 480,
-        maxWidth: 'calc(100vw - 40px)',
       }}
     >
       {/* Input + Mode Toggle */}
@@ -162,7 +207,12 @@ export default function SearchBar() {
           id="chronicle-search"
           ref={inputRef}
           type="search"
+          role="combobox"
           autoComplete="off"
+          aria-autocomplete="list"
+          aria-expanded={hasOptions}
+          aria-controls={LISTBOX_ID}
+          aria-activedescendant={hasOptions && activeIndex >= 0 ? optionId(activeIndex) : undefined}
           aria-describedby="chronicle-search-status"
           value={inputValue}
           onChange={(e) => { setInputValue(e.target.value); setOpen(true); }}
@@ -230,7 +280,9 @@ export default function SearchBar() {
         )}
         {inputValue && !isFetching && (
           <button
-            onClick={() => { setInputValue(''); setOpen(false); }}
+            type="button"
+            aria-label="Clear search"
+            onClick={() => { setInputValue(''); setOpen(false); inputRef.current?.focus(); }}
             style={{
               position: 'absolute',
               right: 10,
@@ -254,7 +306,7 @@ export default function SearchBar() {
       {/* Announce result counts to screen readers */}
       <div id="chronicle-search-status" className="sr-only" aria-live="polite">
         {showDropdown && !isFetching
-          ? `${results.length} result${results.length === 1 ? '' : 's'}`
+          ? `${results.length} result${results.length === 1 ? '' : 's'}${results.length ? '. Use the up and down arrows to choose, Enter to open.' : ''}`
           : ''}
       </div>
 
@@ -303,34 +355,36 @@ export default function SearchBar() {
               )}
             </div>
           ) : (
-            results.map((result, i) => {
+            <div id={LISTBOX_ID} role="listbox" aria-label="Search results">
+            {results.map((result, i) => {
               const color = CATEGORY_COLORS[result.category] ?? '#6b7280';
               const icon = CATEGORY_ICONS[result.category] ?? '●';
+              const isActive = i === activeIndex;
               return (
                 <button
                   key={result.id}
+                  id={optionId(i)}
                   type="button"
+                  role="option"
+                  aria-selected={isActive}
+                  tabIndex={-1}
                   onClick={() => handleSelect(result)}
+                  onMouseMove={() => { if (!isActive) setActiveIndex(i); }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 12,
                     width: '100%',
                     padding: '11px 16px',
-                    background: 'none',
+                    background: isActive ? 'rgba(96,165,250,0.12)' : 'none',
                     border: 'none',
+                    borderLeft: isActive ? '2px solid #60a5fa' : '2px solid transparent',
                     borderTop: i > 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                     color: '#e2e8f0',
                     cursor: 'pointer',
                     textAlign: 'left',
                     fontSize: 13,
                     transition: 'background 0.1s',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
                   }}
                 >
                   {/* Icon */}
@@ -354,7 +408,15 @@ export default function SearchBar() {
                   {/* Text */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {result.title}
+                      {highlightParts(result.title, debouncedQuery).map((part, j) =>
+                        part.match ? (
+                          <mark key={j} style={{ background: 'rgba(96,165,250,0.25)', color: '#f8fafc', borderRadius: 3, padding: '0 1px' }}>
+                            {part.text}
+                          </mark>
+                        ) : (
+                          <span key={j}>{part.text}</span>
+                        ),
+                      )}
                     </div>
                     <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
                       {formatYear(result.year_approx)}
@@ -363,12 +425,13 @@ export default function SearchBar() {
                   </div>
 
                   {/* Fly-to indicator */}
-                  <span aria-hidden="true" style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
-                    ✈ fly to
+                  <span aria-hidden="true" style={{ color: isActive ? '#93c5fd' : '#64748b', fontSize: 12, flexShrink: 0 }}>
+                    {isActive ? '↵ fly to' : '✈ fly to'}
                   </span>
                 </button>
               );
-            })
+            })}
+            </div>
           )}
         </div>
       )}

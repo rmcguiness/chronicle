@@ -12,26 +12,28 @@ A high-level view of where Chronicle is headed. Task-sized items with implementa
   Escape to close the detail panel.
 - **Security hardening.** `ADMIN_KEY` required for moderation, rate limits on submission and
   search, a CI secret scan and Dependabot. See SECURITY.md.
+- **Search.** Keyboard navigation through results (arrow keys, Home/End, Enter) using the ARIA
+  combobox pattern, and highlighting of the matching words.
+- **Demo data quality.** The demo exporter catches more duplicate seed events, and CI checks that
+  the committed snapshot matches the exporter output.
+- **Dependency upgrade pass** (#271): React 19.3, deck.gl 9.4, ESLint 10, Vitest 5,
+  sentence-transformers 6, and CI on Node 22.
+- **Vercel preview config** (#265): a preview deployment of the static demo for each pull request.
 
 ## Now (in review)
 
-- **Search keyboard navigation and demo de-duplication** (#266): arrow keys plus Enter through
-  results, and duplicate seed events merged in the demo snapshot.
-- **Dependency upgrade pass** (#271): React 19.3, deck.gl 9.4, ESLint 10, Vitest 5,
-  sentence-transformers 6, and CI on Node 22.
 - **Contributor docs.** CONTRIBUTING.md, a code of conduct, and issue and PR templates.
-- **Vercel preview config** (#265): a preview deployment of the static demo for each pull request.
 - **Feature backlog** (#231–#247): open PRs for topic deep-dive pages and browsers (people, causal
   chains, parallel history, year in review, categories, quotes, on-this-day) plus a canvas fix,
   waiting for review.
 
 ## Next
 
-- **Data quality.** Remove duplicate events in the seed data itself. The demo exporter merges
-  them, but the database still has them. Backfill `wikipedia_slug` for more events.
+- **Data quality.** Remove duplicate events from the seed scripts themselves. The demo exporter
+  now merges them (including the same event dated a few years apart in different batches), but a
+  database seeded from the scripts still has them. Backfill `wikipedia_slug` for more events.
 - **Canvas usability.** `fitView` on first load across screen sizes, readable causality arrows at
   low zoom, and a better small-screen layout for the timeline scrubber.
-- **Search.** Highlighting of the matching terms (keyboard navigation is in review, see above).
 - **Accessibility.** A non-canvas list view of events, so screen-reader users can browse the
   timeline without the graph.
 

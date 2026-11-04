@@ -170,6 +170,12 @@ describe('committed snapshot (public/demo/snapshot.json)', () => {
     expect(snapshot.license.text).toMatch(/CC BY-SA/);
   });
 
+  it('has no duplicate event titles', () => {
+    const titles = snapshot.events.map((e) => e.title.trim().toLowerCase());
+    const dupes = titles.filter((t, i) => titles.indexOf(t) !== i);
+    expect(dupes).toEqual([]);
+  });
+
   it('has unique ids and only links between included events', () => {
     const ids = new Set(snapshot.events.map((e) => e.id));
     expect(ids.size).toBe(snapshot.events.length);
