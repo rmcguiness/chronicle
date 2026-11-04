@@ -10,5 +10,5 @@ meilisearch==0.31.0
 python-dotenv==1.2.4
 httpx==0.28.1
 shapely==2.2.0
-sentence-transformers>=2.2.0
+sentence-transformers>=6.2.0
 psycopg2-binary>=2.9.0
