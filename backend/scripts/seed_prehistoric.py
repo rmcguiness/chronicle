@@ -425,23 +425,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "stonehenge-phase-1",
-        "title": "Stonehenge — Phase 1 Construction Begins",
-        "year": -3000, "lat": 51.1789, "lng": -1.8262,
-        "geo_modern": "Wiltshire, England",
-        "geo_era_label": "Neolithic Britain",
-        "category": "cultural", "importance_score": 0.8, "zoom_min": 2, "is_bce": True,
-        "perspectives": [
-            {"label": "Archaeological perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "Stonehenge's earliest phase — a circular ditch and bank enclosure with 56 Aubrey Holes — was constructed ~3000 BCE. Over the next 1,500 years, the monument evolved through multiple building phases, culminating in the iconic sarsen stone circle.",
-             "summary": "The beginning of Britain's most iconic prehistoric monument.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "Stonehenge: A New Understanding", "author": "Mike Parker Pearson", "publication": "The Experiment",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2012}
-             ]},
-        ],
-    },
-    {
         "slug": "aboriginal-australian-rock-art-kakadu",
         "title": "Aboriginal Rock Art Tradition — Kakadu, Australia",
         "year": -20000, "lat": -12.43, "lng": 132.89,

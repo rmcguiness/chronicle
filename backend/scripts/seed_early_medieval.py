@@ -1254,24 +1254,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "song-dynasty-reunification-960",
-        "title": "Song Dynasty Reunifies China — An Age of Innovation Begins",
-        "year": 960, "lat": 34.76, "lng": 114.36,
-        "geo_modern": "Kaifeng, Henan, China",
-        "geo_era_label": "Song Dynasty",
-        "category": "political", "importance_score": 0.76, "zoom_min": 3, "is_bce": False,
-        "perspectives": [
-            {"label": "Chinese history perspective", "culture_code": "cn", "viewpoint_type": "academic",
-             "narrative": "In 960, the general Zhao Kuangyin founded the Song Dynasty, reunifying China after decades of fragmentation. Though militarily weaker than the Tang, the Song presided over an economic and technological revolution: movable type printing, gunpowder weapons, the magnetic compass, paper money, and blast furnace steel. Song China was the world's most technologically advanced civilization, with a population exceeding 100 million.",
-             "summary": "China's age of invention — the dynasty that gave the world printing, gunpowder, and the compass.",
-             "evidence_score": 0.82,
-             "sources": [
-                 {"title": "The Age of Confucian Rule", "author": "Dieter Kuhn", "publication": "Harvard University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}
-             ]},
-        ],
-    },
-    {
         "slug": "fatimid-caliphate-cairo-969",
         "title": "Fatimids Found Cairo — A Shia Caliphate Challenges Baghdad",
         "year": 969, "lat": 30.05, "lng": 31.24,
@@ -1286,24 +1268,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Fatimid Caliphate", "author": "Shainool Jiwa", "publication": "I.B. Tauris",
                   "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2018}
-             ]},
-        ],
-    },
-    {
-        "slug": "leif-erikson-vinland-1000",
-        "title": "Leif Erikson Reaches North America — Vikings in the New World",
-        "year": 1000, "lat": 51.60, "lng": -55.53,
-        "geo_modern": "L'Anse aux Meadows, Newfoundland, Canada",
-        "geo_era_label": "Viking Age",
-        "category": "discovery", "importance_score": 0.76, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Norse exploration perspective", "culture_code": "ca", "viewpoint_type": "academic",
-             "narrative": "Around 1000, Leif Erikson sailed from Greenland to establish a settlement at Vinland — identified with L'Anse aux Meadows in Newfoundland, the only confirmed Norse site in the Americas. Archaeological evidence shows the Vikings built turf houses, smelted iron, and repaired boats here. Though the settlement was abandoned within a few years due to conflicts with indigenous peoples, it represents the first known European contact with the Americas, nearly 500 years before Columbus.",
-             "summary": "Europeans reach America five centuries before Columbus — a Viking outpost at the edge of the world.",
-             "evidence_score": 0.84,
-             "sources": [
-                 {"title": "The Viking Discovery of America", "author": "Helge Ingstad and Anne Stine Ingstad",
-                  "publication": "Checkmark Books", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2001}
              ]},
         ],
     },

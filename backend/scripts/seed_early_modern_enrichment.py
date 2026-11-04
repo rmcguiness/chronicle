@@ -54,23 +54,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "harvey-discovers-blood-circulation",
-        "title": "William Harvey Describes Blood Circulation",
-        "year": 1628, "lat": 51.51, "lng": -0.13,
-        "geo_modern": "London, England",
-        "geo_era_label": "Early Modern England",
-        "category": "discovery", "importance_score": 0.75, "zoom_min": 3, "is_bce": False,
-        "perspectives": [
-            {"label": "Medical history perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "William Harvey's Exercitatio Anatomica de Motu Cordis (1628) demonstrated that blood circulates through the body in a closed system, pumped by the heart. This overturned Galen's 1,500-year-old model and established the foundation of modern physiology and evidence-based medicine.",
-             "summary": "Harvey's discovery of blood circulation revolutionized medicine.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "The Circulation of the Blood and Andrea Cesalpino of Arezzo", "author": "Andrew Wear", "publication": "Journal of the History of Medicine",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1973}
-             ]},
-        ],
-    },
-    {
         "slug": "leibniz-calculus-invention",
         "title": "Leibniz Publishes Calculus — Independent of Newton",
         "year": 1684, "lat": 52.37, "lng": 9.74,
@@ -108,40 +91,6 @@ EVENTS: list[dict[str, Any]] = [
     # REFORMATION & RELIGIOUS WARS
     # ═══════════════════════════════════════════════════════════════════════
     {
-        "slug": "luther-95-theses-reformation",
-        "title": "Martin Luther's 95 Theses — Start of the Protestant Reformation",
-        "year": 1517, "lat": 51.87, "lng": 12.64,
-        "geo_modern": "Wittenberg, Saxony, Germany",
-        "geo_era_label": "Early Modern Europe",
-        "category": "cultural", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Religious history perspective", "culture_code": "de", "viewpoint_type": "academic",
-             "narrative": "On October 31, 1517, Martin Luther posted his 95 Theses challenging papal indulgences, sparking the Protestant Reformation. Luther's insistence on Scripture alone (sola scriptura) and salvation by faith alone (sola fide) fractured Western Christianity and reshaped European politics, culture, and thought for centuries.",
-             "summary": "Luther's 95 Theses launched the Protestant Reformation that split Western Christianity.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "Martin Luther: Renegade and Prophet", "author": "Lyndal Roper", "publication": "Random House",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2016}
-             ]},
-        ],
-    },
-    {
-        "slug": "council-of-trent-catholic-reform",
-        "title": "Council of Trent — Catholic Counter-Reformation",
-        "year": 1545, "lat": 46.07, "lng": 11.12,
-        "geo_modern": "Trento, Italy",
-        "geo_era_label": "Early Modern Europe",
-        "category": "cultural", "importance_score": 0.75, "zoom_min": 3, "is_bce": False,
-        "perspectives": [
-            {"label": "Religious history perspective", "culture_code": "it", "viewpoint_type": "academic",
-             "narrative": "The Council of Trent (1545–1563) was the Catholic Church's definitive response to the Protestant Reformation. It reaffirmed Catholic doctrines on Scripture, sacraments, and papal authority while enacting reforms to address corruption. The council shaped Catholicism for the next four centuries.",
-             "summary": "The Catholic Church's major reform council in response to Protestantism.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Council of Trent: Reform and Controversy in Europe and Beyond", "author": "Nelson Minnich", "publication": "Cambridge University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2018}
-             ]},
-        ],
-    },
-    {
         "slug": "english-reformation-henry-viii",
         "title": "English Reformation — Henry VIII Breaks with Rome",
         "year": 1534, "lat": 51.50, "lng": -0.12,
@@ -155,23 +104,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Stripping of the Altars", "author": "Eamon Duffy", "publication": "Yale University Press",
                   "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1992}
-             ]},
-        ],
-    },
-    {
-        "slug": "thirty-years-war-begins",
-        "title": "Thirty Years' War — Europe's Devastating Religious Conflict",
-        "year": 1618, "lat": 50.09, "lng": 14.42,
-        "geo_modern": "Prague, Bohemia (Czech Republic)",
-        "geo_era_label": "Early Modern Europe",
-        "category": "war", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Military history perspective", "culture_code": "de", "viewpoint_type": "academic",
-             "narrative": "The Thirty Years' War (1618–1648) began as a conflict between Protestant and Catholic states in the Holy Roman Empire but escalated into a general European war. It killed an estimated 8 million people (~30% of the German population), devastated Central Europe, and ended with the Peace of Westphalia establishing the modern state system.",
-             "summary": "The most destructive European war before the 20th century, reshaping the state system.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Thirty Years' War: Europe's Tragedy", "author": "Peter Wilson", "publication": "Harvard University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}
              ]},
         ],
     },
@@ -215,47 +147,6 @@ EVENTS: list[dict[str, Any]] = [
     # ═══════════════════════════════════════════════════════════════════════
     # COLONIALISM & EXPLORATION
     # ═══════════════════════════════════════════════════════════════════════
-    {
-        "slug": "columbus-reaches-americas",
-        "title": "Columbus Reaches the Americas",
-        "year": 1492, "lat": 24.05, "lng": -74.53,
-        "geo_modern": "San Salvador (Guanahani), Bahamas",
-        "geo_era_label": "Age of Exploration",
-        "category": "discovery", "importance_score": 0.95, "zoom_min": 1, "is_bce": False,
-        "perspectives": [
-            {"label": "European exploration perspective", "culture_code": "es", "viewpoint_type": "academic",
-             "narrative": "Christopher Columbus's 1492 voyage, funded by Spain, reached the Caribbean islands, initiating sustained European contact with the Americas. This 'Columbian Exchange' transformed both hemispheres through the transfer of crops, animals, diseases, and peoples — but devastated indigenous populations through conquest and epidemic disease.",
-             "summary": "Columbus's 1492 voyage initiated the Columbian Exchange between hemispheres.", "evidence_score": 0.92,
-             "sources": [
-                 {"title": "The Columbian Exchange: Biological and Cultural Consequences of 1492", "author": "Alfred Crosby", "publication": "Greenwood Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1972}
-             ]},
-            {"label": "Indigenous perspective", "culture_code": "global", "viewpoint_type": "indigenous",
-             "narrative": "For the Taíno and other indigenous peoples of the Caribbean, Columbus's arrival marked the beginning of catastrophic colonization. Within decades, the Taíno population was decimated by forced labor, disease, and violence — from an estimated 250,000–1 million to near extinction.",
-             "summary": "Columbus's arrival began the destruction of Caribbean indigenous civilizations.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "A People's History of the United States", "author": "Howard Zinn", "publication": "Harper & Row",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1980}
-             ]},
-        ],
-    },
-    {
-        "slug": "vasco-da-gama-india-route",
-        "title": "Vasco da Gama Reaches India by Sea",
-        "year": 1498, "lat": 11.25, "lng": 75.77,
-        "geo_modern": "Calicut (Kozhikode), Kerala, India",
-        "geo_era_label": "Age of Exploration",
-        "category": "discovery", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Maritime history perspective", "culture_code": "pt", "viewpoint_type": "academic",
-             "narrative": "Vasco da Gama's 1498 voyage around Africa to India established the first direct sea route from Europe to Asia. This broke the Venetian-Ottoman monopoly on the spice trade, shifted global trade patterns, and launched Portuguese maritime empire in the Indian Ocean.",
-             "summary": "The first European sea route to India, transforming global trade.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "Conquerors: How Portugal Forged the First Global Empire", "author": "Roger Crowley", "publication": "Random House",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2015}
-             ]},
-        ],
-    },
     {
         "slug": "dutch-east-india-company-founded",
         "title": "Dutch East India Company (VOC) Founded — First Multinational Corporation",
@@ -399,23 +290,6 @@ EVENTS: list[dict[str, Any]] = [
     # POLITICAL REVOLUTIONS
     # ═══════════════════════════════════════════════════════════════════════
     {
-        "slug": "english-civil-war-begins-1642",
-        "title": "English Civil War Begins — Parliament vs. Crown",
-        "year": 1642, "lat": 52.05, "lng": -1.17,
-        "geo_modern": "Edgehill, Warwickshire, England",
-        "geo_era_label": "Stuart England",
-        "category": "war", "importance_score": 0.8, "zoom_min": 3, "is_bce": False,
-        "perspectives": [
-            {"label": "Political history perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "The English Civil War (1642–1651) pitted Parliament against Charles I over issues of royal prerogative, religious policy, and taxation. The Parliamentary victory, regicide of Charles I (1649), and brief republic under Cromwell established the precedent that monarchs rule with the consent of Parliament — a foundation of constitutional government.",
-             "summary": "The English Civil War established parliamentary supremacy over absolute monarchy.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The English Civil War: A People's History", "author": "Diane Purkiss", "publication": "Harper Perennial",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2006}
-             ]},
-        ],
-    },
-    {
         "slug": "glorious-revolution-1688",
         "title": "Glorious Revolution — Constitutional Monarchy Established",
         "year": 1688, "lat": 51.50, "lng": -0.12,
@@ -484,23 +358,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "latin-american-independence-movements",
-        "title": "Latin American Independence Movements — Bolívar and San Martín",
-        "year": 1819, "lat": 4.60, "lng": -74.08,
-        "geo_modern": "Bogotá, Colombia",
-        "geo_era_label": "Age of Revolutions",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Latin American perspective", "culture_code": "co", "viewpoint_type": "academic",
-             "narrative": "Inspired by the American and French Revolutions and enabled by Napoleon's invasion of Spain, Latin American independence movements swept the continent from 1808–1825. Simón Bolívar liberated Venezuela, Colombia, Ecuador, Peru, and Bolivia; José de San Martín freed Argentina, Chile, and Peru. These campaigns created over a dozen new nations.",
-             "summary": "Revolutionary wars that liberated most of Latin America from Spanish colonial rule.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "Bolívar: American Liberator", "author": "Marie Arana", "publication": "Simon & Schuster",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2013}
-             ]},
-        ],
-    },
-    {
         "slug": "revolutions-1848-springtime-peoples",
         "title": "Revolutions of 1848 — Springtime of Peoples",
         "year": 1848, "lat": 48.85, "lng": 2.35,
@@ -520,23 +377,6 @@ EVENTS: list[dict[str, Any]] = [
     # ═══════════════════════════════════════════════════════════════════════
     # ENLIGHTENMENT & PHILOSOPHY
     # ═══════════════════════════════════════════════════════════════════════
-    {
-        "slug": "printing-press-gutenberg",
-        "title": "Gutenberg Printing Press — Revolution in Knowledge",
-        "year": 1440, "lat": 50.00, "lng": 8.27,
-        "geo_modern": "Mainz, Germany",
-        "geo_era_label": "Late Medieval/Renaissance Europe",
-        "category": "discovery", "importance_score": 0.95, "zoom_min": 1, "is_bce": False,
-        "perspectives": [
-            {"label": "Media history perspective", "culture_code": "de", "viewpoint_type": "academic",
-             "narrative": "Johannes Gutenberg's movable-type printing press (c. 1440) revolutionized the production and distribution of knowledge. By 1500, an estimated 20 million volumes had been printed. The press enabled the Reformation, Scientific Revolution, and Enlightenment by making books affordable and ideas transmissible across Europe.",
-             "summary": "The printing press democratized knowledge and enabled the modern world.", "evidence_score": 0.92,
-             "sources": [
-                 {"title": "Gutenberg's Europe: The Book and the Invention of Western Modernity", "author": "Frédéric Barbier", "publication": "Polity Press",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2017}
-             ]},
-        ],
-    },
     {
         "slug": "enlightenment-encyclopedie",
         "title": "Diderot's Encyclopédie — Enlightenment Knowledge Project",
@@ -609,57 +449,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "meiji-restoration-japan-modernization",
-        "title": "Meiji Restoration — Japan's Rapid Modernization",
-        "year": 1868, "lat": 35.68, "lng": 139.75,
-        "geo_modern": "Tokyo (Edo), Japan",
-        "geo_era_label": "Meiji Japan",
-        "category": "political", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Japanese history perspective", "culture_code": "jp", "viewpoint_type": "academic",
-             "narrative": "The Meiji Restoration (1868) overthrew the Tokugawa shogunate and restored imperial rule under Emperor Meiji. Japan then undertook the most rapid modernization program in history, adopting Western technology, institutions, and military systems while preserving Japanese cultural identity. Within 30 years Japan became an industrial and military power.",
-             "summary": "Japan's transformation from feudal isolation to industrial world power in one generation.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "The Making of Modern Japan", "author": "Marius Jansen", "publication": "Harvard University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2000}
-             ]},
-        ],
-    },
-    {
-        "slug": "scramble-for-africa-berlin-conference",
-        "title": "Scramble for Africa — Berlin Conference",
-        "year": 1884, "lat": 52.52, "lng": 13.41,
-        "geo_modern": "Berlin, Germany",
-        "geo_era_label": "New Imperialism",
-        "category": "political", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Postcolonial perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The Berlin Conference (1884–1885) established rules for European colonization of Africa, formalizing the 'Scramble for Africa.' By 1914, over 90% of Africa was under European control. The arbitrary borders drawn with no regard for ethnic, linguistic, or cultural boundaries continue to shape African conflicts today.",
-             "summary": "European powers partitioned Africa at a conference, with lasting consequences.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Scramble for Africa", "author": "Thomas Pakenham", "publication": "Random House",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1991}
-             ]},
-        ],
-    },
-    {
-        "slug": "darwin-origin-species-evolution",
-        "title": "Darwin's On the Origin of Species — Theory of Evolution",
-        "year": 1859, "lat": 51.33, "lng": 0.05,
-        "geo_modern": "Down House, Kent, England",
-        "geo_era_label": "Victorian Britain",
-        "category": "discovery", "importance_score": 0.95, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "History of science perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "Charles Darwin's On the Origin of Species (1859) presented the theory of evolution by natural selection, explaining the diversity of life through descent with modification. It revolutionized biology, challenged religious creationism, and fundamentally altered humanity's understanding of its place in nature.",
-             "summary": "Darwin's theory of evolution transformed biology and human self-understanding.", "evidence_score": 0.92,
-             "sources": [
-                 {"title": "The Origin of Species by Means of Natural Selection", "author": "Charles Darwin", "publication": "John Murray",
-                  "source_type": "primary", "reliability_tier": 1, "peer_reviewed": False, "year": 1859}
-             ]},
-        ],
-    },
-    {
         "slug": "suez-canal-opens-1869",
         "title": "Suez Canal Opens — Connecting Mediterranean and Red Sea",
         "year": 1869, "lat": 30.59, "lng": 32.27,
@@ -694,57 +483,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "congress-of-vienna-european-order",
-        "title": "Congress of Vienna — Post-Napoleonic European Order",
-        "year": 1815, "lat": 48.21, "lng": 16.37,
-        "geo_modern": "Vienna, Austria",
-        "geo_era_label": "Post-Napoleonic Europe",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Diplomatic history perspective", "culture_code": "at", "viewpoint_type": "academic",
-             "narrative": "The Congress of Vienna (1814–1815) redrew the map of Europe after Napoleon's defeat. Led by Metternich, Castlereagh, and Talleyrand, it established a 'Concert of Europe' balance-of-power system that maintained relative peace for nearly a century. It also restored monarchies and suppressed liberal-nationalist movements.",
-             "summary": "The post-Napoleonic settlement that maintained European peace for nearly a century.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Congress of Vienna: Power and Politics after Napoleon", "author": "Brian Vick", "publication": "Harvard University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2014}
-             ]},
-        ],
-    },
-    {
-        "slug": "american-civil-war-emancipation",
-        "title": "American Civil War and Emancipation",
-        "year": 1861, "lat": 38.81, "lng": -77.07,
-        "geo_modern": "Washington DC / Southern States, USA",
-        "geo_era_label": "Civil War America",
-        "category": "war", "importance_score": 0.9, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "American history perspective", "culture_code": "us", "viewpoint_type": "academic",
-             "narrative": "The American Civil War (1861–1865) was fought between the Union and the Confederate States over slavery and states' rights. The bloodiest conflict in American history (~620,000 dead), it resulted in the abolition of slavery (13th Amendment), the preservation of the Union, and a constitutional revolution expanding federal power.",
-             "summary": "America's deadliest war, ending slavery and preserving the Union.", "evidence_score": 0.92,
-             "sources": [
-                 {"title": "Battle Cry of Freedom: The Civil War Era", "author": "James McPherson", "publication": "Oxford University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1988}
-             ]},
-        ],
-    },
-    {
-        "slug": "german-unification-bismarck",
-        "title": "German Unification Under Bismarck",
-        "year": 1871, "lat": 48.78, "lng": 2.30,
-        "geo_modern": "Versailles, France (proclamation) / Berlin, Germany",
-        "geo_era_label": "19th Century Europe",
-        "category": "political", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Political history perspective", "culture_code": "de", "viewpoint_type": "academic",
-             "narrative": "Otto von Bismarck unified Germany through 'blood and iron' — wars against Denmark (1864), Austria (1866), and France (1870–71). The German Empire was proclaimed at Versailles in January 1871, creating a powerful nation-state in the heart of Europe that would transform the balance of power and ultimately contribute to both World Wars.",
-             "summary": "Bismarck's wars unified Germany, creating Europe's most powerful continental state.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "Bismarck: A Life", "author": "Jonathan Steinberg", "publication": "Oxford University Press",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2011}
-             ]},
-        ],
-    },
-    {
         "slug": "italian-unification-risorgimento",
         "title": "Italian Unification — Risorgimento",
         "year": 1861, "lat": 45.07, "lng": 7.69,
@@ -764,57 +502,6 @@ EVENTS: list[dict[str, Any]] = [
     # ═══════════════════════════════════════════════════════════════════════
     # ADDITIONAL KEY EVENTS
     # ═══════════════════════════════════════════════════════════════════════
-    {
-        "slug": "fall-of-constantinople-1453",
-        "title": "Fall of Constantinople — End of the Byzantine Empire",
-        "year": 1453, "lat": 41.01, "lng": 28.98,
-        "geo_modern": "Istanbul, Turkey",
-        "geo_era_label": "Late Medieval / Early Modern",
-        "category": "war", "importance_score": 0.9, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The Ottoman conquest of Constantinople on May 29, 1453, ended the 1,100-year Byzantine Empire. Sultan Mehmed II used massive cannons to breach the Theodosian Walls. The fall reshaped Mediterranean geopolitics, drove Greek scholars westward (contributing to the Renaissance), and established Ottoman dominance in southeastern Europe for centuries.",
-             "summary": "The Ottoman conquest ended Byzantium and reshaped Mediterranean geopolitics.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "Constantinople: The Last Great Siege, 1453", "author": "Roger Crowley", "publication": "Faber and Faber",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2005}
-             ]},
-        ],
-    },
-    {
-        "slug": "spanish-conquest-aztec-empire",
-        "title": "Spanish Conquest of the Aztec Empire",
-        "year": 1521, "lat": 19.43, "lng": -99.13,
-        "geo_modern": "Tenochtitlán (Mexico City), Mexico",
-        "geo_era_label": "Spanish Conquest",
-        "category": "war", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Postcolonial perspective", "culture_code": "mx", "viewpoint_type": "academic",
-             "narrative": "Hernán Cortés and a small Spanish force, allied with indigenous enemies of the Aztecs, conquered the Aztec Empire by 1521. The fall of Tenochtitlán — a city of 200,000+ — was facilitated by smallpox epidemics, superior Spanish weapons, and local alliances. It destroyed one of the world's great civilizations and began centuries of Spanish colonial rule.",
-             "summary": "The destruction of the Aztec Empire by Spanish conquistadors and their indigenous allies.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Conquest of New Spain", "author": "Bernal Díaz del Castillo", "publication": "Penguin Classics",
-                  "source_type": "primary", "reliability_tier": 2, "peer_reviewed": False, "year": 1568}
-             ]},
-        ],
-    },
-    {
-        "slug": "spanish-conquest-inca-empire",
-        "title": "Spanish Conquest of the Inca Empire",
-        "year": 1533, "lat": -13.52, "lng": -71.97,
-        "geo_modern": "Cusco, Peru",
-        "geo_era_label": "Spanish Conquest",
-        "category": "war", "importance_score": 0.8, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Postcolonial perspective", "culture_code": "pe", "viewpoint_type": "academic",
-             "narrative": "Francisco Pizarro captured the Inca emperor Atahualpa in 1532 and conquered the Inca Empire by 1533. The largest empire in pre-Columbian America, stretching 2,500 miles along the Andes, fell to fewer than 200 Spaniards aided by civil war, disease, and technological advantages. The conquest destroyed a sophisticated civilization with advanced engineering and governance.",
-             "summary": "A handful of Spanish conquistadors overthrew the vast Inca Empire.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Last Days of the Incas", "author": "Kim MacQuarrie", "publication": "Simon & Schuster",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2007}
-             ]},
-        ],
-    },
     {
         "slug": "mughal-empire-peak-akbar",
         "title": "Mughal Empire at Its Peak Under Akbar",
@@ -901,23 +588,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "marx-communist-manifesto",
-        "title": "Marx and Engels Publish The Communist Manifesto",
-        "year": 1848, "lat": 51.51, "lng": -0.13,
-        "geo_modern": "London, England",
-        "geo_era_label": "Industrial Europe",
-        "category": "cultural", "importance_score": 0.85, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Political thought perspective", "culture_code": "de", "viewpoint_type": "academic",
-             "narrative": "The Communist Manifesto (1848) by Karl Marx and Friedrich Engels analyzed history as class struggle and predicted the overthrow of capitalism by the proletariat. Its call 'Workers of the world, unite!' galvanized labor movements globally and laid the ideological foundation for communist revolutions in the 20th century.",
-             "summary": "The foundational text of communist ideology that shaped 20th-century politics.", "evidence_score": 0.90,
-             "sources": [
-                 {"title": "Karl Marx: A Nineteenth-Century Life", "author": "Jonathan Sperber", "publication": "Liveright",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2013}
-             ]},
-        ],
-    },
-    {
         "slug": "tokugawa-japan-isolation",
         "title": "Tokugawa Japan — Sakoku Isolation Policy",
         "year": 1639, "lat": 32.75, "lng": 129.87,
@@ -975,24 +645,24 @@ EVENTS: list[dict[str, Any]] = [
 # ═══════════════════════════════════════════════════════════════════════════
 CAUSALITY_LINKS: list[dict[str, Any]] = [
     # Printing → Reformation → Religious wars → Enlightenment
-    {"cause": "printing-press-gutenberg", "effect": "luther-95-theses-reformation", "type": "contributing", "strength": 0.8, "desc": "The printing press enabled rapid spread of Luther's ideas across Europe"},
-    {"cause": "printing-press-gutenberg", "effect": "copernicus-publishes-de-revolutionibus", "type": "contributing", "strength": 0.6, "desc": "Print enabled dissemination of scientific works"},
-    {"cause": "luther-95-theses-reformation", "effect": "council-of-trent-catholic-reform", "type": "direct", "strength": 0.9, "desc": "The Counter-Reformation was a direct response to Protestant challenges"},
-    {"cause": "luther-95-theses-reformation", "effect": "english-reformation-henry-viii", "type": "contributing", "strength": 0.6, "desc": "The broader Reformation context facilitated Henry VIII's break with Rome"},
-    {"cause": "luther-95-theses-reformation", "effect": "thirty-years-war-begins", "type": "direct", "strength": 0.8, "desc": "Religious divisions from the Reformation fueled the Thirty Years' War"},
-    {"cause": "thirty-years-war-begins", "effect": "peace-of-westphalia-sovereignty", "type": "direct", "strength": 0.9, "desc": "The Peace of Westphalia ended the Thirty Years' War"},
+    {"cause": "gutenberg-printing-press", "effect": "martin-luther-95-theses-1517", "type": "contributing", "strength": 0.8, "desc": "The printing press enabled rapid spread of Luther's ideas across Europe"},
+    {"cause": "gutenberg-printing-press", "effect": "copernicus-publishes-de-revolutionibus", "type": "contributing", "strength": 0.6, "desc": "Print enabled dissemination of scientific works"},
+    {"cause": "martin-luther-95-theses-1517", "effect": "protestant-reformation-council-trent-1545", "type": "direct", "strength": 0.9, "desc": "The Counter-Reformation was a direct response to Protestant challenges"},
+    {"cause": "martin-luther-95-theses-1517", "effect": "english-reformation-henry-viii", "type": "contributing", "strength": 0.6, "desc": "The broader Reformation context facilitated Henry VIII's break with Rome"},
+    {"cause": "martin-luther-95-theses-1517", "effect": "thirty-years-war-1618-1648", "type": "direct", "strength": 0.8, "desc": "Religious divisions from the Reformation fueled the Thirty Years' War"},
+    {"cause": "thirty-years-war-1618-1648", "effect": "peace-of-westphalia-sovereignty", "type": "direct", "strength": 0.9, "desc": "The Peace of Westphalia ended the Thirty Years' War"},
 
     # Scientific revolution chain
-    {"cause": "copernicus-publishes-de-revolutionibus", "effect": "galileo-telescope-1609", "type": "direct", "strength": 0.8, "desc": "Galileo's telescopic observations confirmed Copernican heliocentrism"},
-    {"cause": "galileo-telescope-1609", "effect": "scientific-revolution-newton-laws-1687", "type": "direct", "strength": 0.8, "desc": "Galileo's mechanics laid groundwork for Newton's laws of motion"},
+    {"cause": "copernicus-publishes-de-revolutionibus", "effect": "galileo-telescope-observations", "type": "direct", "strength": 0.8, "desc": "Galileo's telescopic observations confirmed Copernican heliocentrism"},
+    {"cause": "galileo-telescope-observations", "effect": "newton-principia-1687", "type": "direct", "strength": 0.8, "desc": "Galileo's mechanics laid groundwork for Newton's laws of motion"},
     {"cause": "copernicus-publishes-de-revolutionibus", "effect": "kepler-planetary-laws-1609", "type": "direct", "strength": 0.8, "desc": "Kepler refined and proved the heliocentric model with mathematical precision"},
-    {"cause": "kepler-planetary-laws-1609", "effect": "scientific-revolution-newton-laws-1687", "type": "direct", "strength": 0.9, "desc": "Newton's gravitational theory explained Kepler's planetary laws"},
-    {"cause": "scientific-revolution-newton-laws-1687", "effect": "leibniz-calculus-invention", "type": "contributing", "strength": 0.7, "desc": "Newton and Leibniz independently developed calculus in the same intellectual milieu"},
-    {"cause": "scientific-revolution-newton-laws-1687", "effect": "enlightenment-encyclopedie", "type": "contributing", "strength": 0.7, "desc": "Newton's success inspired Enlightenment faith in reason and science"},
-    {"cause": "scientific-societies-founded", "effect": "scientific-revolution-newton-laws-1687", "type": "contributing", "strength": 0.6, "desc": "Scientific societies provided institutional support for Newton's work"},
+    {"cause": "kepler-planetary-laws-1609", "effect": "newton-principia-1687", "type": "direct", "strength": 0.9, "desc": "Newton's gravitational theory explained Kepler's planetary laws"},
+    {"cause": "newton-principia-1687", "effect": "leibniz-calculus-invention", "type": "contributing", "strength": 0.7, "desc": "Newton and Leibniz independently developed calculus in the same intellectual milieu"},
+    {"cause": "newton-principia-1687", "effect": "enlightenment-encyclopedie", "type": "contributing", "strength": 0.7, "desc": "Newton's success inspired Enlightenment faith in reason and science"},
+    {"cause": "scientific-societies-founded", "effect": "newton-principia-1687", "type": "contributing", "strength": 0.6, "desc": "Scientific societies provided institutional support for Newton's work"},
     {"cause": "microscope-discovery-microorganisms", "effect": "linnaeus-systema-naturae", "type": "contributing", "strength": 0.5, "desc": "Microscopy expanded awareness of biological diversity, motivating classification"},
-    {"cause": "linnaeus-systema-naturae", "effect": "darwin-origin-species-evolution", "type": "contributing", "strength": 0.7, "desc": "Linnaean taxonomy organized biodiversity, enabling evolutionary thinking"},
-    {"cause": "harvey-discovers-blood-circulation", "effect": "scientific-societies-founded", "type": "contributing", "strength": 0.5, "desc": "Harvey's experimental approach exemplified the new science the societies promoted"},
+    {"cause": "linnaeus-systema-naturae", "effect": "darwin-on-the-origin-of-species-1859", "type": "contributing", "strength": 0.7, "desc": "Linnaean taxonomy organized biodiversity, enabling evolutionary thinking"},
+    {"cause": "harvey-blood-circulation-1628", "effect": "scientific-societies-founded", "type": "contributing", "strength": 0.5, "desc": "Harvey's experimental approach exemplified the new science the societies promoted"},
 
     # Enlightenment → political revolutions
     {"cause": "enlightenment-encyclopedie", "effect": "french-revolution-bastille", "type": "contributing", "strength": 0.7, "desc": "Enlightenment ideas of liberty and reason inspired the French Revolution"},
@@ -1003,50 +673,49 @@ CAUSALITY_LINKS: list[dict[str, Any]] = [
     {"cause": "american-declaration-independence", "effect": "french-revolution-bastille", "type": "direct", "strength": 0.7, "desc": "The American Revolution inspired French revolutionaries"},
     {"cause": "french-revolution-bastille", "effect": "french-revolution-declaration-rights-man", "type": "direct", "strength": 0.9, "desc": "The Revolution's National Assembly adopted the Declaration of Rights"},
     {"cause": "french-revolution-bastille", "effect": "napoleon-rise-to-power", "type": "direct", "strength": 0.9, "desc": "Napoleon rose through the chaos of the French Revolution"},
-    {"cause": "napoleon-rise-to-power", "effect": "congress-of-vienna-european-order", "type": "direct", "strength": 0.9, "desc": "The Congress of Vienna was convened after Napoleon's defeat"},
-    {"cause": "napoleon-rise-to-power", "effect": "latin-american-independence-movements", "type": "contributing", "strength": 0.7, "desc": "Napoleon's invasion of Spain weakened colonial control, enabling Latin American independence"},
-    {"cause": "congress-of-vienna-european-order", "effect": "revolutions-1848-springtime-peoples", "type": "contributing", "strength": 0.6, "desc": "Repression of liberal-nationalist movements by the Vienna system provoked the 1848 revolutions"},
+    {"cause": "napoleon-rise-to-power", "effect": "congress-vienna-1815", "type": "direct", "strength": 0.9, "desc": "The Congress of Vienna was convened after Napoleon's defeat"},
+    {"cause": "napoleon-rise-to-power", "effect": "bolivar-latin-american-independence-1819", "type": "contributing", "strength": 0.7, "desc": "Napoleon's invasion of Spain weakened colonial control, enabling Latin American independence"},
+    {"cause": "congress-vienna-1815", "effect": "revolutions-1848-springtime-peoples", "type": "contributing", "strength": 0.6, "desc": "Repression of liberal-nationalist movements by the Vienna system provoked the 1848 revolutions"},
 
     # Slave trade → revolution → abolition chain
     {"cause": "atlantic-slave-trade-begins", "effect": "trans-atlantic-slave-trade-peak-1780", "type": "direct", "strength": 0.9, "desc": "The slave trade escalated to its peak in the 18th century"},
     {"cause": "trans-atlantic-slave-trade-peak-1780", "effect": "haitian-revolution-independence", "type": "direct", "strength": 0.8, "desc": "The brutality of plantation slavery provoked the Haitian Revolution"},
     {"cause": "haitian-revolution-independence", "effect": "abolition-slave-trade-britain", "type": "contributing", "strength": 0.6, "desc": "Haiti's revolution strengthened abolitionist arguments"},
     {"cause": "abolition-slave-trade-britain", "effect": "abolition-slavery-british-empire-1833", "type": "direct", "strength": 0.9, "desc": "Trade abolition was followed by full emancipation in 1833"},
-    {"cause": "abolition-slavery-british-empire-1833", "effect": "american-civil-war-emancipation", "type": "contributing", "strength": 0.5, "desc": "British abolition intensified the global debate over slavery"},
+    {"cause": "abolition-slavery-british-empire-1833", "effect": "american-civil-war-1861-1865", "type": "contributing", "strength": 0.5, "desc": "British abolition intensified the global debate over slavery"},
 
     # Colonialism chains
-    {"cause": "columbus-reaches-americas", "effect": "treaty-tordesillas-world-division", "type": "direct", "strength": 0.9, "desc": "Columbus's discovery prompted Spain and Portugal to divide the new world"},
-    {"cause": "columbus-reaches-americas", "effect": "spanish-conquest-aztec-empire", "type": "direct", "strength": 0.8, "desc": "Columbus opened the path to Spanish conquest of the Americas"},
-    {"cause": "spanish-conquest-aztec-empire", "effect": "spanish-conquest-inca-empire", "type": "direct", "strength": 0.7, "desc": "Success in Mexico emboldened and enabled the conquest of Peru"},
-    {"cause": "spanish-conquest-aztec-empire", "effect": "atlantic-slave-trade-begins", "type": "contributing", "strength": 0.6, "desc": "Conquest created labor demands that fueled the slave trade"},
-    {"cause": "vasco-da-gama-india-route", "effect": "dutch-east-india-company-founded", "type": "contributing", "strength": 0.7, "desc": "Da Gama's route opened Indian Ocean trade to European companies"},
+    {"cause": "columbus-reaches-americas-1492", "effect": "treaty-tordesillas-world-division", "type": "direct", "strength": 0.9, "desc": "Columbus's discovery prompted Spain and Portugal to divide the new world"},
+    {"cause": "columbus-reaches-americas-1492", "effect": "cortez-conquest-aztec-1519-1521", "type": "direct", "strength": 0.8, "desc": "Columbus opened the path to Spanish conquest of the Americas"},
+    {"cause": "cortez-conquest-aztec-1519-1521", "effect": "spanish-conquest-inca", "type": "direct", "strength": 0.7, "desc": "Success in Mexico emboldened and enabled the conquest of Peru"},
+    {"cause": "cortez-conquest-aztec-1519-1521", "effect": "atlantic-slave-trade-begins", "type": "contributing", "strength": 0.6, "desc": "Conquest created labor demands that fueled the slave trade"},
+    {"cause": "vasco-da-gama-india-1498", "effect": "dutch-east-india-company-founded", "type": "contributing", "strength": 0.7, "desc": "Da Gama's route opened Indian Ocean trade to European companies"},
     {"cause": "dutch-east-india-company-founded", "effect": "british-east-india-company-india", "type": "contributing", "strength": 0.6, "desc": "Dutch success in Asia spurred British East India Company expansion"},
-    {"cause": "fall-of-constantinople-1453", "effect": "columbus-reaches-americas", "type": "contributing", "strength": 0.6, "desc": "Ottoman control of eastern trade routes motivated westward exploration"},
-    {"cause": "fall-of-constantinople-1453", "effect": "vasco-da-gama-india-route", "type": "contributing", "strength": 0.6, "desc": "Ottoman control motivated Portuguese search for sea route to India"},
+    {"cause": "fall-constantinople-1453", "effect": "columbus-reaches-americas-1492", "type": "contributing", "strength": 0.6, "desc": "Ottoman control of eastern trade routes motivated westward exploration"},
+    {"cause": "fall-constantinople-1453", "effect": "vasco-da-gama-india-1498", "type": "contributing", "strength": 0.6, "desc": "Ottoman control motivated Portuguese search for sea route to India"},
 
     # Industrial revolution chain
     {"cause": "spinning-jenny-textile-revolution", "effect": "watt-steam-engine-improved", "type": "contributing", "strength": 0.6, "desc": "Textile mechanization drove demand for steam power"},
     {"cause": "watt-steam-engine-improved", "effect": "first-railway-liverpool-manchester", "type": "direct", "strength": 0.9, "desc": "Steam power enabled the railway revolution"},
     {"cause": "watt-steam-engine-improved", "effect": "bessemer-process-steel", "type": "contributing", "strength": 0.6, "desc": "Steam-powered industry created demand for cheap steel"},
     {"cause": "first-railway-liverpool-manchester", "effect": "telegraph-morse-communication", "type": "contributing", "strength": 0.5, "desc": "Railways created infrastructure corridors for telegraph lines"},
-    {"cause": "watt-steam-engine-improved", "effect": "marx-communist-manifesto", "type": "contributing", "strength": 0.6, "desc": "Industrialization's social upheaval inspired Marx's critique of capitalism"},
+    {"cause": "watt-steam-engine-improved", "effect": "communist-manifesto-1848", "type": "contributing", "strength": 0.6, "desc": "Industrialization's social upheaval inspired Marx's critique of capitalism"},
 
     # Japan/China chain
-    {"cause": "opium-wars-china-unequal-treaties", "effect": "meiji-restoration-japan-modernization", "type": "contributing", "strength": 0.6, "desc": "China's humiliation by Western powers alarmed Japanese leaders into modernization"},
-    {"cause": "tokugawa-japan-isolation", "effect": "meiji-restoration-japan-modernization", "type": "direct", "strength": 0.8, "desc": "The Meiji Restoration overthrew the Tokugawa order"},
+    {"cause": "opium-wars-china-unequal-treaties", "effect": "meiji-restoration-japan-1868", "type": "contributing", "strength": 0.6, "desc": "China's humiliation by Western powers alarmed Japanese leaders into modernization"},
+    {"cause": "tokugawa-japan-isolation", "effect": "meiji-restoration-japan-1868", "type": "direct", "strength": 0.8, "desc": "The Meiji Restoration overthrew the Tokugawa order"},
 
     # English Civil War → constitutional chain
-    {"cause": "english-civil-war-begins-1642", "effect": "glorious-revolution-1688", "type": "direct", "strength": 0.8, "desc": "The unresolved tensions of the Civil War led to the Glorious Revolution"},
+    {"cause": "english-civil-war", "effect": "glorious-revolution-1688", "type": "direct", "strength": 0.8, "desc": "The unresolved tensions of the Civil War led to the Glorious Revolution"},
 
     # Nationalism
-    {"cause": "revolutions-1848-springtime-peoples", "effect": "german-unification-bismarck", "type": "contributing", "strength": 0.6, "desc": "1848 nationalism failed peacefully, leading to Bismarck's military unification"},
+    {"cause": "revolutions-1848-springtime-peoples", "effect": "unification-germany-1871", "type": "contributing", "strength": 0.6, "desc": "1848 nationalism failed peacefully, leading to Bismarck's military unification"},
     {"cause": "revolutions-1848-springtime-peoples", "effect": "italian-unification-risorgimento", "type": "contributing", "strength": 0.7, "desc": "1848 revolutionary nationalism directly inspired the Risorgimento"},
 
     # Mughal/colonial India
     {"cause": "mughal-empire-peak-akbar", "effect": "british-east-india-company-india", "type": "indirect", "strength": 0.5, "desc": "Mughal decline in the 18th century enabled British expansion in India"},
 
     # Africa
-    {"cause": "scramble-for-africa-berlin-conference", "effect": "berlin-conference-africa-partition-1884", "type": "direct", "strength": 0.9, "desc": "The Berlin Conference formalized the Scramble for Africa"},
 
     # Suffrage
     {"cause": "french-revolution-declaration-rights-man", "effect": "womens-suffrage-movement-seneca-falls", "type": "contributing", "strength": 0.5, "desc": "The Declaration of Rights' exclusion of women provoked demands for women's rights"},

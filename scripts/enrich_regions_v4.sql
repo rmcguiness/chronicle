@@ -311,7 +311,7 @@ SELECT c.id, e.id, 'direct', 0.8,
   'Toltec cultural legacy directly influenced Aztec founding mythology and political organization',
   'seed-script:regional-enrichment-v4', 'approved'
 FROM events c, events e
-WHERE c.slug = 'toltec-empire-tula-900' AND e.slug = 'aztec-founding-tenochtitlan'
+WHERE c.slug = 'toltec-empire-tula-900' AND e.slug = 'aztec-tenochtitlan-founding-1325'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)

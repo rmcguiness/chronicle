@@ -40,7 +40,7 @@ ON CONFLICT ON CONSTRAINT uq_causality_pair DO NOTHING;
 -- Little Ice Age → Black Death
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
 SELECT c.id, e.id, 'contributing', 0.5, 'Little Ice Age crop failures weakened immune systems, amplifying the Black Death.', 'enrichment-bot', 'approved'
-FROM events c, events e WHERE c.slug = 'little-ice-age-begins-1350' AND e.slug = 'black-death-1347-1351' AND c.id != e.id
+FROM events c, events e WHERE c.slug = 'little-ice-age-begins-1350' AND e.slug = 'black-death-arrives-europe' AND c.id != e.id
 ON CONFLICT ON CONSTRAINT uq_causality_pair DO NOTHING;
 
 -- SARS → COVID
@@ -82,7 +82,7 @@ ON CONFLICT ON CONSTRAINT uq_causality_pair DO NOTHING;
 -- Black Death → Renaissance
 INSERT INTO causality_links (cause_event_id, effect_event_id, link_type, strength, description, created_by, review_status)
 SELECT c.id, e.id, 'contributing', 0.6, 'The Black Death disrupted feudalism and created conditions contributing to the Renaissance.', 'enrichment-bot', 'approved'
-FROM events c CROSS JOIN LATERAL (SELECT id FROM events WHERE title LIKE '%Renaissance%' AND year_approx BETWEEN 1350 AND 1500 AND id != c.id LIMIT 1) e WHERE c.slug = 'black-death-1347-1351'
+FROM events c CROSS JOIN LATERAL (SELECT id FROM events WHERE title LIKE '%Renaissance%' AND year_approx BETWEEN 1350 AND 1500 AND id != c.id LIMIT 1) e WHERE c.slug = 'black-death-arrives-europe'
 ON CONFLICT ON CONSTRAINT uq_causality_pair DO NOTHING;
 
 -- Holodomor → Soviet dissolution

@@ -378,24 +378,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "russo-japanese-war-1904",
-        "title": "Russo-Japanese War — First Asian Victory Over a European Power",
-        "year": 1904, "lat": 38.73, "lng": 125.75,
-        "geo_modern": "Port Arthur (Lüshun), China",
-        "geo_era_label": "Late Imperial Era",
-        "category": "war", "importance_score": 0.75, "zoom_min": 3, "is_bce": False,
-        "perspectives": [
-            {"label": "Japanese perspective", "culture_code": "jp", "viewpoint_type": "nationalist",
-             "narrative": "Japan's stunning victory over Russia (1904–1905) shattered the myth of European invincibility. The naval triumph at Tsushima established Japan as a world power and inspired anti-colonial movements across Asia.",
-             "summary": "Japan defeats Russia — the first modern Asian victory over a European empire.",
-             "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Tide at Sunrise: A History of the Russo-Japanese War", "author": "Denis and Peggy Warner",
-                  "publication": "Charterhouse", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1974}
-             ]},
-        ],
-    },
-    {
         "slug": "ottoman-tanzimat-reforms-land-law-1858",
         "title": "Ottoman Land Code of 1858 — Tanzimat Reforms Reshape Property",
         "year": 1858, "lat": 41.01, "lng": 28.98,
@@ -665,24 +647,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Opium War", "author": "Julia Lovell", "publication": "Picador",
                   "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2011}
-             ]},
-        ],
-    },
-    {
-        "slug": "abolition-slavery-us-13th-amendment-1865",
-        "title": "13th Amendment Ratified — Slavery Abolished in the United States",
-        "year": 1865, "lat": 38.90, "lng": -77.04,
-        "geo_modern": "Washington, D.C., USA",
-        "geo_era_label": "Reconstruction America",
-        "category": "political", "importance_score": 0.90, "zoom_min": 1, "is_bce": False,
-        "perspectives": [
-            {"label": "African American perspective", "culture_code": "us", "viewpoint_type": "academic",
-             "narrative": "The ratification of the 13th Amendment on December 6, 1865, formally abolished slavery throughout the United States, freeing nearly 4 million enslaved people. However, the promise of freedom would be undermined by Black Codes, sharecropping, and Jim Crow segregation.",
-             "summary": "The constitutional amendment that ended American slavery — but not racial oppression.",
-             "evidence_score": 0.92,
-             "sources": [
-                 {"title": "The Second Founding", "author": "Eric Foner", "publication": "W.W. Norton",
-                  "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": False, "year": 2019}
              ]},
         ],
     },
@@ -1073,24 +1037,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Parkland: Birth of a Movement", "author": "Dave Cullen",
                   "publication": "Harper", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2019}
-             ]},
-        ],
-    },
-    {
-        "slug": "paris-climate-agreement-adopted-2015",
-        "title": "Paris Climate Agreement Adopted — 196 Nations Commit to Limit Warming",
-        "year": 2015, "lat": 48.86, "lng": 2.35,
-        "geo_modern": "Paris, France",
-        "geo_era_label": "Climate Action Era",
-        "category": "political", "importance_score": 0.80, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Environmental perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "On December 12, 2015, 196 parties adopted the Paris Agreement, committing to limit global warming to well below 2°C above pre-industrial levels. It was the first universal, legally binding global climate deal, though enforcement remains voluntary and emissions continue to rise.",
-             "summary": "The first universal climate deal — historic ambition, uncertain enforcement.",
-             "evidence_score": 0.87,
-             "sources": [
-                 {"title": "The Paris Agreement", "author": "UNFCCC",
-                  "source_type": "primary", "reliability_tier": 1, "peer_reviewed": False, "year": 2015}
              ]},
         ],
     },

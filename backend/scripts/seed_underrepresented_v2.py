@@ -41,25 +41,6 @@ def sha256_str(data: str) -> str:
 EVENTS: list[dict[str, Any]] = [
     # ─── SOUTHEAST ASIA: KHMER EMPIRE ───
     {
-        "slug": "khmer-empire-founding-802",
-        "title": "Founding of the Khmer Empire by Jayavarman II",
-        "year": 802, "is_bce": False,
-        "lat": 13.41, "lng": 103.87,
-        "geo_modern": "Siem Reap Province, Cambodia",
-        "geo_era_label": "Khmer Empire",
-        "category": "political", "importance_score": 0.75, "zoom_min": 3,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Cambodian historical perspective", "culture_code": "kh", "viewpoint_type": "academic",
-             "narrative": "Jayavarman II unified the warring Khmer polities and declared independence from Javanese suzerainty atop Phnom Kulen in 802 CE. His devaraja (god-king) cult established the sacral kingship that would underpin the Khmer Empire for six centuries.",
-             "summary": "Unification of Khmer polities under divine kingship.", "evidence_score": 0.78,
-             "sources": [
-                 {"title": "The Civilization of Angkor", "author": "Charles Higham",
-                  "publication": "University of California Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2001}
-             ]},
-        ],
-    },
-    {
         "slug": "angkor-wat-construction-1113",
         "title": "Construction of Angkor Wat",
         "year": 1113, "is_bce": False,
@@ -137,25 +118,6 @@ EVENTS: list[dict[str, Any]] = [
     },
     # ─── SOUTHEAST ASIA: SRIVIJAYA ───
     {
-        "slug": "srivijaya-maritime-empire-650",
-        "title": "Rise of the Srivijaya Maritime Empire",
-        "year": 650, "is_bce": False,
-        "lat": -2.99, "lng": 104.76,
-        "geo_modern": "Palembang, South Sumatra, Indonesia",
-        "geo_era_label": "Srivijaya Empire",
-        "category": "political", "importance_score": 0.75, "zoom_min": 3,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Maritime Southeast Asian perspective", "culture_code": "id", "viewpoint_type": "academic",
-             "narrative": "Srivijaya emerged as the dominant maritime power in Southeast Asia, controlling the Strait of Malacca and the Sunda Strait — the two critical chokepoints of Indian Ocean-China Sea trade. Based at Palembang, it became the region's richest and most powerful thalassocracy for over 600 years.",
-             "summary": "A powerful maritime empire controlling key Southeast Asian trade straits.", "evidence_score": 0.8,
-             "sources": [
-                 {"title": "Srivijaya: History, Religion and Language of an Early Malay Polity", "author": "George Coedès",
-                  "publication": "Malaysian Branch of the Royal Asiatic Society", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1918}
-             ]},
-        ],
-    },
-    {
         "slug": "srivijaya-buddhist-center-700",
         "title": "Srivijaya as Major Buddhist Learning Center",
         "year": 700, "is_bce": False,
@@ -229,25 +191,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Nagarakretagama (Desawarñana)", "author": "Mpu Prapañca (tr. Stuart Robson)",
                   "publication": "KITLV Press", "source_type": "primary", "reliability_tier": 1, "peer_reviewed": True, "year": 1995}
-             ]},
-        ],
-    },
-    {
-        "slug": "majapahit-peak-hayam-wuruk-1350",
-        "title": "Majapahit Empire at Peak Under Hayam Wuruk",
-        "year": 1350, "is_bce": False,
-        "lat": -7.62, "lng": 112.40,
-        "geo_modern": "Trowulan, East Java, Indonesia",
-        "geo_era_label": "Majapahit Empire",
-        "category": "political", "importance_score": 0.75, "zoom_min": 3,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Southeast Asian perspective", "culture_code": "id", "viewpoint_type": "academic",
-             "narrative": "Under King Hayam Wuruk (r. 1350-1389) and his prime minister Gajah Mada, the Majapahit Empire reached its zenith, claiming suzerainty over much of maritime Southeast Asia including Sumatra, Borneo, Bali, and parts of the Philippines. The court poet Prapanca documented this golden age in the Nagarakretagama.",
-             "summary": "The golden age of Java's greatest empire, spanning the archipelago.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "Java in the 14th Century: A Study in Cultural History", "author": "Theodore G. Th. Pigeaud",
-                  "publication": "Martinus Nijhoff", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1960}
              ]},
         ],
     },
@@ -328,64 +271,7 @@ EVENTS: list[dict[str, Any]] = [
              ]},
         ],
     },
-    {
-        "slug": "champa-kingdom-rise-192",
-        "title": "Rise of the Kingdom of Champa",
-        "year": 192, "is_bce": False,
-        "lat": 15.93, "lng": 108.33,
-        "geo_modern": "Central Vietnam",
-        "geo_era_label": "Champa Kingdom",
-        "category": "political", "importance_score": 0.6, "zoom_min": 4,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Southeast Asian perspective", "culture_code": "vn", "viewpoint_type": "academic",
-             "narrative": "The Indianized kingdom of Champa emerged along central Vietnam's coast, becoming a major maritime trading power and building elaborate Hindu temple complexes at Mỹ Sơn. For over a millennium, Champa engaged in intermittent warfare with both the Khmer Empire to the west and Dai Viet to the north.",
-             "summary": "An Indianized maritime kingdom that rivaled the Khmer and Vietnamese.", "evidence_score": 0.78,
-             "sources": [
-                 {"title": "Champa and the Archaeology of Mỹ Sơn", "author": "Andrew Hardy et al.",
-                  "publication": "NUS Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}
-             ]},
-        ],
-    },
     # ─── SOUTHEAST ASIA: OTHER ───
-    {
-        "slug": "pagan-kingdom-burma-1044",
-        "title": "Anawrahta Founds the Pagan Kingdom of Burma",
-        "year": 1044, "is_bce": False,
-        "lat": 21.17, "lng": 94.87,
-        "geo_modern": "Bagan, Myanmar",
-        "geo_era_label": "Pagan Kingdom",
-        "category": "political", "importance_score": 0.65, "zoom_min": 3,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Burmese historical perspective", "culture_code": "mm", "viewpoint_type": "academic",
-             "narrative": "King Anawrahta unified Burma and adopted Theravada Buddhism as the state religion after conquering the Mon kingdom of Thaton. He built over 10,000 Buddhist temples at Bagan, creating one of the world's greatest concentrations of religious architecture. Pagan became the first Burmese empire.",
-             "summary": "The first Burmese empire, with thousands of Buddhist temples at Bagan.", "evidence_score": 0.8,
-             "sources": [
-                 {"title": "The Making of Modern Burma", "author": "Thant Myint-U",
-                  "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2001}
-             ]},
-        ],
-    },
-    {
-        "slug": "sukhothai-kingdom-1238",
-        "title": "Founding of the Sukhothai Kingdom",
-        "year": 1238, "is_bce": False,
-        "lat": 17.01, "lng": 99.70,
-        "geo_modern": "Sukhothai, Thailand",
-        "geo_era_label": "Sukhothai Kingdom",
-        "category": "political", "importance_score": 0.6, "zoom_min": 4,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Thai historical perspective", "culture_code": "th", "viewpoint_type": "academic",
-             "narrative": "The Sukhothai Kingdom is traditionally regarded as the first Thai kingdom, established after local chieftains threw off Khmer suzerainty. Under King Ramkhamhaeng the Great, Sukhothai developed the Thai script, established Theravada Buddhism as the state religion, and created the political foundations of the Thai state.",
-             "summary": "The first Thai kingdom, birthplace of the Thai script.", "evidence_score": 0.78,
-             "sources": [
-                 {"title": "A History of Thailand", "author": "Chris Baker and Pasuk Phongpaichit",
-                  "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2014}
-             ]},
-        ],
-    },
     {
         "slug": "ayutthaya-kingdom-1351",
         "title": "Founding of the Ayutthaya Kingdom",
@@ -402,25 +288,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Ayutthaya: Venice of the East", "author": "Chris Baker",
                   "publication": "Silkworm Books", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2002}
-             ]},
-        ],
-    },
-    {
-        "slug": "malacca-sultanate-1400",
-        "title": "Founding of the Malacca Sultanate",
-        "year": 1400, "is_bce": False,
-        "lat": 2.19, "lng": 102.25,
-        "geo_modern": "Malacca, Malaysia",
-        "geo_era_label": "Malacca Sultanate",
-        "category": "political", "importance_score": 0.7, "zoom_min": 3,
-        "region": "southeast_asia",
-        "perspectives": [
-            {"label": "Malay world perspective", "culture_code": "my", "viewpoint_type": "academic",
-             "narrative": "Parameswara, a Srivijayan prince, founded the port city of Malacca around 1400. It quickly became the richest entrepôt in Southeast Asia, dominating the strait trade. The sultan's conversion to Islam accelerated Islamization throughout maritime Southeast Asia. Malacca's legal code (Undang-Undang Melaka) became the basis of Malay law.",
-             "summary": "A trading port whose conversion to Islam transformed maritime Southeast Asia.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "The Malay Annals (Sejarah Melayu)", "author": "Tun Sri Lanang (tr. C.C. Brown)",
-                  "publication": "Oxford University Press", "source_type": "primary", "reliability_tier": 2, "peer_reviewed": True, "year": 1970}
              ]},
         ],
     },
@@ -655,25 +522,6 @@ EVENTS: list[dict[str, Any]] = [
     },
     # ─── PACIFIC & OCEANIA ───
     {
-        "slug": "polynesian-settlement-samoa-tonga-1000bce",
-        "title": "Polynesian Settlement of Samoa and Tonga",
-        "year": -1000, "is_bce": True,
-        "lat": -13.83, "lng": -171.76,
-        "geo_modern": "Samoa",
-        "geo_era_label": "Ancestral Polynesia",
-        "category": "social", "importance_score": 0.7, "zoom_min": 3,
-        "region": "pacific",
-        "perspectives": [
-            {"label": "Pacific studies perspective", "culture_code": "ws", "viewpoint_type": "academic",
-             "narrative": "Lapita peoples settled Samoa and Tonga around 1000 BCE, establishing the ancestral Polynesian homeland. Over the next 1,500 years, these islands became the staging ground for the greatest maritime expansion in human history, as Polynesian navigators spread across the Pacific using sophisticated wayfinding techniques.",
-             "summary": "The ancestral Polynesian homeland, launching pad for Pacific settlement.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "Polynesian Navigation and the Discovery of New Zealand", "author": "Jeff Evans",
-                  "publication": "Libro International", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 1998}
-             ]},
-        ],
-    },
-    {
         "slug": "polynesian-navigation-techniques-500",
         "title": "Polynesian Celestial Navigation — Masters of the Pacific",
         "year": 500, "is_bce": False,
@@ -788,25 +636,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "hawaiian-unification-kamehameha-1810",
-        "title": "Kamehameha I Unifies the Hawaiian Islands",
-        "year": 1810, "is_bce": False,
-        "lat": 20.02, "lng": -155.83,
-        "geo_modern": "Kailua-Kona, Hawaii, USA",
-        "geo_era_label": "Kingdom of Hawaii",
-        "category": "political", "importance_score": 0.65, "zoom_min": 3,
-        "region": "pacific",
-        "perspectives": [
-            {"label": "Hawaiian perspective", "culture_code": "us", "viewpoint_type": "academic",
-             "narrative": "Kamehameha I unified the Hawaiian archipelago through a combination of military conquest, diplomacy, and the strategic use of Western weapons acquired from European traders. His kingdom established a centralized government with a legal code (kapu system) and international trade relations, lasting until the overthrow of the monarchy in 1893.",
-             "summary": "Unification of Hawaii into a single kingdom through warfare and diplomacy.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "Kamehameha: The Rise of a King", "author": "Richard Borreca",
-                  "publication": "Mutual Publishing", "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": True, "year": 2009}
-             ]},
-        ],
-    },
-    {
         "slug": "tonga-tuionga-empire-1200",
         "title": "Tu'i Tonga Maritime Empire",
         "year": 1200, "is_bce": False,
@@ -846,25 +675,6 @@ EVENTS: list[dict[str, Any]] = [
     },
     # ─── 19TH-20TH CENTURY AFRICA ───
     {
-        "slug": "zulu-kingdom-shaka-1818",
-        "title": "Rise of the Zulu Kingdom Under Shaka",
-        "year": 1818, "is_bce": False,
-        "lat": -28.53, "lng": 31.30,
-        "geo_modern": "KwaZulu-Natal, South Africa",
-        "geo_era_label": "Zulu Kingdom",
-        "category": "military", "importance_score": 0.75, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Southern African perspective", "culture_code": "za", "viewpoint_type": "academic",
-             "narrative": "Shaka kaSenzangakhona transformed the small Zulu chieftaincy into a centralized military state through revolutionary tactics: the iklwa short stabbing spear replaced throwing assegais, the 'horns of the buffalo' encirclement formation, regimental age-based organization (amabutho), and ruthless discipline. His military reforms triggered the Mfecane upheaval across Southern Africa.",
-             "summary": "A military revolutionary who transformed southern African warfare and politics.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "The Zulu Kingdom", "author": "John Laband",
-                  "publication": "University of KwaZulu-Natal Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}
-             ]},
-        ],
-    },
-    {
         "slug": "mfecane-upheaval-1815",
         "title": "The Mfecane — Southern African Upheaval",
         "year": 1815, "is_bce": False,
@@ -903,25 +713,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "berlin-conference-scramble-africa-1884",
-        "title": "Berlin Conference — The Scramble for Africa Begins",
-        "year": 1884, "is_bce": False,
-        "lat": 52.52, "lng": 13.40,
-        "geo_modern": "Berlin, Germany",
-        "geo_era_label": "Scramble for Africa",
-        "category": "political", "importance_score": 0.85, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "African historical perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "The Berlin Conference of 1884-85, convened by Otto von Bismarck, established the rules by which European powers would divide Africa among themselves. No African representatives were invited. The conference formalized the 'Scramble for Africa,' drawing arbitrary borders that cut through ethnic groups and existing political entities, creating divisions that persist today.",
-             "summary": "European powers partitioned Africa without African consent.", "evidence_score": 0.95,
-             "sources": [
-                 {"title": "The Scramble for Africa", "author": "Thomas Pakenham",
-                  "publication": "Random House", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1991}
-             ]},
-        ],
-    },
-    {
         "slug": "ashanti-british-wars-1824",
         "title": "Ashanti-British Wars Begin",
         "year": 1824, "is_bce": False,
@@ -956,44 +747,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "Yaa Asantewaa and the Asante-British War of 1900-1", "author": "A. Adu Boahen",
                   "publication": "James Currey", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2003}
-             ]},
-        ],
-    },
-    {
-        "slug": "battle-of-adwa-1896",
-        "title": "Battle of Adwa — Ethiopia Defeats Italian Invasion",
-        "year": 1896, "is_bce": False,
-        "lat": 14.17, "lng": 38.90,
-        "geo_modern": "Adwa, Tigray, Ethiopia",
-        "geo_era_label": "Ethiopian Empire",
-        "category": "military", "importance_score": 0.85, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Pan-African perspective", "culture_code": "et", "viewpoint_type": "academic",
-             "narrative": "Emperor Menelik II assembled a force of 100,000 Ethiopians and decisively defeated the Italian army at the Battle of Adwa on March 1, 1896. This was the most significant African military victory against a European colonial power, preserving Ethiopian independence during the Scramble for Africa. Adwa became a symbol of African resistance and inspired pan-African movements worldwide.",
-             "summary": "The only African defeat of a European colonizer during the Scramble for Africa.", "evidence_score": 0.95,
-             "sources": [
-                 {"title": "The Battle of Adwa: African Victory in the Age of Empire", "author": "Raymond Jonas",
-                  "publication": "Harvard University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2011}
-             ]},
-        ],
-    },
-    {
-        "slug": "ethiopian-modernization-menelik-1889",
-        "title": "Ethiopian Modernization Under Emperor Menelik II",
-        "year": 1889, "is_bce": False,
-        "lat": 9.02, "lng": 38.75,
-        "geo_modern": "Addis Ababa, Ethiopia",
-        "geo_era_label": "Ethiopian Empire",
-        "category": "political", "importance_score": 0.65, "zoom_min": 4,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Ethiopian perspective", "culture_code": "et", "viewpoint_type": "academic",
-             "narrative": "Menelik II founded Addis Ababa as his new capital and embarked on ambitious modernization: introducing railways, telegraph, postal services, and modern education. He consolidated Ethiopian territorial control and built the centralized state that would resist Italian colonialism. His reign marks the transition of Ethiopia into a modern nation-state.",
-             "summary": "Modernization and state-building that enabled Ethiopia to resist colonialism.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "A History of Ethiopia", "author": "Harold Marcus",
-                  "publication": "University of California Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2002}
              ]},
         ],
     },
@@ -1074,25 +827,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "year-of-africa-1960",
-        "title": "Year of Africa — 17 Nations Gain Independence",
-        "year": 1960, "is_bce": False,
-        "lat": 6.52, "lng": 3.38,
-        "geo_modern": "Lagos, Nigeria",
-        "geo_era_label": "African independence wave",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "African independence perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "1960 became known as the 'Year of Africa' as 17 nations gained independence, including Nigeria, Congo, Senegal, Mali, Cameroon, and Somalia. This wave of decolonization fundamentally transformed the world order, swelling UN membership and creating the Non-Aligned Movement as a Third World bloc in Cold War geopolitics.",
-             "summary": "Seventeen African nations gained independence in a single transformative year.", "evidence_score": 0.92,
-             "sources": [
-                 {"title": "The Fate of Africa", "author": "Martin Meredith",
-                  "publication": "PublicAffairs", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2005}
-             ]},
-        ],
-    },
-    {
         "slug": "oau-founded-1963",
         "title": "Organisation of African Unity Founded",
         "year": 1963, "is_bce": False,
@@ -1131,25 +865,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "algerian-war-independence-1954",
-        "title": "Algerian War of Independence Begins",
-        "year": 1954, "is_bce": False,
-        "lat": 36.75, "lng": 3.06,
-        "geo_modern": "Algiers, Algeria",
-        "geo_era_label": "French Algeria",
-        "category": "military", "importance_score": 0.75, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "North African perspective", "culture_code": "dz", "viewpoint_type": "academic",
-             "narrative": "The Algerian War of Independence (1954-1962) was one of the most brutal decolonization conflicts. The FLN insurgency and France's response — including systematic torture, mass displacement of 2 million Algerians, and napalm bombing — ultimately led to Algerian independence and the fall of France's Fourth Republic. It inspired anti-colonial movements worldwide.",
-             "summary": "A brutal war that ended 132 years of French colonialism in Algeria.", "evidence_score": 0.9,
-             "sources": [
-                 {"title": "A Savage War of Peace: Algeria 1954-1962", "author": "Alistair Horne",
-                  "publication": "New York Review Books", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1977}
-             ]},
-        ],
-    },
-    {
         "slug": "apartheid-south-africa-1948",
         "title": "Apartheid Formally Established in South Africa",
         "year": 1948, "is_bce": False,
@@ -1165,25 +880,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Rise and Fall of Apartheid", "author": "David Welsh",
                   "publication": "University of Virginia Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}
-             ]},
-        ],
-    },
-    {
-        "slug": "nelson-mandela-freed-1990",
-        "title": "Nelson Mandela Released — End of Apartheid Begins",
-        "year": 1990, "is_bce": False,
-        "lat": -33.92, "lng": 18.86,
-        "geo_modern": "Paarl, South Africa",
-        "geo_era_label": "End of Apartheid",
-        "category": "political", "importance_score": 0.85, "zoom_min": 2,
-        "region": "africa",
-        "perspectives": [
-            {"label": "South African perspective", "culture_code": "za", "viewpoint_type": "academic",
-             "narrative": "After 27 years of imprisonment, Nelson Mandela walked free from Victor Verster Prison on February 11, 1990. His release, negotiated by President F.W. de Klerk under domestic and international pressure, began the transition from apartheid to democracy. Mandela's subsequent leadership of peaceful transition to majority rule is one of the 20th century's greatest political achievements.",
-             "summary": "Mandela's release after 27 years began South Africa's transition to democracy.", "evidence_score": 0.95,
-             "sources": [
-                 {"title": "Long Walk to Freedom", "author": "Nelson Mandela",
-                  "publication": "Little, Brown", "source_type": "primary", "reliability_tier": 1, "peer_reviewed": True, "year": 1994}
              ]},
         ],
     },
@@ -1304,25 +1000,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     # ─── ADDITIONAL PACIFIC ───
-    {
-        "slug": "lapita-expansion-pacific-1500bce",
-        "title": "Lapita Peoples Expand Across the Pacific",
-        "year": -1500, "is_bce": True,
-        "lat": -17.73, "lng": 168.32,
-        "geo_modern": "Vanuatu",
-        "geo_era_label": "Lapita cultural complex",
-        "category": "social", "importance_score": 0.7, "zoom_min": 3,
-        "region": "pacific",
-        "perspectives": [
-            {"label": "Pacific archaeology perspective", "culture_code": "global", "viewpoint_type": "academic",
-             "narrative": "Starting around 1500 BCE, the Lapita cultural complex spread from the Bismarck Archipelago across Melanesia to Fiji, Tonga, and Samoa. Identified by their distinctive dentate-stamped pottery, the Lapita peoples were skilled sailors and the ancestors of all Polynesian peoples. Their expansion was the first human settlement of Remote Oceania.",
-             "summary": "The ancestral Polynesian culture that first settled the remote Pacific.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "The Lapita Peoples: Ancestors of the Oceanic World", "author": "Patrick Vinton Kirch",
-                  "publication": "Blackwell", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1997}
-             ]},
-        ],
-    },
     # ─── ADDITIONAL MODERN AFRICA ───
     {
         "slug": "ethiopian-italian-war-1935",
@@ -1340,44 +1017,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Ethiopian War 1935-1941", "author": "Angelo Del Boca",
                   "publication": "University of Chicago Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 1969}
-             ]},
-        ],
-    },
-    {
-        "slug": "congo-independence-crisis-1960",
-        "title": "Congo Independence and Lumumba's Assassination",
-        "year": 1960, "is_bce": False,
-        "lat": -4.32, "lng": 15.31,
-        "geo_modern": "Kinshasa, Democratic Republic of Congo",
-        "geo_era_label": "Congo Crisis",
-        "category": "political", "importance_score": 0.7, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "African Cold War perspective", "culture_code": "cd", "viewpoint_type": "academic",
-             "narrative": "Congo's independence on June 30, 1960 was immediately followed by political crisis, military mutiny, and Belgian-backed secession of mineral-rich Katanga. Prime Minister Patrice Lumumba's assassination in January 1961 — with CIA and Belgian involvement — became a defining moment of Cold War-era neocolonialism in Africa and led to decades of Mobutu's dictatorship.",
-             "summary": "Independence followed by crisis and a Cold War-driven assassination.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Assassination of Lumumba", "author": "Ludo De Witte",
-                  "publication": "Verso", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2001}
-             ]},
-        ],
-    },
-    {
-        "slug": "biafra-war-nigeria-1967",
-        "title": "Nigerian Civil War (Biafra War)",
-        "year": 1967, "is_bce": False,
-        "lat": 5.48, "lng": 7.03,
-        "geo_modern": "Enugu, Nigeria",
-        "geo_era_label": "Post-colonial Nigeria",
-        "category": "military", "importance_score": 0.65, "zoom_min": 3,
-        "region": "africa",
-        "perspectives": [
-            {"label": "Nigerian perspective", "culture_code": "ng", "viewpoint_type": "academic",
-             "narrative": "The Igbo-dominated Eastern Region declared independence as the Republic of Biafra in 1967, triggering a devastating civil war. The Nigerian government's blockade caused a famine that killed over a million civilians, creating one of the first televised humanitarian crises and inspiring the founding of Médecins Sans Frontières (Doctors Without Borders).",
-             "summary": "A civil war whose famine images sparked modern humanitarian activism.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "The Nigeria-Biafra War", "author": "Toyin Falola and Ogechukwu Ezekwem",
-                  "publication": "De Gruyter", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2016}
              ]},
         ],
     },

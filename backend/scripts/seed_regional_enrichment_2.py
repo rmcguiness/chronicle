@@ -318,24 +318,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "majapahit-empire-peak-1350",
-        "title": "Majapahit Empire at Its Peak",
-        "year": 1350, "is_bce": False,
-        "lat": -7.62, "lng": 112.41,
-        "geo_modern": "Trowulan, East Java, Indonesia",
-        "geo_era_label": "Majapahit Empire",
-        "category": "political", "importance_score": 0.7, "zoom_min": 3,
-        "perspectives": [
-            {"label": "Indonesian historical perspective", "culture_code": "id", "viewpoint_type": "academic",
-             "narrative": "Under Prime Minister Gajah Mada, the Majapahit Empire became the largest state in Southeast Asian history, claiming suzerainty over much of modern Indonesia, Malaysia, and the southern Philippines. The Nagarakretagama poem (1365) describes a cosmopolitan empire controlling maritime trade routes and maintaining diplomatic ties with China, Vietnam, and India.",
-             "summary": "The largest pre-modern state in Southeast Asia, controlling vast maritime trade.", "evidence_score": 0.78,
-             "sources": [
-                 {"title": "Majapahit and the End of the Classical Age", "author": "John Miksic",
-                  "publication": "National University of Singapore Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2004}
-             ]},
-        ],
-    },
-    {
         "slug": "champa-kingdom-vietnam-192",
         "title": "Founding of the Champa Kingdom",
         "year": 192, "is_bce": False,
@@ -373,24 +355,6 @@ EVENTS: list[dict[str, Any]] = [
     },
 
     # ─── PRE-COLUMBIAN / COLONIAL AMERICAS ───
-    {
-        "slug": "cahokia-mississippian-city-1050",
-        "title": "Cahokia — Largest Pre-Columbian City North of Mexico",
-        "year": 1050, "is_bce": False,
-        "lat": 38.65, "lng": -90.06,
-        "geo_modern": "Collinsville, Illinois, USA",
-        "geo_era_label": "Mississippian Culture",
-        "category": "cultural", "importance_score": 0.7, "zoom_min": 3,
-        "perspectives": [
-            {"label": "North American archaeological perspective", "culture_code": "us", "viewpoint_type": "academic",
-             "narrative": "Cahokia was a massive urban center that at its peak around 1100 CE housed 15,000-20,000 people — larger than contemporary London. Its centerpiece, Monks Mound, was the largest earthen structure in the pre-Columbian Americas. The city's planned layout, with a grand plaza aligned to astronomical events, reflects sophisticated urban planning and a complex chiefdom society.",
-             "summary": "A massive pre-Columbian city in the Mississippi Valley, larger than medieval London.", "evidence_score": 0.82,
-             "sources": [
-                 {"title": "Cahokia: Ancient America's Great City on the Mississippi", "author": "Timothy R. Pauketat",
-                  "publication": "Viking", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2009}
-             ]},
-        ],
-    },
     {
         "slug": "haudenosaunee-great-law-peace-1142",
         "title": "Great Law of Peace — Haudenosaunee Confederacy Founded",
@@ -624,24 +588,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Swahili: The Social Landscape of a Mercantile Society", "author": "Mark Horton and John Middleton",
                   "publication": "Wiley-Blackwell", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2000}
-             ]},
-        ],
-    },
-    {
-        "slug": "thai-sukhothai-kingdom-1238",
-        "title": "Founding of the Sukhothai Kingdom",
-        "year": 1238, "is_bce": False,
-        "lat": 17.01, "lng": 99.7,
-        "geo_modern": "Sukhothai, Thailand",
-        "geo_era_label": "Early Thai Kingdoms",
-        "category": "political", "importance_score": 0.6, "zoom_min": 4,
-        "perspectives": [
-            {"label": "Thai historical perspective", "culture_code": "th", "viewpoint_type": "academic",
-             "narrative": "The Sukhothai Kingdom, often considered the first Thai state, was founded when Thai chiefs overthrew Khmer governors. Under King Ramkhamhaeng (r. 1279-1298), the kingdom invented the Thai script, established Theravada Buddhism as the state religion, and developed a paternalistic style of governance described in the famous Ramkhamhaeng Inscription — though the stele's authenticity remains debated.",
-             "summary": "The first Thai kingdom, creator of the Thai script.", "evidence_score": 0.72,
-             "sources": [
-                 {"title": "A History of Thailand", "author": "Chris Baker and Pasuk Phongpaichit",
-                  "publication": "Cambridge University Press", "source_type": "secondary", "reliability_tier": 1, "peer_reviewed": True, "year": 2014}
              ]},
         ],
     },

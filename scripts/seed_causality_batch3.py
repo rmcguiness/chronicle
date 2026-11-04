@@ -356,7 +356,7 @@ LINKS = [
      "Late 19th century French cultural and technological achievements"),
     ("opening japan meiji constitution", "russo-japanese-war-1905", "enables", 0.7,
      "Meiji constitutional modernization enabled Japanese military power"),
-    ("columbian-exchange-begins", "slave trade atlantic peak", "causes", 0.7,
+    ("columbus-reaches-americas-1492", "slave trade atlantic peak", "causes", 0.7,
      "Columbian Exchange plantation system drove peak slave trade"),
     ("battle of kadesh", "bronze age collapse", "context", 0.5,
      "Battle of Kadesh between major Bronze Age powers before collapse"),
@@ -370,7 +370,7 @@ LINKS = [
      "Greek lyric poetry tradition influenced Roman literary culture"),
 
     # ── More isolated event connections ───────────────────────────────────
-    ("columbian-exchange-begins", "aids epidemic", "context", 0.2,
+    ("columbus-reaches-americas-1492", "aids epidemic", "context", 0.2,
      "Global interconnection from Columbian Exchange to modern pandemics"),
     ("penicillin discovered", "spanish flu pandemic-1918-detail", "context", 0.4,
      "Spanish Flu motivated medical research leading to antibiotics"),

@@ -391,23 +391,6 @@ EVENTS: list[dict[str, Any]] = [
         ],
     },
     {
-        "slug": "bessemer-steel-process-1856",
-        "title": "Bessemer Steel Process — Mass Production of Steel",
-        "year": 1856, "lat": 53.38, "lng": -1.47,
-        "geo_modern": "Sheffield, England",
-        "geo_era_label": "Industrial Revolution",
-        "category": "discovery", "importance_score": 0.8, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Industrial history perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "Henry Bessemer's converter process (patented 1856) made mass production of steel economically viable for the first time. Cheap steel enabled skyscrapers, railways, bridges, and warships — transforming industry, architecture, and warfare.",
-             "summary": "The process that made cheap steel possible, enabling the modern built world.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "The Most Powerful Idea in the World", "author": "William Rosen", "publication": "Random House",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2010}
-             ]},
-        ],
-    },
-    {
         "slug": "telephone-invention-bell-1876",
         "title": "Alexander Graham Bell Patents the Telephone",
         "year": 1876, "lat": 42.36, "lng": -71.06,
@@ -523,40 +506,6 @@ EVENTS: list[dict[str, Any]] = [
              "sources": [
                  {"title": "The Russo-Turkish War 1877–1878", "author": "Quintin Barry", "publication": "Helion",
                   "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 2012}
-             ]},
-        ],
-    },
-    {
-        "slug": "zulu-war-isandlwana-1879",
-        "title": "Battle of Isandlwana — Zulu Victory over the British",
-        "year": 1879, "lat": -28.35, "lng": 30.65,
-        "geo_modern": "Isandlwana, KwaZulu-Natal, South Africa",
-        "geo_era_label": "Anglo-Zulu War",
-        "category": "war", "importance_score": 0.7, "zoom_min": 3, "is_bce": False,
-        "perspectives": [
-            {"label": "Zulu perspective", "culture_code": "za", "viewpoint_type": "academic",
-             "narrative": "On 22 January 1879, a 20,000-strong Zulu army overran 1,800 British and colonial troops at Isandlwana — the worst British defeat against a technologically inferior force. It demonstrated Zulu military genius but could not prevent eventual conquest.",
-             "summary": "A stunning Zulu victory that shocked the British Empire.", "evidence_score": 0.85,
-             "sources": [
-                 {"title": "The Washing of the Spears", "author": "Donald Morris", "publication": "Simon & Schuster",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1965}
-             ]},
-        ],
-    },
-    {
-        "slug": "scramble-for-africa-congo-leopold",
-        "title": "Leopold II Claims the Congo — Colonial Exploitation",
-        "year": 1885, "lat": -4.32, "lng": 15.31,
-        "geo_modern": "Kinshasa (Léopoldville), Congo",
-        "geo_era_label": "Scramble for Africa",
-        "category": "political", "importance_score": 0.8, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Congolese/African perspective", "culture_code": "cd", "viewpoint_type": "academic",
-             "narrative": "King Leopold II's 'Congo Free State' (1885–1908) was a regime of forced labor, mutilation, and mass death that killed an estimated 10 million Congolese. It became the most infamous example of colonial exploitation in Africa.",
-             "summary": "Leopold's Congo — one of history's worst colonial atrocities.", "evidence_score": 0.88,
-             "sources": [
-                 {"title": "King Leopold's Ghost", "author": "Adam Hochschild", "publication": "Houghton Mifflin",
-                  "source_type": "secondary", "reliability_tier": 2, "peer_reviewed": False, "year": 1998}
              ]},
         ],
     },
@@ -709,22 +658,6 @@ EVENTS: list[dict[str, Any]] = [
              "summary": "The world's first women's suffrage in a self-governing country.", "evidence_score": 0.90,
              "sources": [
                  {"title": "The Women's Suffrage Petition", "source_type": "primary", "reliability_tier": 1, "year": 1893}
-             ]},
-        ],
-    },
-    {
-        "slug": "darwin-origin-of-species-publication",
-        "title": "Darwin Publishes On the Origin of Species",
-        "year": 1859, "lat": 51.33, "lng": 0.05,
-        "geo_modern": "Down House, Kent, England",
-        "geo_era_label": "Victorian Britain",
-        "category": "discovery", "importance_score": 0.9, "zoom_min": 2, "is_bce": False,
-        "perspectives": [
-            {"label": "Scientific perspective", "culture_code": "gb", "viewpoint_type": "academic",
-             "narrative": "Darwin's On the Origin of Species (1859) presented the theory of evolution by natural selection, providing a mechanism for biological diversity. It is arguably the most important scientific book ever published, revolutionizing biology and challenging religious worldviews.",
-             "summary": "The book that explained the diversity of life — the foundation of modern biology.", "evidence_score": 0.95,
-             "sources": [
-                 {"title": "On the Origin of Species", "author": "Charles Darwin", "source_type": "primary", "reliability_tier": 1, "year": 1859}
              ]},
         ],
     },

@@ -160,7 +160,7 @@ NEW_EVENTS = [
 
     ("Founding of Carthage by Phoenicians", -814, "political",
      "Tunis, Tunisia", "Phoenician Civilization",
-     36.85, 10.32, 0.75, "founding-carthage-814bce"),
+     36.85, 10.32, 0.75, "phoenicians-found-carthage-814bce"),
 
     ("Phoenician Circumnavigation of Africa", -600, "discovery",
      "Eastern Mediterranean", "Phoenician Civilization",
