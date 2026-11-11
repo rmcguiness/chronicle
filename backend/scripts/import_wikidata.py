@@ -390,6 +390,7 @@ def parse_point(wkt: str | None) -> tuple[float, float] | None:
 
 
 def slugify(text: str) -> str:
+    text = re.sub(r"[\u2010-\u2015\u2212/]", " ", text)  # "Roman–Persian" -> roman-persian
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:70].strip("-")
 
