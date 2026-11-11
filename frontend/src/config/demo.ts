@@ -17,3 +17,8 @@ export function demoSnapshotUrl(): string {
 export function wikipediaSearchUrl(title: string): string {
   return `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(title)}`;
 }
+
+/** Link to an English Wikipedia article from its page slug (e.g. "Battle_of_Hastings"). */
+export function wikipediaArticleUrl(slug: string): string {
+  return `https://en.wikipedia.org/wiki/${encodeURIComponent(slug.replace(/ /g, '_'))}`;
+}

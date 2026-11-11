@@ -11,7 +11,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchEventDetail, fetchArticle } from '../api/client';
-import { IS_DEMO_MODE, wikipediaSearchUrl } from '../config/demo';
+import { IS_DEMO_MODE, wikipediaArticleUrl, wikipediaSearchUrl } from '../config/demo';
 import type { ArticleResponse } from '../api/client';
 import type { Perspective, ConnectedEvent, Source } from '../types';
 import { useAppStore } from '../store';
@@ -399,7 +399,17 @@ interface ArticleFetchState {
 }
 
 /** Renders the Wikipedia article content or a fallback message. */
-function ArticleContent({ slug, title }: { slug: string; title?: string }) {
+function ArticleContent({
+  slug,
+  title,
+  summary,
+  wikipediaSlug,
+}: {
+  slug: string;
+  title?: string;
+  summary?: string;
+  wikipediaSlug?: string;
+}) {
   const [fetchState, setFetchState] = useState<ArticleFetchState>({
     loading: true,
     notFound: false,
@@ -435,15 +445,21 @@ function ArticleContent({ slug, title }: { slug: string; title?: string }) {
     if (IS_DEMO_MODE) {
       return (
         <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0', lineHeight: 1.6 }}>
-          Wikipedia article text loads from the backend, so it isn't part of this read-only demo.{' '}
-          {title && (
+          {summary ? (
+            <p style={{ color: '#cbd5e1', marginBottom: 8 }}>
+              {summary} <span style={{ color: '#64748b' }}>(Wikidata)</span>
+            </p>
+          ) : (
+            <>Wikipedia article text loads from the backend, so it isn't part of this read-only demo. </>
+          )}
+          {(wikipediaSlug || title) && (
             <a
-              href={wikipediaSearchUrl(title)}
+              href={wikipediaSlug ? wikipediaArticleUrl(wikipediaSlug) : wikipediaSearchUrl(title ?? '')}
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: '#60a5fa' }}
             >
-              Look it up on Wikipedia →
+              {wikipediaSlug ? 'Read the Wikipedia article →' : 'Look it up on Wikipedia →'}
             </a>
           )}
         </div>
@@ -726,7 +742,12 @@ export default function EventDetailPanel() {
             {/* ── Article ───────────────────────────────────────────── */}
             <div style={{ marginBottom: 20 }}>
               <div style={sectionHeaderStyle}>Article</div>
-              <ArticleContent slug={event.slug} title={event.title} />
+              <ArticleContent
+                slug={event.slug}
+                title={event.title}
+                summary={event.summary}
+                wikipediaSlug={event.wikipedia_slug}
+              />
             </div>
 
             {/* ── Perspectives ──────────────────────────────────────── */}

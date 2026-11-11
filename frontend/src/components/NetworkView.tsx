@@ -802,6 +802,7 @@ function NetworkViewInner() {
         fitViewOptions={{ padding: 0.15 }}
         style={{ background: 'transparent' }}
         proOptions={{ hideAttribution: true }}
+        onlyRenderVisibleElements
         elementsSelectable
         nodesDraggable
         panOnScroll={false}

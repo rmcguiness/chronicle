@@ -46,7 +46,7 @@ export default function DemoBanner() {
         rel="noopener noreferrer"
         style={{ color: '#cbd5e1', textDecoration: 'underline', textUnderlineOffset: 2 }}
       >
-        Data: ODbL / CC BY-SA
+        Data: ODbL / CC BY-SA, incl. Wikidata (CC0)
       </a>
     </div>
   );

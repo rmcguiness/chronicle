@@ -19,7 +19,7 @@ CC BY-SA 4.0 (narrative text) — see LICENSE-DATA.md. The snapshot embeds that 
 No Wikipedia text is exported (the app fetches it at runtime in normal mode only).
 
 Usage (from the repo root):
-    python3 scripts/export_demo_snapshot.py            # default: 300 events
+    python3 scripts/export_demo_snapshot.py            # default: 2500 events
     python3 scripts/export_demo_snapshot.py --limit 400
 """
 from __future__ import annotations
@@ -54,6 +54,7 @@ EVENT_MODULES = [
     "seed_regional_enrichment_2",
     "seed_underrepresented_regions",
     "seed_underrepresented_v2",
+    "seed_wikidata",
 ]
 
 # Modules that define causality links, and the attribute names they use.
@@ -67,6 +68,7 @@ LINK_SOURCES = [
     ("seed_causality_batch2", "LINKS"),
     ("causality_20th_century", "LINKS"),
     ("seed_ancient_classical_medieval_figures", "CAUSALITY_LINKS"),
+    ("seed_wikidata", "CAUSALITY_LINKS"),
 ]
 
 # Mirrors backend/app/schemas.py::_LINK_TYPE_MAP
@@ -210,6 +212,10 @@ def collect_links(events: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 VERBOSE = bool(os.environ.get("CHRONICLE_EXPORT_VERBOSE"))
+
+# No single category may fill more than this share of the snapshot.
+MAX_CATEGORY_SHARE = 0.45
+DEFAULT_LIMIT = 2500
 _STOPWORDS = {"the", "of", "and", "a", "an", "in", "on", "to", "for", "at", "by", "with", "from"}
 
 
@@ -229,6 +235,8 @@ _STEM_CHARS = 6
 # Seed batches sometimes date the same event a year or two apart (start vs. end of a
 # conquest). Near-identical titles within this many years are treated as one event.
 NEAR_YEAR_WINDOW = 3
+# Exactly matching titles count as one event over a wider window.
+SAME_TITLE_YEAR_WINDOW = 12
 
 
 def _title_words(title: str) -> set[str]:
@@ -249,6 +257,10 @@ def is_duplicate(a: dict[str, Any], b: dict[str, Any]) -> bool:
     apart: one title's key words (at least two of them) are a subset of the other's.
     """
     gap = abs(int(a["year"]) - int(b["year"]))
+    if a.get("wikidata_id") and b.get("wikidata_id") and a["wikidata_id"] != b["wikidata_id"]:
+        return False  # different Wikidata items are different events
+    if gap <= SAME_TITLE_YEAR_WINDOW and _title_words(a["title"]) == _title_words(b["title"]):
+        return True  # identical titles dated a few years apart ("Construction of Angkor Wat")
     if gap > NEAR_YEAR_WINDOW:
         return False
     words, other = _key_words(a["title"]), _key_words(b["title"])
@@ -277,16 +289,22 @@ def merge_duplicates(
         degree[link["effect"]] += 1
     rank = lambda s: (-degree.get(s, 0), -float(events[s].get("importance_score", 0.5)), s)  # noqa: E731
     canonical: dict[str, str] = {}
-    kept: list[str] = []
+    kept_by_year: dict[int, list[str]] = defaultdict(list)
     for slug in sorted(events, key=rank):
-        for k in kept:
-            if is_duplicate(events[slug], events[k]):
-                canonical[slug] = k
-                if VERBOSE:
-                    print(f"  merge: {events[slug]['title']!r} -> {events[k]['title']!r}", file=sys.stderr)
-                break
+        year = int(events[slug]["year"])
+        nearby = [
+            k
+            for y in range(year - SAME_TITLE_YEAR_WINDOW, year + SAME_TITLE_YEAR_WINDOW + 1)
+            for k in kept_by_year.get(y, [])
+        ]
+        # Compare in rank order so the best-connected match wins, as before.
+        match = next((k for k in sorted(nearby, key=rank) if is_duplicate(events[slug], events[k])), None)
+        if match:
+            canonical[slug] = match
+            if VERBOSE:
+                print(f"  merge: {events[slug]['title']!r} -> {events[match]['title']!r}", file=sys.stderr)
         else:
-            kept.append(slug)
+            kept_by_year[year].append(slug)
     merged_links: dict[tuple[str, str], dict[str, Any]] = {}
     for link in links:
         cause = canonical.get(link["cause"], link["cause"])
@@ -308,7 +326,19 @@ def select_subset(
         events,
         key=lambda s: (-degree.get(s, 0), -float(events[s].get("importance_score", 0.5)), s),
     )
-    chosen = set(ranked[:limit])
+    # The Wikidata import is mostly battles and wars; cap any one category so the demo
+    # still shows politics, culture, science and natural events across the canvas.
+    cap = max(1, int(limit * MAX_CATEGORY_SHARE))
+    per_cat: dict[str, int] = defaultdict(int)
+    chosen: set[str] = set()
+    for s in ranked:
+        cat = _norm_category(events[s].get("category"))
+        if per_cat[cat] >= cap:
+            continue
+        per_cat[cat] += 1
+        chosen.add(s)
+        if len(chosen) >= limit:
+            break
     kept = [l for l in links if l["cause"] in chosen and l["effect"] in chosen]
     # Order events chronologically for readability / stable diffs.
     ordered = sorted(chosen, key=lambda s: (events[s]["year"], s))
@@ -375,6 +405,9 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
                 "importance_score": round(importance, 3),
                 "perspective_count": len(ev.get("perspectives") or []),
                 "is_bce": year < 0,
+                **({"summary": ev["summary"]} if ev.get("summary") else {}),
+                **({"wikipedia_slug": ev["wikipedia_slug"]} if ev.get("wikipedia_slug") else {}),
+                **({"wikidata_id": ev["wikidata_id"]} if ev.get("wikidata_id") else {}),
             }
         )
         if perspectives:
@@ -395,7 +428,7 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
     return {
         "version": 1,
         "generator": "scripts/export_demo_snapshot.py",
-        "source": "backend/scripts seed data",
+        "source": "backend/scripts seed data, including events and links imported from Wikidata (CC0)",
         "license": LICENSE_NOTICE,
         "stats": {
             "events": len(out_events),
@@ -411,7 +444,7 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--limit", type=int, default=300, help="max events in the snapshot (default 300)")
+    parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"max events in the snapshot (default {DEFAULT_LIMIT})")
     parser.add_argument("--min-year", type=int, default=-5000, help="earliest year to include (default -5000)")
     parser.add_argument("--out", type=Path, default=OUT_PATH, help="output path")
     args = parser.parse_args()

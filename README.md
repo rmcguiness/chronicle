@@ -109,7 +109,8 @@ in place of the API, so it can be hosted on any free static host with no databas
 | ![Canvas](docs/screenshots/canvas.webp) | ![Event detail](docs/screenshots/detail-panel.webp) |
 | ![Search](docs/screenshots/search.webp) | ![Mobile](docs/screenshots/mobile.webp) |
 
-**What the demo includes:** about 300 of the highest-importance seed events from 3300 BCE onward, their
+**What the demo includes:** 2,500 events from 3300 BCE onward (the best-connected hand-written seed
+events plus events imported from Wikidata, with no category above 45% of the sample), their
 causality links and perspectives, the network canvas, timeline scrubber, legend, keyword search
 (arrow keys and Enter pick a result, matching words are highlighted)
 and the event detail panel.
@@ -132,8 +133,8 @@ The normal `npm run build` is unchanged. Demo code is tree-shaken out and `dist/
 The snapshot is built from the seed scripts in `backend/scripts/` (no database needed):
 
 ```bash
-python3 scripts/export_demo_snapshot.py               # defaults: --limit 300 --min-year -5000
-python3 scripts/export_demo_snapshot.py --limit 500 --min-year -3000
+python3 scripts/export_demo_snapshot.py               # defaults: --limit 2500 --min-year -5000
+python3 scripts/export_demo_snapshot.py --limit 1000 --min-year -3000
 ```
 
 It writes `frontend/public/demo/snapshot.json`, which keeps only links where both ends are in the
@@ -144,6 +145,33 @@ The duplicate-matching rules have tests:
 ```bash
 python3 -m unittest discover -s scripts -p "test_*.py"
 ```
+
+### Events imported from Wikidata
+
+`backend/scripts/import_wikidata.py` pulls notable events from the
+[Wikidata Query Service](https://query.wikidata.org/): wars, battles, sieges, treaties, revolutions,
+coups, earthquakes, epidemics, expeditions and similar classes, plus any dated item that lists a
+cause or an effect. For each one it records the English label and description, the date and its
+precision, coordinates, the English Wikipedia article and the sitelink count (used for
+importance). Links come from Wikidata's cause and effect properties (P828, P1542, P1478, P1479,
+P1536, P1537, mapped to "causes" and "enables"), its sequence properties (P155, P156) and part-of
+(P361, at most six parts per whole), mapped to "context".
+
+The importer drops items without an English Wikipedia article, a date at decade precision or
+better, or coordinates, and links where the cause starts after the effect. Events that match a
+hand-written seed event are not imported again: their links are attached to the existing event.
+The output is `backend/scripts/data/wikidata_events.json`, loaded by `seed_wikidata.py` (database)
+and by the snapshot exporter.
+
+```bash
+python3 backend/scripts/import_wikidata.py             # queries WDQS, caches responses in /tmp
+python3 backend/scripts/import_wikidata.py --offline   # rebuild from the cache only
+python3 backend/scripts/duplicate_events.py --check    # CI check across all seed batches
+python backend/scripts/seed_wikidata.py                # load into Postgres after the other seeds
+```
+
+Wikidata content is CC0. Most Wikidata cause and effect statements describe wars and politics,
+so the imported set leans toward conflict; the hand-written seeds cover more science and culture.
 
 ### Hosting the demo for free
 

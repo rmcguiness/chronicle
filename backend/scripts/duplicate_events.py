@@ -12,7 +12,9 @@ Usage (from the repo root):
 
 Two events count as near-duplicates when their years are within MAX_YEAR_GAP and their
 titles share most of their meaningful words. Pairs that look alike but are different
-events go in KNOWN_DISTINCT.
+events go in KNOWN_DISTINCT. Two events that both carry a Wikidata QID (seed_wikidata.py)
+are distinct when the QIDs differ; the check instead fails on a repeated QID or on two
+events with the same normalized title in the same year.
 """
 from __future__ import annotations
 
@@ -31,7 +33,7 @@ EVENT_MODULES = [
     "seed_events", "seed_prehistoric", "seed_prehistoric_enrichment", "seed_bronze_classical",
     "seed_early_medieval", "seed_medieval_early_modern", "seed_early_modern_enrichment",
     "seed_19th_century", "seed_19c_modern", "seed_20th_century", "seed_regional_enrichment_2",
-    "seed_underrepresented_regions", "seed_underrepresented_v2",
+    "seed_underrepresented_regions", "seed_underrepresented_v2", "seed_wikidata",
 ]
 
 MAX_YEAR_GAP = 3
@@ -231,12 +233,14 @@ def _title_words(title: str) -> set[str]:
     return {w for w in words if w not in _STOPWORDS and w not in _GENERIC}
 
 
-def load_events() -> dict[str, dict[str, Any]]:
+def load_events(exclude: tuple[str, ...] = ()) -> dict[str, dict[str, Any]]:
     """slug -> event dict across all dict-based seed scripts (first definition wins)."""
     for name in ("asyncpg", "psycopg2", "psycopg2.extras"):
         sys.modules.setdefault(name, types.ModuleType(name))
     events: dict[str, dict[str, Any]] = {}
     for name in EVENT_MODULES:
+        if name in exclude:
+            continue
         path = SEED_DIR / f"{name}.py"
         spec = importlib.util.spec_from_file_location(f"_chronicle_dupcheck_{name}", path)
         assert spec and spec.loader
@@ -271,6 +275,9 @@ def find_near_duplicates(events: dict[str, dict[str, Any]]) -> list[tuple[str, s
                 for b in by_year.get(other_year, []):
                     if (year == other_year and a >= b) or frozenset((a, b)) in KNOWN_DISTINCT:
                         continue
+                    qa, qb = events[a].get("wikidata_id"), events[b].get("wikidata_id")
+                    if qa and qb and qa != qb:
+                        continue  # different Wikidata items are different events
                     if is_near_duplicate(events[a], events[b]):
                         found.append((a, b))
     return found
@@ -283,6 +290,19 @@ def check(events: dict[str, dict[str, Any]]) -> list[str]:
             problems.append(f"merged duplicate is back in the seeds: {dup} (merged into {keep})")
         if keep not in events:
             problems.append(f"merge target missing from the seeds: {keep}")
+    seen_qids: dict[str, str] = {}
+    seen_titles: dict[tuple[str, int], str] = {}
+    for slug, ev in events.items():
+        qid = ev.get("wikidata_id")
+        if qid and qid in seen_qids:
+            problems.append(f"repeated Wikidata QID {qid}: {seen_qids[qid]} and {slug}")
+        elif qid:
+            seen_qids[qid] = slug
+        key = (" ".join(re.findall(r"[a-z0-9]+", ev["title"].lower())), int(ev["year"]))
+        if key in seen_titles:
+            problems.append(f"same title and year: {seen_titles[key]} and {slug} ({ev['title']!r}, {ev['year']})")
+        else:
+            seen_titles[key] = slug
     for a, b in find_near_duplicates(events):
         problems.append(
             f"near-duplicate: {a} ({events[a]['year']}, {events[a]['title']!r}) ~ "

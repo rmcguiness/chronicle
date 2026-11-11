@@ -54,6 +54,12 @@ export interface HistoricalEvent {
   perspective_count?: number;
   /** Precomputed Y position for network view (from DB). Null if not yet computed. */
   network_y?: number | null;
+  /** One-line description (Wikidata-imported events). */
+  summary?: string;
+  /** English Wikipedia article slug, e.g. "Battle_of_Hastings". */
+  wikipedia_slug?: string;
+  /** Wikidata item ID, e.g. "Q83224". */
+  wikidata_id?: string;
 }
 
 export interface Source {
