@@ -30,7 +30,7 @@ from curated import CHAIN_TYPES, CONFIDENCE_LEVELS, CURATED_DIR, LINK_TYPES, SOU
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 # Narrator-voice words that cast a party as hero or villain or pass a moral verdict.
-# Quoted or attributed uses belong in citations, not in these fields.
+# A word inside quotation marks is a quoted, attributed use and is allowed.
 LOADED_WORDS = [
     "hero", "heroes", "heroic", "villain", "villains", "villainous", "evil", "wicked", "noble",
     "brave", "bravely", "cowardly", "barbaric", "savage", "monstrous", "infamous", "notorious",
@@ -40,6 +40,7 @@ LOADED_WORDS = [
 LOADED_RE = re.compile(r"\b(" + "|".join(LOADED_WORDS) + r")\b", re.IGNORECASE)
 # Stock metaphors the house style avoids in narrator voice.
 METAPHOR_RE = re.compile(r"\b(powder keg|tinderbox|domino(?:es)? effect|lit the fuse|sleepwalk\w*)\b", re.IGNORECASE)
+QUOTED_RE = re.compile(r'"[^"]*"|“[^”]*”')
 NARRATOR_FIELDS = ("title", "summary", "description", "rationale", "wanted", "feared", "remembered")
 MIN_QUOTE_CHARS = 20
 
@@ -61,7 +62,7 @@ def check_text(rep: Report, where: str, obj: dict[str, Any]) -> None:
         text = obj.get(field)
         if not isinstance(text, str):
             continue
-        for m in LOADED_RE.finditer(text):
+        for m in LOADED_RE.finditer(QUOTED_RE.sub("", text)):
             rep.error(where, f"loaded word {m.group(0)!r} in {field} (attribute it in a citation instead)")
         for m in METAPHOR_RE.finditer(text):
             rep.error(where, f"stock metaphor {m.group(0)!r} in {field}")

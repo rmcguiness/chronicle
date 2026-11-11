@@ -556,8 +556,10 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
 
     chains = curated_chains(out_events, out_links)
     taken = {c["slug"] for c in chains}
+    # A generated chain that only walks part of a curated chain repeats it with less context.
+    curated_steps = [set(c["link_ids"]) for c in chains]
     for c in find_chains(out_events, out_links, limit=CHAIN_LIMIT):
-        if c["slug"] not in taken:
+        if c["slug"] not in taken and not any(set(c["link_ids"]) <= steps for steps in curated_steps):
             chains.append({**c, "chain_type": "generated", **_chain_evidence(c["link_ids"], out_links)})
 
     return {

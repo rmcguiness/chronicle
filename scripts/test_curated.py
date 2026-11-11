@@ -82,6 +82,8 @@ class ValidateTest(unittest.TestCase):
         self.assertTrue(any("confidence must be" in e for e in errs))
         self.assertTrue(any("'heroic'" in e for e in errs))
         self.assertTrue(any("'evil'" in e for e in errs))
+        data["links"][0]["rationale"] = 'He came to be regarded as a "national hero."'
+        self.assertFalse(any("loaded word" in e for e in errors(data)))
 
     def test_chain_must_follow_links_and_popular_chains_are_labelled(self) -> None:
         data = batch(chains=[{"slug": "x", "title": "A to C", "chain_type": "popular_internet",
