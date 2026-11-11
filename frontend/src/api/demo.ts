@@ -13,8 +13,10 @@ import type {
   ConnectedEvent,
   EventDetail,
   HistoricalEvent,
+  LinkConfidence,
   Perspective,
   SearchResult,
+  Source,
   TileResponse,
 } from '../types';
 import { demoSnapshotUrl } from '../config/demo';
@@ -27,13 +29,26 @@ export interface DemoLicense {
   details: string;
 }
 
-/** A shareable cause-and-effect chain (scripts/chains.py). */
+/**
+ * Where a chain came from. scholarly: hand-built from cited sources (data/curated/).
+ * popular_internet: a well-known internet "butterfly effect" chain, rated step by step.
+ * generated: found automatically in the link graph (scripts/chains.py), not reviewed.
+ */
+export type ChainType = 'scholarly' | 'popular_internet' | 'generated';
+
+/** A shareable cause-and-effect chain (curated in data/curated/, or found by scripts/chains.py). */
 export interface DemoChain {
   slug: string;
   title: string;
   event_ids: string[];
   link_ids: string[];
   score: number;
+  chain_type?: ChainType;
+  description?: string;
+  /** How many of the chain's links are rated at each confidence level. */
+  confidence?: Partial<Record<LinkConfidence | 'unrated', number>>;
+  /** Distinct sources cited across the chain's links. */
+  source_count?: number;
 }
 
 /** Shape of `public/demo/snapshot.json`. */
@@ -46,7 +61,7 @@ export interface DemoSnapshot {
   events: HistoricalEvent[];
   links: CausalityLink[];
   /** Per-event extras keyed by slug (perspectives are the bulky part). */
-  details: Record<string, { perspectives?: Perspective[] }>;
+  details: Record<string, { perspectives?: Perspective[]; description?: string; citations?: Source[] }>;
   /** Shareable cause-and-effect chains, oldest first. */
   chains?: DemoChain[];
 }
@@ -149,14 +164,18 @@ export function demoEventDetail(snapshot: DemoSnapshot, slug: string): EventDeta
       direction: isCause ? 'cause' : 'effect',
       strength: l.strength,
       description: l.description,
+      ...(l.confidence ? { confidence: l.confidence, rationale: l.rationale, citations: l.citations ?? [] } : {}),
     });
   }
   connected.sort((a, b) => a.year_approx - b.year_approx);
+  const detail = snapshot.details[ev.slug];
   return {
     ...ev,
     is_bce: ev.year_approx < 0,
-    perspectives: snapshot.details[ev.slug]?.perspectives ?? [],
+    perspectives: detail?.perspectives ?? [],
     connected_events: connected,
+    ...(detail?.description ? { description: detail.description } : {}),
+    ...(detail?.citations ? { citations: detail.citations } : {}),
   };
 }
 
