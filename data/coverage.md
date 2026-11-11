@@ -12,8 +12,8 @@ Wikidata import covers thinly.
 
 | Batch | Era / region / theme | Status | Events | Links | Perspectives | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0001-wwi-origins | Europe 1839-1914: alliances, Balkan crises, July Crisis | in review (pilot) | 22 | 27 | 21 | Pilot batch |
-| 0002-popular-internet-chains | Popular internet chains: 9/11 to Fifty Shades of Grey | in review (pilot) | 6 (1 reused) | 5 | 0 | Playful chains, rated step by step |
+| 0001-wwi-origins | Europe 1839-1914: alliances, Balkan crises, July Crisis | in review (pilot) | 22 | 27 | 28 | Pilot batch |
+| 0002-popular-internet-chains | Popular internet chains: 9/11 to Fifty Shades of Grey | in review (pilot) | 6 | 5 | 0 | Playful chains, rated step by step |
 | wwi-course | First World War 1914-1918: fronts, home fronts, empires, Ottoman Armenians | todo | | | | |
 | interwar | 1918-1939: peace treaties, revolutions, Depression, fascism | todo | | | | |
 | wwii-europe | Second World War in Europe and the Holocaust | todo | | | | |

@@ -109,9 +109,10 @@ links, what the disagreement is. Link `type` keeps the existing meanings: `direc
   "drafted_by": "Claude (model and settings)",
   "reviewed_by": "Codex (model and settings)",
   "sources": {
+    // publication_date only when the page states one; otherwise record the access date
     "brit-balkan-wars": {
       "title": "Balkan Wars", "author": "Britannica Editors",
-      "publication": "Encyclopaedia Britannica", "publication_date": "2026",
+      "publication": "Encyclopaedia Britannica", "accessed": "2026-11-11",
       "source_type": "tertiary", "url": "https://www.britannica.com/event/Balkan-Wars"
     }
   },
@@ -181,7 +182,18 @@ first on `/chains`, each with its own share page and card at `/chain/<slug>`.
 
 ## Cost per batch (pilot measurement)
 
-The first batch (the road to World War I plus one popular internet chain) took about
-three hours of agent time for 28 events, 32 links and 25 perspectives, most of it source
-research and quote checking. Drafting and review by the two models took about half an
-hour of that. See `data/coverage.md` for the plan this estimate feeds.
+The pilot batch (origins of the First World War plus one popular internet chain: 28 events,
+32 links, 28 perspectives, 204 citations from 37 sources) took about 70 minutes of
+wall-clock time from an empty source cache to a validated batch, or roughly 2.5 minutes
+per event. The parts were:
+
+| Step | Time | Notes |
+| --- | --- | --- |
+| Source research and caching | about 25 minutes | 44 pages fetched; Britannica and some 1914-1918-online pages block scripted fetches and had to be read by hand |
+| Model drafting | 10 to 20 minutes per draft, run in parallel | 6 events took 18 minutes at the highest Claude setting; 8 events and 17 links took 10 minutes at the highest Codex setting |
+| Quote check, reconcile, validate | about 15 minutes | `checkquotes`-style substring check, then `validate_curated.py --verify-quotes` |
+
+Both drafting models hit their plan usage limits during the pilot, after one and a half
+drafts each. A recurring routine should budget for that by running one batch at a time per
+model and keeping a queue, rather than drafting several batches in parallel. See
+`data/coverage.md` for the plan this estimate feeds.

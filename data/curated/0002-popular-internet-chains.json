@@ -1,45 +1,48 @@
 {
   "batch": "popular-internet-chains",
   "title": "Popular internet chains",
+  "drafted_by": "Claude Opus (max effort)",
+  "reviewed_by": "Grok Bot: quote check and confidence check; model review by GPT-6-Astra (ultra) queued for after the usage limit resets",
   "sources": {
     "avclub-911-fifty-shades": {
       "title": "Tumblr is obsessing over the events that link 50 Shades of Grey to 9/11",
       "publication": "The A.V. Club",
       "publication_date": "2020",
       "source_type": "journalistic",
-      "url": "https://www.avclub.com/tumblr-is-obsessing-over-the-events-that-link-50-shades-1840970807"
+      "url": "https://www.avclub.com/tumblr-is-obsessing-over-the-events-that-link-50-shades-1840970807",
+      "accessed": "2026-11-11"
     },
     "brit-el-james": {
       "title": "E.L. James",
       "author": "Michael Ray",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/biography/E-L-James"
+      "url": "https://www.britannica.com/biography/E-L-James",
+      "accessed": "2026-11-11"
     },
     "brit-my-chemical-romance": {
       "title": "My Chemical Romance",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/topic/My-Chemical-Romance"
+      "url": "https://www.britannica.com/topic/My-Chemical-Romance",
+      "accessed": "2026-11-11"
     },
     "brit-september-11": {
       "title": "September 11 attacks",
       "author": "Peter L. Bergen",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/September-11-attacks"
+      "url": "https://www.britannica.com/event/September-11-attacks",
+      "accessed": "2026-11-11"
     },
     "brit-stephenie-meyer": {
       "title": "Stephenie Meyer",
       "author": "Janet Moredock",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/biography/Stephenie-Meyer"
+      "url": "https://www.britannica.com/biography/Stephenie-Meyer",
+      "accessed": "2026-11-11"
     },
     "snopes-911-fifty-shades": {
       "title": "Did 9/11 Lead to the Creation of 'Fifty Shades of Grey'?",
@@ -47,7 +50,8 @@
       "publication": "Snopes",
       "publication_date": "2021",
       "source_type": "journalistic",
-      "url": "https://www.snopes.com/articles/346513/9-11-fifty-shades-of-grey/"
+      "url": "https://www.snopes.com/articles/346513/9-11-fifty-shades-of-grey/",
+      "accessed": "2026-11-11"
     }
   },
   "events": [

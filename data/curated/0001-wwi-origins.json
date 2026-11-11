@@ -1,211 +1,235 @@
 {
   "batch": "wwi-origins",
   "title": "Origins of the First World War, 1839-1914",
+  "drafted_by": {
+    "events and links up to 1911, alliances chain": "Grok Bot (orchestrating agent); Claude Opus and GPT-6-Astra both hit plan usage limits before this part was drafted",
+    "events and links 1912-1914, road and July Crisis chains": "GPT-6-Astra (Codex, ultra reasoning), after Claude Opus hit its session limit"
+  },
+  "reviewed_by": "Grok Bot: every quote checked as a verbatim substring of the cached source text and refetched live where the site allows; model review by Claude Opus (max) and GPT-6-Astra (ultra) queued for after the usage limits reset",
   "sources": {
     "brit-anglo-russian-entente": {
       "title": "Anglo-Russian Entente",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/Anglo-Russian-Entente"
+      "url": "https://www.britannica.com/event/Anglo-Russian-Entente",
+      "accessed": "2026-11-11"
     },
     "brit-balkan-wars": {
       "title": "Balkan Wars",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/Balkan-Wars"
+      "url": "https://www.britannica.com/event/Balkan-Wars",
+      "accessed": "2026-11-11"
     },
     "brit-congress-of-berlin": {
       "title": "Congress of Berlin",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/Congress-of-Berlin"
+      "url": "https://www.britannica.com/event/Congress-of-Berlin",
+      "accessed": "2026-11-11"
     },
     "brit-entente-cordiale": {
       "title": "Entente Cordiale",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/Entente-Cordiale"
+      "url": "https://www.britannica.com/event/Entente-Cordiale",
+      "accessed": "2026-11-11"
     },
     "brit-franz-ferdinand": {
       "title": "Franz Ferdinand, archduke of Austria-Este",
       "author": "Fid Backhouse and others",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/biography/Franz-Ferdinand-Archduke-of-Austria-Este"
+      "url": "https://www.britannica.com/biography/Franz-Ferdinand-Archduke-of-Austria-Este",
+      "accessed": "2026-11-11"
     },
     "brit-moroccan-crises": {
       "title": "Moroccan crises",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/Moroccan-crises"
+      "url": "https://www.britannica.com/event/Moroccan-crises",
+      "accessed": "2026-11-11"
     },
     "brit-princip": {
       "title": "Gavrilo Princip",
       "author": "Britannica Editors",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/biography/Gavrilo-Princip"
+      "url": "https://www.britannica.com/biography/Gavrilo-Princip",
+      "accessed": "2026-11-11"
     },
     "brit-schlieffen-plan": {
       "title": "Schlieffen Plan",
       "author": "Raymond Limbach",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/Schlieffen-Plan"
+      "url": "https://www.britannica.com/event/Schlieffen-Plan",
+      "accessed": "2026-11-11"
     },
     "brit-wwi-outbreak": {
       "title": "World War I: The outbreak of war",
       "author": "Dennis E. Showalter",
       "publication": "Encyclopaedia Britannica",
-      "publication_date": "2026",
       "source_type": "tertiary",
-      "url": "https://www.britannica.com/event/World-War-I/Outbreak"
+      "url": "https://www.britannica.com/event/World-War-I/Outbreak",
+      "accessed": "2026-11-11"
     },
     "byu-belgian-neutrality-treaties": {
       "title": "Treaties and Documents Relative to the Neutrality of the Netherlands and Belgium",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1839",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/Treaties_and_Documents_Relative_to_the_Neutrality_of_the_Netherlands_and_Belgium"
+      "url": "https://wwi.lib.byu.edu/index.php/Treaties_and_Documents_Relative_to_the_Neutrality_of_the_Netherlands_and_Belgium",
+      "accessed": "2026-11-11"
     },
     "byu-belgian-refusal": {
       "title": "The Belgian Refusal of Free Passage",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Belgian_Refusal_of_Free_Passage"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Belgian_Refusal_of_Free_Passage",
+      "accessed": "2026-11-11"
     },
     "byu-black-hand-constitution": {
       "title": "Constitution of the Black Hand",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1911",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/Constitution_of_the_Black_Hand"
+      "url": "https://wwi.lib.byu.edu/index.php/Constitution_of_the_Black_Hand",
+      "accessed": "2026-11-11"
     },
     "byu-blank-check": {
       "title": "The 'Blank Check'",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_%27Blank_Check%27"
+      "url": "https://wwi.lib.byu.edu/index.php/The_%27Blank_Check%27",
+      "accessed": "2026-11-11"
     },
     "byu-bosnia-annexation": {
       "title": "The Annexation of Bosnia and Herzegovina by Austria-Hungary",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1908",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Annexation_of_Bosnia_and_Herzegovina_by_Austria-Hungary"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Annexation_of_Bosnia_and_Herzegovina_by_Austria-Hungary",
+      "accessed": "2026-11-11"
     },
     "byu-dual-alliance": {
       "title": "The Dual Alliance Between Austria-Hungary and Germany",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1879",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Dual_Alliance_Between_Austria-Hungary_and_Germany"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Dual_Alliance_Between_Austria-Hungary_and_Germany",
+      "accessed": "2026-11-11"
     },
     "byu-first-moroccan-crisis": {
       "title": "The First Moroccan Crisis",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1905",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_First_Moroccan_Crisis"
+      "url": "https://wwi.lib.byu.edu/index.php/The_First_Moroccan_Crisis",
+      "accessed": "2026-11-11"
     },
     "byu-franco-russian-convention": {
       "title": "The Franco-Russian Alliance Military Convention",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1892",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Franco-Russian_Alliance_Military_Convention"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Franco-Russian_Alliance_Military_Convention",
+      "accessed": "2026-11-11"
     },
     "byu-franz-joseph-letter": {
       "title": "Autograph Letter of Franz Joseph to the Kaiser",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/Autograph_Letter_of_Franz_Joseph_to_the_Kaiser"
+      "url": "https://wwi.lib.byu.edu/index.php/Autograph_Letter_of_Franz_Joseph_to_the_Kaiser",
+      "accessed": "2026-11-11"
     },
     "byu-german-request-belgium": {
       "title": "The German Request for Free Passage Through Belgium",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_German_Request_for_Free_Passage_Through_Belgium"
+      "url": "https://wwi.lib.byu.edu/index.php/The_German_Request_for_Free_Passage_Through_Belgium",
+      "accessed": "2026-11-11"
     },
     "byu-grey-speech": {
       "title": "Sir Edward Grey's Speech Before Parliament",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/Sir_Edward_Grey%27s_Speech_Before_Parliament"
+      "url": "https://wwi.lib.byu.edu/index.php/Sir_Edward_Grey%27s_Speech_Before_Parliament",
+      "accessed": "2026-11-11"
     },
     "byu-mansion-house-speech": {
       "title": "Agadir Crisis: Lloyd George's Mansion House Speech",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1911",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/Agadir_Crisis:_Lloyd_George%27s_Mansion_House_Speech"
+      "url": "https://wwi.lib.byu.edu/index.php/Agadir_Crisis:_Lloyd_George%27s_Mansion_House_Speech",
+      "accessed": "2026-11-11"
     },
     "byu-narodna-odbrana": {
       "title": "The Narodna Odbrana",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1911",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Narodna_Odbrana"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Narodna_Odbrana",
+      "accessed": "2026-11-11"
     },
     "byu-schlieffen-plan": {
       "title": "The Schlieffen Plan",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1929",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Schlieffen_Plan"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Schlieffen_Plan",
+      "accessed": "2026-11-11"
     },
     "byu-scrap-of-paper": {
       "title": "Origin of the Term \"A Scrap of Paper\"",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/Origin_of_the_Term_%22A_Scrap_of_Paper%22"
+      "url": "https://wwi.lib.byu.edu/index.php/Origin_of_the_Term_%22A_Scrap_of_Paper%22",
+      "accessed": "2026-11-11"
     },
     "byu-serbian-reply": {
       "title": "The Serbian Response to the Austro-Hungarian Ultimatum (English Translation)",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Serbian_Response_to_the_Austro-Hungarian_Ultimatum_(English_Translation)"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Serbian_Response_to_the_Austro-Hungarian_Ultimatum_(English_Translation)",
+      "accessed": "2026-11-11"
     },
     "byu-triple-alliance": {
       "title": "The Triple Alliance (The English Translation)",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1882",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Triple_Alliance_(The_English_Translation)"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Triple_Alliance_(The_English_Translation)",
+      "accessed": "2026-11-11"
     },
     "byu-ultimatum": {
       "title": "The Austro-Hungarian Ultimatum to Serbia (English Translation)",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Austro-Hungarian_Ultimatum_to_Serbia_(English_Translation)"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Austro-Hungarian_Ultimatum_to_Serbia_(English_Translation)",
+      "accessed": "2026-11-11"
     },
     "byu-willy-nicky": {
       "title": "The Willy-Nicky Telegrams",
       "publication": "World War I Document Archive, Brigham Young University Library",
       "publication_date": "1914",
       "source_type": "primary",
-      "url": "https://wwi.lib.byu.edu/index.php/The_Willy-Nicky_Telegrams"
+      "url": "https://wwi.lib.byu.edu/index.php/The_Willy-Nicky_Telegrams",
+      "accessed": "2026-11-11"
     },
     "foster-sarajevo-incident": {
       "title": "Sarajevo Incident (Version 1.1), 1914-1918-online. International Encyclopedia of the First World War",
@@ -213,15 +237,16 @@
       "publication": "Freie Universität Berlin (via University of East Anglia repository)",
       "publication_date": "2019",
       "source_type": "secondary",
-      "url": "https://ueaeprints.uea.ac.uk/id/eprint/72080/1/1914_1918_Online_sarajevo_incident_2019_02_14_V1.1.pdf"
+      "url": "https://ueaeprints.uea.ac.uk/id/eprint/72080/1/1914_1918_Online_sarajevo_incident_2019_02_14_V1.1.pdf",
+      "accessed": "2026-11-11"
     },
     "iwm-outbreak": {
       "title": "Outbreak of the First World War",
       "author": "Imperial War Museums",
       "publication": "Imperial War Museums",
-      "publication_date": "2026",
       "source_type": "secondary",
-      "url": "https://www.iwm.org.uk/history/the-causes-of-the-first-world-war"
+      "url": "https://www.iwm.org.uk/history/the-causes-of-the-first-world-war",
+      "accessed": "2026-11-11"
     },
     "mombauer-guilt-or-responsibility": {
       "title": "Guilt or Responsibility? The Hundred-Year Debate on the Origins of World War I",
@@ -229,7 +254,8 @@
       "publication": "Central European History 48(4), Cambridge University Press",
       "publication_date": "2015",
       "source_type": "secondary",
-      "url": "https://www.cambridge.org/core/journals/central-european-history/article/guilt-or-responsibility-the-hundredyear-debate-on-the-origins-of-world-war-i/35B5E58FD27F872B9B2AF3D5DB552661"
+      "url": "https://www.cambridge.org/core/journals/central-european-history/article/guilt-or-responsibility-the-hundredyear-debate-on-the-origins-of-world-war-i/35B5E58FD27F872B9B2AF3D5DB552661",
+      "accessed": "2026-11-11"
     }
   },
   "events": [
