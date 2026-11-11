@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'demo' ? { 'import.meta.env.VITE_DEMO_MODE': JSON.stringify('true') } : {},
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'scripts/**/*.test.mjs'],
   },
   build: {
     chunkSizeWarningLimit: 1000,

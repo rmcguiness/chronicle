@@ -1,0 +1,13 @@
+# Gitleaks config: the default rules plus one narrow allowlist.
+[extend]
+useDefault = true
+
+# The demo snapshot lists event slugs side by side (chains), and long slugs such as
+# "second-impeachment-of-donald-trump-2021" trip the generic-api-key entropy rule.
+# Allow only lowercase hyphenated slugs, and only in that generated file.
+[[allowlists]]
+description = "Event slugs in the generated demo snapshot"
+condition = "AND"
+paths = ['''^frontend/public/demo/snapshot\.json$''']
+regexTarget = "secret"
+regexes = ['''^[a-z0-9]+(?:-[a-z0-9]+)+$''']

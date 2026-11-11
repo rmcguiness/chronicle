@@ -30,6 +30,7 @@ import {
 } from '../utils/categories';
 import type { Perspective, ConnectedEvent } from '../types';
 import type { WikiData } from '../types';
+import { timelineHrefForEvent } from '../utils/share';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -54,7 +55,7 @@ const CARD_STAGGER_DELAY = 0.07;
  */
 function formatYear(year: number | undefined | null, isBce: boolean | undefined): string {
   if (year == null) return 'Unknown date';
-  return isBce ? `${year} BCE` : String(year);
+  return isBce || year < 0 ? `${Math.abs(year)} BCE` : String(year);
 }
 
 /**
@@ -99,6 +100,10 @@ interface HeroSectionProps {
   region: string | undefined;
   category: string | undefined;
   importanceScore: number;
+  /** Deep link that opens the timeline on this event. */
+  timelineHref?: string;
+  /** One-line description (Wikidata-imported events). */
+  summary?: string;
 }
 
 /**
@@ -111,7 +116,7 @@ interface HeroSectionProps {
  * @param props.category - Event category key (war, political, etc.).
  * @param props.importanceScore - Importance score 0–1.
  */
-function HeroSection({ title, year, isBce, region, category, importanceScore }: HeroSectionProps) {
+function HeroSection({ title, year, isBce, region, category, importanceScore, timelineHref, summary }: HeroSectionProps) {
   const catKey = (category ?? 'political') as keyof typeof CATEGORY_COLORS;
   const color = CATEGORY_COLORS[catKey] ?? '#6b7280';
   const icon = CATEGORY_ICONS[catKey] ?? '📌';
@@ -127,9 +132,9 @@ function HeroSection({ title, year, isBce, region, category, importanceScore }: 
         background: `linear-gradient(135deg, rgba(7,14,34,0.98) 0%, ${color}14 100%)`,
       }}
     >
-      {/* Back link */}
+      {/* Back link (deep-links to this event on the timeline when possible) */}
       <Link
-        to="/"
+        to={timelineHref ?? '/'}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -145,7 +150,7 @@ function HeroSection({ title, year, isBce, region, category, importanceScore }: 
           transition: 'color 0.15s',
         }}
       >
-        ← Back to Timeline
+        {timelineHref ? '← Show on the timeline' : '← Back to Timeline'}
       </Link>
 
       {/* Category badge + icon */}
@@ -195,6 +200,10 @@ function HeroSection({ title, year, isBce, region, category, importanceScore }: 
       >
         {title}
       </h1>
+
+      {summary && (
+        <p style={{ fontSize: 16, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 14 }}>{summary}</p>
+      )}
 
       {/* Metadata row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
@@ -905,6 +914,8 @@ export default function EventDetailPage() {
         region={event.geo_modern ?? event.geo_era_label}
         category={event.category}
         importanceScore={event.importance_score}
+        timelineHref={timelineHrefForEvent(event.slug)}
+        summary={event.summary}
       />
 
       {/* 2. Wikipedia */}

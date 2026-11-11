@@ -40,6 +40,10 @@ import { useAppStore } from '../store';
 import { IS_DEMO_MODE } from '../config/demo';
 import type { HistoricalEvent, CausalityLink } from '../types';
 import { CANVAS_CONSTANTS } from '../types';
+import { parseHash } from '../utils/permalink';
+
+/** Camera zoom when a shared link opens the canvas on one event. */
+const DEEP_LINK_ZOOM = 1.1;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -601,7 +605,7 @@ function NetworkViewInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState([] as any[]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow generic requires any[] for initial empty state
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
-  const { fitView } = useReactFlow();
+  const { fitView, getNode, setCenter } = useReactFlow();
   const viewport = useViewport();
 
   // Subscribe to timeViewport — single source of truth for the visible year range
@@ -711,12 +715,24 @@ function NetworkViewInner() {
     if (filteredEvents.length > 0 && !hasFitViewRef.current) {
       // Small delay to let ReactFlow render nodes before fitting
       const timer = setTimeout(() => {
-        fitView({ padding: 0.15, duration: 300 });
+        // Shared links (#...e=slug) open centred on that event instead of the whole canvas.
+        const focus = parseHash(window.location.hash);
+        const node = focus.eventSlug ? getNode(focus.eventSlug) : undefined;
+        if (node) {
+          const w = node.measured?.width ?? node.width ?? 0;
+          const h = node.measured?.height ?? node.height ?? 0;
+          setCenter(node.position.x + w / 2, node.position.y + h / 2, {
+            zoom: focus.zoom ?? DEEP_LINK_ZOOM,
+            duration: 300,
+          });
+        } else {
+          fitView({ padding: 0.15, duration: 300 });
+        }
         hasFitViewRef.current = true;
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [filteredEvents.length, fitView]);
+  }, [filteredEvents.length, fitView, getNode, setCenter]);
 
   // NOTE: handleFitView on timeViewport change was removed — the scrubber now controls the
   // ReactFlow camera directly via setPendingRfViewport. Auto-fitView on every scroll-zoom
