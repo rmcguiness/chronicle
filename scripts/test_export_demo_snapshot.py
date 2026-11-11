@@ -71,6 +71,19 @@ class IsDuplicateTest(unittest.TestCase):
         self.assertFalse(is_duplicate(ev("Siege of Vienna", 1529), ev("Congress of Vienna", 1531)))
 
 
+class SameTitleAndWikidataTest(unittest.TestCase):
+    def test_identical_titles_within_a_decade_match(self) -> None:
+        self.assertTrue(is_duplicate(ev("Construction of Angkor Wat", 1113), ev("Construction of Angkor Wat", 1122)))
+
+    def test_identical_titles_far_apart_do_not_match(self) -> None:
+        self.assertFalse(is_duplicate(ev("Siege of Jerusalem", 70), ev("Siege of Jerusalem", 1099)))
+
+    def test_different_wikidata_items_never_match(self) -> None:
+        a = {**ev("Battle of Uji", 1180), "wikidata_id": "Q1887494"}
+        b = {**ev("Battle of Uji", 1184), "wikidata_id": "Q2888057"}
+        self.assertFalse(is_duplicate(a, b))
+
+
 class MergeDuplicatesTest(unittest.TestCase):
     def test_keeps_best_connected_event_and_repoints_links(self) -> None:
         events = {

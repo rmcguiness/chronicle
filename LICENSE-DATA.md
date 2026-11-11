@@ -19,6 +19,11 @@ same license.
   Wikipedia REST API and cached. That text belongs to Wikipedia contributors and is available
   under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); the app links each
   article back to its source page. Some seed records reference Wikipedia article titles.
+- **Wikidata.** Events and links in `backend/scripts/data/wikidata_events.json` were imported from
+  [Wikidata](https://www.wikidata.org/) by `backend/scripts/import_wikidata.py`. Wikidata's
+  structured data is available under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/);
+  each imported event keeps its Wikidata ID (`wikidata_id`) so it can be traced to its source item.
+  The one-line event summaries are Wikidata descriptions.
 - **Map tiles and other libraries** keep their own licenses and attribution requirements (see
   `frontend/package.json` and `backend/requirements.txt` dependencies).
 
