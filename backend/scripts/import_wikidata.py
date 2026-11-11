@@ -270,6 +270,18 @@ SELECT ?item ?cls WHERE {{ VALUES ?item {{ {vs} }} ?item wdt:P31 ?cls . }}"""):
 
 
 CAUSAL_PROPS = ("P828", "P1478", "P1479", "P1542", "P1536", "P1537", "P155", "P156")
+# Linked items join the import only if they are an event class instance or their name
+# reads like an event.
+EVENT_WORDS = re.compile(
+    r"\b(battles?|war|wars|siege|treaty|peace|revolution|revolt|rebellion|uprising|massacre|crisis|"
+    r"invasion|conquest|assassination|coup|attacks?|bombing|incident|campaign|expedition|crusade|"
+    r"earthquake|eruption|famine|pandemic|epidemic|fire|riots?|protests?|strike|election|referendum|"
+    r"declaration|independence|partition|annexation|occupation|council|conference|congress|agreement|"
+    r"accords?|pact|edict|restoration|dissolution|unification|collapse|fall|sack|landing|voyage|"
+    r"raid|mutiny|insurrection|offensive|operation|blockade|evacuation|disaster|genocide|purge|"
+    r"abdication|coronation|reunification|secession|withdrawal|surrender|armistice|ceasefire)\b",
+    re.I,
+)
 # Events reached through a cause/effect/sequence link need fewer sitelinks than the
 # era threshold, since the link itself is the reason to include them.
 EXPANSION_MIN_SITELINKS = 4
@@ -344,6 +356,8 @@ def date_display(start: tuple[int, str] | None, end: tuple[int, str] | None) -> 
     if not parsed or prec < 8:
         return None
     year, month, day = parsed
+    if prec == 8 and year >= 1500:
+        return None  # "c. 2020s" is too vague to place a modern event
     if prec == 8:
         decade = year - (year % 10) if year > 0 else year
         text = f"c. {decade}s" if year > 0 else f"c. {-year} BCE"
@@ -427,11 +441,17 @@ def era_label(year: int) -> str:
     return "Contemporary era"
 
 
+def best_start(d: dict[str, Any]) -> tuple[int, str] | None:
+    """The more precise of point in time (P585) and start time (P580)."""
+    options = [d[k] for k in ("P585", "P580") if d.get(k)]
+    return max(options, key=lambda o: o[0]) if options else None
+
+
 def prefilter(cand: dict[str, Any], d: dict[str, Any], classes: set[str]) -> bool:
     """Cheap checks on the first batch of details, before the slower place queries."""
     if not (d.get("label") and d.get("desc") and d.get("article")):
         return False
-    dated = date_display(d.get("P585") or d.get("P580"), None)
+    dated = date_display(best_start(d), None)
     if not dated or not (MIN_YEAR <= dated[0] <= MAX_YEAR):
         return False
     if cand.get("expansion"):
@@ -459,7 +479,8 @@ def build_events(candidates: dict[str, dict[str, Any]], details: dict[str, dict[
         if "Q5" in d.get("p31", set()):
             dropped["is a person"] += 1
             continue
-        dated = date_display(d.get("P585") or d.get("P580"), d.get("P582") if "P585" not in d else None)
+        start = best_start(d)
+        dated = date_display(start, d.get("P582") if start is not d.get("P585") else None)
         if not dated:
             dropped["no usable date"] += 1
             continue
@@ -652,9 +673,9 @@ def main() -> int:
     fetch_places(wd, hop_ok, hop_details)
     hop_events, hop_dropped = build_events({q: hop_cands[q] for q in hop_ok}, hop_details, {})
     for q in list(hop_events):
-        if re.search(r"\b(century|millennium|era|period|age)\b", hop_events[q]["title"], re.I) and \
-                hop_events[q]["summary"].lower().startswith(("period", "era", "historical period")):
-            hop_events.pop(q)  # long periods are not events
+        classes = hop_details.get(q, {}).get("p31", set())
+        if not (classes & set(EVENT_CLASSES) or EVENT_WORDS.search(hop_events[q]["title"])):
+            hop_events.pop(q)  # parliaments, offices, periods: linked, but not events
     print(f"  {len(hop_events)} added from links", file=sys.stderr)
     events.update(hop_events)
     raw_links += fetch_links(wd, list(hop_events))
