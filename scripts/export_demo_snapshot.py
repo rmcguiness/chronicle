@@ -35,6 +35,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from chains import find_chains  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 SEED_DIR = ROOT / "backend" / "scripts"
 OUT_PATH = ROOT / "frontend" / "public" / "demo" / "snapshot.json"
@@ -216,6 +219,8 @@ VERBOSE = bool(os.environ.get("CHRONICLE_EXPORT_VERBOSE"))
 # No single category may fill more than this share of the snapshot.
 MAX_CATEGORY_SHARE = 0.45
 DEFAULT_LIMIT = 2500
+# Shareable cause-and-effect chains stored in the snapshot (scripts/chains.py).
+CHAIN_LIMIT = 150
 _STOPWORDS = {"the", "of", "and", "a", "an", "in", "on", "to", "for", "at", "by", "with", "from"}
 
 
@@ -425,6 +430,8 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
         for l in sorted(kept_links, key=lambda l: (l["cause"], l["effect"]))
     ]
 
+    chains = find_chains(out_events, out_links, limit=CHAIN_LIMIT)
+
     return {
         "version": 1,
         "generator": "scripts/export_demo_snapshot.py",
@@ -435,10 +442,12 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
             "links": len(out_links),
             "source_events": len(events),
             "source_links": len(links),
+            "chains": len(chains),
         },
         "events": out_events,
         "links": out_links,
         "details": details,
+        "chains": chains,
     }
 
 

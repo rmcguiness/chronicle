@@ -11,7 +11,9 @@ const SESSION_KEY = 'chronicle_welcome_dismissed';
 
 export default function WelcomeOverlay() {
   const [visible, setVisible] = useState<boolean>(() => {
-    // Persist dismissal for the session only (not localStorage — show each visit)
+    // Persist dismissal for the session only (not localStorage — show each visit).
+    // Shared links that select an event (#...e=slug) go straight to it.
+    if (/(^#|&)e=/.test(window.location.hash)) return false;
     return !sessionStorage.getItem(SESSION_KEY);
   });
 

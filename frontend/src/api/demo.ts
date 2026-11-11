@@ -27,6 +27,15 @@ export interface DemoLicense {
   details: string;
 }
 
+/** A shareable cause-and-effect chain (scripts/chains.py). */
+export interface DemoChain {
+  slug: string;
+  title: string;
+  event_ids: string[];
+  link_ids: string[];
+  score: number;
+}
+
 /** Shape of `public/demo/snapshot.json`. */
 export interface DemoSnapshot {
   version: number;
@@ -38,6 +47,8 @@ export interface DemoSnapshot {
   links: CausalityLink[];
   /** Per-event extras keyed by slug (perspectives are the bulky part). */
   details: Record<string, { perspectives?: Perspective[] }>;
+  /** Shareable cause-and-effect chains, oldest first. */
+  chains?: DemoChain[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,6 +73,7 @@ export function parseSnapshot(raw: unknown): DemoSnapshot {
     events: s.events,
     links: s.links,
     details: s.details ?? {},
+    chains: Array.isArray(s.chains) ? s.chains : [],
   };
 }
 

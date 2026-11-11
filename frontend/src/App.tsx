@@ -13,6 +13,8 @@
  * Routes:
  *  /              → Network view (force-directed causality graph)
  *  /event/:slug   → Full event detail page (DATA-03)
+ *  /chain/:slug   → Shareable cause-and-effect chain
+ *  /chains        → Index of chains
  */
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -26,6 +28,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import OnThisDayPanel from './components/OnThisDayPanel';
 import OnThisDayButton from './components/OnThisDayButton';
 import EventDetailPage from './pages/EventDetailPage';
+import { ChainPage, ChainsIndexPage } from './pages/ChainPages';
 import AdminPage from './pages/AdminPage';
 import KoreanWarPage from './pages/KoreanWarPage';
 import HistoryOfFilmPage from './pages/HistoryOfFilmPage';
@@ -98,6 +101,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/event/:slug" element={<EventDetailPage />} />
+        <Route path="/chain/:slug" element={<ChainPage />} />
+        <Route path="/chains" element={<ChainsIndexPage />} />
         <Route
           path="/admin"
           element={IS_DEMO_MODE ? <DemoUnavailable feature="Admin review" /> : <AdminPage />}

@@ -2,21 +2,51 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "cd frontend && npm ci",
+  "installCommand": "npm ci && cd frontend && npm ci",
   "framework": null,
-  "rewrites": [{ "source": "/((?!demo/|assets/).*)", "destination": "/index.html" }],
+  "cleanUrls": true,
+  "functions": {
+    "api/og.js": {
+      "includeFiles": "{frontend/public/demo/snapshot.json,api/_fonts/*.woff}",
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/og/:type/:file",
+      "destination": "/api/og?type=:type&slug=:file"
+    },
+    {
+      "source": "/((?!demo/|assets/|api/|og/).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
       ]
     },
     {
       "source": "/demo/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     }
   ]
 }

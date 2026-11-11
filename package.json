@@ -1,0 +1,12 @@
+{
+  "name": "chronicle-share",
+  "private": true,
+  "type": "module",
+  "description": "Vercel Function that renders Open Graph cards for Chronicle share pages (api/og.js).",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/og": "^0.8.6"
+  }
+}
