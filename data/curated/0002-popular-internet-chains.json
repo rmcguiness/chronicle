@@ -2,7 +2,7 @@
   "batch": "popular-internet-chains",
   "title": "Popular internet chains",
   "drafted_by": "Claude Opus (max effort)",
-  "reviewed_by": "Grok Bot: quote check and confidence check. GPT-6-Astra (Codex, ultra reasoning) reviewed the batch against the cached sources on 2026-11-11 and Grok Bot applied the findings the sources support; a Claude Opus (max) review is scheduled.",
+  "reviewed_by": "Grok Bot: quote check and confidence check. GPT-6-Astra (Codex, ultra reasoning) reviewed the batch against the cached sources on 2026-11-11 and Claude Opus (max effort) reviewed it on 2026-11-12; Grok Bot applied the findings the cached sources support.",
   "sources": {
     "avclub-911-fifty-shades": {
       "title": "Tumblr is obsessing over the events that link 50 Shades of Grey to 9/11",
@@ -88,7 +88,6 @@
       "date_display": "Late 2001",
       "lat": 40.7357,
       "lng": -74.1724,
-      "geo_modern": "Newark, New Jersey, USA",
       "geo_era_label": "United States",
       "category": "cultural",
       "importance_score": 0.5,
@@ -113,11 +112,9 @@
       "slug": "twilight-novel-published-2005",
       "title": "Stephenie Meyer's Twilight is published",
       "year": 2005,
-      "date_display": "Oct 2005",
+      "date_display": "2005",
       "lat": 33.4484,
       "lng": -112.074,
-      "geo_modern": "Phoenix, Arizona, USA",
-      "geo_era_label": "United States",
       "category": "cultural",
       "importance_score": 0.6,
       "summary": "Stephenie Meyer's first book, Twilight, which was inspired by a dream and written in three months, was published in 2005.",
@@ -141,15 +138,13 @@
       "slug": "twilight-film-2008",
       "title": "Twilight film adaptation is released",
       "year": 2008,
-      "date_display": "Nov 2008",
+      "date_display": "2008",
       "lat": 47.9504,
       "lng": -124.3855,
-      "geo_modern": "Forks, Washington, USA (setting)",
-      "geo_era_label": "United States",
       "category": "cultural",
       "importance_score": 0.5,
       "summary": "A film adaptation of Twilight, the first book in Stephenie Meyer's series of vampire novels for young adults, came out in 2008.",
-      "description": "Twilight, the first book of Stephenie Meyer's popular series of vampire novels aimed at young adults, was adapted as a film released in 2008. The Twilight film adaptations starred Kristen Stewart as Bella and Robert Pattinson as Edward and, according to Britannica, were enormously successful. After viewing the 2008 film, E.L. James was inspired to write stories based on Twilight characters.",
+      "description": "Twilight, the first book of Stephenie Meyer's popular series of vampire novels aimed at young adults, was adapted as a film released in 2008. The Twilight film adaptations starred Kristen Stewart as Bella and Robert Pattinson as Edward and, according to Britannica, were enormously successful. According to Britannica, E.L. James was inspired to write stories based on Twilight characters after viewing the 2008 film.",
       "citations": [
         {
           "source": "brit-el-james",
@@ -168,8 +163,6 @@
       "date_display": "2009",
       "lat": 51.5074,
       "lng": -0.1278,
-      "geo_modern": "London, United Kingdom",
-      "geo_era_label": "United Kingdom",
       "category": "cultural",
       "importance_score": 0.45,
       "summary": "Writing as Snowqueens Icedragon, E.L. James began posting Master of the Universe, a story based on Twilight's characters, in installments on a fan-fiction site in 2009.",
@@ -196,12 +189,10 @@
       "date_display": "May 2011",
       "lat": 51.5074,
       "lng": -0.1278,
-      "geo_modern": "London, United Kingdom",
-      "geo_era_label": "United Kingdom",
       "category": "cultural",
       "importance_score": 0.6,
       "summary": "After cutting its connections to Twilight, E.L. James published Master of the Universe as Fifty Shades of Grey through a small Australian publisher in May 2011.",
-      "description": "In 2011 E.L. James severed her fan fiction's connections to Twilight, renaming Bella as Anastasia Steele and Edward as Christian Grey, though the underlying narrative was virtually unchanged. James then signed a contract with a small Australian publisher, and Master of the Universe, renamed Fifty Shades of Grey, was published in print and as an e-book in May 2011. Months after its release by a major publisher, it became the top-selling book of all time on Amazon's Kindle e-reader, according to Britannica.",
+      "description": "In 2011 E.L. James severed her fan fiction's connections to Twilight, renaming Bella as Anastasia Steele and Edward as Christian Grey, though the underlying narrative was virtually unchanged. James then signed a contract with a small Australian publisher, and Master of the Universe, renamed Fifty Shades of Grey, was published in print and as an e-book in May 2011. Britannica says that just months after a separate major-publisher release, Fifty Shades of Grey became the top-selling book of all time on Amazon's Kindle e-reader.",
       "citations": [
         {
           "source": "brit-el-james",
@@ -247,11 +238,15 @@
       "type": "indirect",
       "strength": 0.2,
       "confidence": "speculative",
-      "rationale": "A meme reported by The A.V. Club claims that Meyer used Way and the band's music as inspiration for Twilight; Snopes reports that she named My Chemical Romance as one of her inspirations for the series, but the interview comment it quotes ties the band to the werewolf character Jacob Black, and Britannica says the first novel was inspired by a dream.",
+      "rationale": "A meme reported by The A.V. Club claims that Meyer used Way and the band's music as inspiration for Twilight, and the A.V. Club, summarizing Ryan Broderick's newsletter Garbage Day, says Meyer apparently used the band's music to write Twilight and reiterated that on her official website. Snopes reports that she named My Chemical Romance as one of her inspirations for the series, but the interview comment it quotes ties the band to the werewolf character Jacob Black, whom Britannica places in New Moon (2006), Meyer's second novel. Britannica says the first novel was inspired by a dream.",
       "citations": [
         {
           "source": "avclub-911-fifty-shades",
           "quote": "this event inspired him to start my chemical romance. as a result, stephanie meyer used him and the band’s music for inspiration for twilight. as a result of that book, el james wrote a twilight fanfic that eventually became the best selling book fifty shades of grey."
+        },
+        {
+          "source": "avclub-911-fifty-shades",
+          "quote": "Stephanie Meyer apparently used MCR’s music as fuel to write her tween romance novel, Twilight . She reiterated that on her official website ."
         },
         {
           "source": "snopes-911-fifty-shades",
@@ -260,6 +255,10 @@
         {
           "source": "brit-stephenie-meyer",
           "quote": "Inspired by a dream, Meyer completed the manuscript for her first book, Twilight (2005; film 2008), in three months."
+        },
+        {
+          "source": "brit-stephenie-meyer",
+          "quote": "Meyer’s second novel, New Moon (2006; film 2009), in which Bella befriends a young werewolf named Jacob Black"
         }
       ]
     },
@@ -268,8 +267,8 @@
       "effect": "twilight-film-2008",
       "type": "direct",
       "strength": 0.9,
-      "confidence": "established",
-      "rationale": "The 2008 film was adapted from Twilight, Meyer's first book, as Britannica's entries on both Meyer and E.L. James state.",
+      "confidence": "speculative",
+      "rationale": "The 2008 film was adapted from Twilight, Meyer's first book, as Britannica's entries on both Meyer and E.L. James state. Both entries come from Britannica, so this timeline counts them as one source and rates the step speculative under its source-count rule.",
       "citations": [
         {
           "source": "brit-el-james",
@@ -287,7 +286,7 @@
       "type": "direct",
       "strength": 0.85,
       "confidence": "speculative",
-      "rationale": "Britannica reports that E.L. James was inspired to write stories based on Twilight characters after viewing the 2008 film, the one cached source that ties her fan fiction to the film; Snopes reports that Master of the Universe initially named its main characters Edward and Bella after the primary characters in Twilight.",
+      "rationale": "Britannica reports that E.L. James was inspired to write stories based on Twilight characters after viewing the 2008 film. Of the two cited sources, only Britannica mentions the film. Snopes reports that Master of the Universe initially named its main characters Edward and Bella after the primary characters in Twilight.",
       "citations": [
         {
           "source": "brit-el-james",
@@ -317,7 +316,7 @@
         },
         {
           "source": "snopes-911-fifty-shades",
-          "quote": "Ultimately its popularity led to the book deal and the \"Fifty Shades\" franchise as we know it today."
+          "quote": "James originally posted her work as unauthorized fan fiction online under the title \"Master of the Universe.\" The main characters, initially, were named Edward and Bella after the primary characters in \"Twilight.\" It re-imagined the story as Edward being a very sexually active human businessman, and not a chaste teen vampire. Ultimately its popularity led to the book deal and the \"Fifty Shades\" franchise as we know it today."
         }
       ]
     }
@@ -335,7 +334,7 @@
         "master-of-the-universe-fanfic-2009",
         "fifty-shades-of-grey-published-2011"
       ],
-      "description": "The A.V. Club and Snopes have reported on an internet meme claiming that the September 11 attacks led to Fifty Shades of Grey: Gerard Way started My Chemical Romance after witnessing the attacks, Stephenie Meyer used Way and the band's music as inspiration for Twilight, and E.L. James wrote the Twilight fan fiction that became Fifty Shades of Grey. This timeline rates the band's influence on the first novel as speculative, because Britannica says the novel was inspired by a dream and the Meyer comment quoted by Snopes ties the band to the character Jacob Black. It also rates the film's influence on James as speculative, because Britannica is the one source that supports it. The other steps are rated established on the basis of Way's interviews, Britannica and Snopes."
+      "description": "The A.V. Club and Snopes have reported on an internet meme claiming that the September 11 attacks led to Fifty Shades of Grey: Gerard Way started My Chemical Romance after witnessing the attacks, Stephenie Meyer used Way and the band's music as inspiration for Twilight, and E.L. James wrote the Twilight fan fiction that became Fifty Shades of Grey. Snopes writes, \"While the internet may have drawn vivid and even convincing links from 9/11 to Fifty Shades, it doesn't account for all the other variables that may have led to the development and ensuing success of all these cultural creations.\" The meme links the book directly to the fan fiction. This timeline adds the 2008 film because Britannica says James was inspired to write stories based on Twilight characters after viewing it; Britannica and Snopes both report that the fan fiction used Twilight's characters, and only Britannica ties its start to the film. Snopes reports that Meyer publicly stated that My Chemical Romance was one of her inspirations for the Twilight series, and the interview comment it quotes concerns the character Jacob Black; Britannica says the first novel was inspired by a dream. This timeline rates the band's influence on the first novel as speculative because the Snopes evidence concerns the series and Jacob Black, and the A.V. Club's report about the first novel is hedged with \"apparently.\" The novel-to-film and film-to-fan-fiction steps are rated speculative because only Britannica supports them. The 9/11-to-band and fan-fiction-to-book steps are rated established on Britannica and Snopes, including Way's interviews as Snopes quotes them."
     }
   ]
 }

@@ -5,7 +5,7 @@
     "events and links up to 1911, alliances chain": "Grok Bot (orchestrating agent); Claude Opus and GPT-6-Astra both hit plan usage limits before this part was drafted",
     "events and links 1912-1914, road and July Crisis chains": "GPT-6-Astra (Codex, ultra reasoning), after Claude Opus hit its session limit"
   },
-  "reviewed_by": "Grok Bot: every quote checked as a verbatim substring of the cached source text and refetched live where the site allows. GPT-6-Astra (Codex, ultra reasoning) reviewed the batch against the cached sources on 2026-11-11 and Grok Bot applied the findings the sources support; a Claude Opus (max) review is scheduled.",
+  "reviewed_by": "Grok Bot: every quote checked as a verbatim substring of the cached source text and refetched live where the site allows. GPT-6-Astra (Codex, ultra reasoning) reviewed the batch against the cached sources on 2026-11-11 and Grok Bot applied the findings the sources support; a Claude Opus (max) review of this batch is pending because Claude hit its session limit.",
   "sources": {
     "brit-anglo-russian-entente": {
       "title": "Anglo-Russian Entente",
