@@ -2,7 +2,7 @@
   "batch": "popular-internet-chains",
   "title": "Popular internet chains",
   "drafted_by": "Claude Opus (max effort)",
-  "reviewed_by": "Grok Bot: quote check and confidence check; model review by GPT-6-Astra (ultra) queued for after the usage limit resets",
+  "reviewed_by": "Grok Bot: quote check and confidence check. GPT-6-Astra (Codex, ultra reasoning) reviewed the batch against the cached sources on 2026-11-11 and Grok Bot applied the findings the sources support; a Claude Opus (max) review is scheduled.",
   "sources": {
     "avclub-911-fifty-shades": {
       "title": "Tumblr is obsessing over the events that link 50 Shades of Grey to 9/11",
@@ -64,7 +64,7 @@
       "lng": -74.0134,
       "category": "war",
       "importance_score": 0.97,
-      "summary": "Nineteen militants associated with al-Qaeda hijacked airliners on September 11, 2001, and carried out suicide attacks on New York City and Washington, D.C., killing 2,977 people.",
+      "summary": "Nineteen militants associated with al-Qaeda carried out airline hijackings and suicide attacks against U.S. targets on September 11, 2001. The official death toll, excluding the hijackers, is 2,977.",
       "description": "On September 11, 2001, a group of 19 militants associated with al-Qaeda carried out a series of airline hijackings and suicide attacks against targets in the United States. The attacks on New York City and Washington, D.C., caused extensive death and destruction. After numerous revisions, the official death toll, which does not include the 19 hijackers, stands at 2,977 people. Britannica describes the attacks as \"the deadliest terrorist attacks on American soil in U.S. history\" and says they triggered \"an enormous U.S. effort to combat terrorism.\"",
       "citations": [
         {
@@ -286,8 +286,8 @@
       "effect": "master-of-the-universe-fanfic-2009",
       "type": "direct",
       "strength": 0.85,
-      "confidence": "established",
-      "rationale": "Britannica reports that E.L. James was inspired to write stories based on Twilight characters after viewing the 2008 film, and Snopes reports that her fan fiction, Master of the Universe, initially named its main characters Edward and Bella after the primary characters in Twilight.",
+      "confidence": "speculative",
+      "rationale": "Britannica reports that E.L. James was inspired to write stories based on Twilight characters after viewing the 2008 film, the one cached source that ties her fan fiction to the film; Snopes reports that Master of the Universe initially named its main characters Edward and Bella after the primary characters in Twilight.",
       "citations": [
         {
           "source": "brit-el-james",
@@ -325,7 +325,7 @@
   "chains": [
     {
       "slug": "september-11-to-fifty-shades-of-grey",
-      "title": "How 9/11 led to Fifty Shades of Grey (popular internet chain)",
+      "title": "An internet meme links 9/11 to Fifty Shades of Grey (popular internet chain)",
       "chain_type": "popular_internet",
       "event_ids": [
         "september-11-attacks-2001",
@@ -335,7 +335,7 @@
         "master-of-the-universe-fanfic-2009",
         "fifty-shades-of-grey-published-2011"
       ],
-      "description": "The A.V. Club and Snopes have reported on an internet meme claiming that the September 11 attacks led to Fifty Shades of Grey: Gerard Way started My Chemical Romance after witnessing the attacks, Stephenie Meyer used Way and the band's music as inspiration for Twilight, and E.L. James wrote the Twilight fan fiction that became Fifty Shades of Grey. In this timeline the step from the band to Twilight is rated speculative, because Britannica says the novel was inspired by a dream and the Meyer comment quoted by Snopes ties the band to the character Jacob Black, while the other steps are rated established on the basis of Way's interviews, Britannica and Snopes."
+      "description": "The A.V. Club and Snopes have reported on an internet meme claiming that the September 11 attacks led to Fifty Shades of Grey: Gerard Way started My Chemical Romance after witnessing the attacks, Stephenie Meyer used Way and the band's music as inspiration for Twilight, and E.L. James wrote the Twilight fan fiction that became Fifty Shades of Grey. This timeline rates the band's influence on the first novel as speculative, because Britannica says the novel was inspired by a dream and the Meyer comment quoted by Snopes ties the band to the character Jacob Black. It also rates the film's influence on James as speculative, because Britannica is the one source that supports it. The other steps are rated established on the basis of Way's interviews, Britannica and Snopes."
     }
   ]
 }

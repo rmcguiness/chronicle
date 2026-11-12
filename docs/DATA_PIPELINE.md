@@ -50,7 +50,8 @@ Procedure:
    non-state groups that acted (for example Young Bosnia in 1914). For each party find
    what it wanted, what it believed or feared, and, where a source covers it, how it has
    remembered the event. Primary documents written by that party are the best source
-   for its own view.
+   for its own view. `wanted` is required; leave `feared` out when no cited source
+   records what the party feared, instead of inferring a fear from an outcome.
 4. Look for disagreement. For contested links, find the historiography (review essays
    such as Mombauer 2015 in *Central European History* summarise a debate in one place).
 

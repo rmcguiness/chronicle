@@ -74,6 +74,18 @@ class ValidateTest(unittest.TestCase):
         self.assertTrue(any("perspective 'Side A'" in e and "citation" in e for e in errs))
         self.assertTrue(any("at least two parties" in e for e in errs))
 
+    def test_perspective_feared_is_optional(self) -> None:
+        data = batch()
+        data["events"][0]["perspectives"] = [
+            {"party": "Side A", "wanted": "x", "citations": [{"source": "s1", "quote": "a supporting quote of some length"}]},
+            {"party": "Side B", "wanted": "y", "feared": "z", "citations": [{"source": "s1", "quote": "a supporting quote of some length"}]},
+        ]
+        self.assertFalse(any("feared" in e or "wanted" in e for e in errors(data)))
+        data["events"][0]["perspectives"][0]["feared"] = ""
+        self.assertTrue(any("feared is empty" in e for e in errors(data)))
+        del data["events"][0]["perspectives"][1]["wanted"]
+        self.assertTrue(any("missing wanted" in e for e in errors(data)))
+
     def test_bad_confidence_and_loaded_words(self) -> None:
         data = batch()
         data["links"][0]["confidence"] = "certain"

@@ -131,9 +131,11 @@ def validate_batch(batch: dict[str, Any], rep: Report, known_slugs: set[str]) ->
             if p.get("party") in parties:
                 rep.error(pw, "duplicate party")
             parties.add(p.get("party"))
-            for key in ("wanted", "feared"):
-                if not p.get(key):
-                    rep.error(pw, f"missing {key}")
+            # "feared" is optional: leave it out when no cited source records what the party feared.
+            if not p.get("wanted"):
+                rep.error(pw, "missing wanted")
+            if "feared" in p and not p["feared"]:
+                rep.error(pw, "feared is empty (omit the field when no source records a fear)")
             check_text(rep, pw, p)
             check_citations(rep, pw, p.get("citations"), sources, used)
         if ev.get("perspectives") and len(parties) < 2:
