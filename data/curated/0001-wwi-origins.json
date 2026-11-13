@@ -256,6 +256,13 @@
       "source_type": "secondary",
       "url": "https://www.cambridge.org/core/journals/central-european-history/article/guilt-or-responsibility-the-hundredyear-debate-on-the-origins-of-world-war-i/35B5E58FD27F872B9B2AF3D5DB552661",
       "accessed": "2026-11-11"
+    },
+    "byu-ah-declaration-of-war": {
+      "title": "The Austro-Hungarian Declaration of War on Serbia",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Austro-Hungarian_Declaration_of_War_on_Serbia",
+      "accessed": "2026-11-11"
     }
   },
   "events": [
@@ -1250,7 +1257,7 @@
           "party": "Austria-Hungary",
           "perspective_type": "government",
           "wanted": "Conrad von Hötzendorf and Foreign Minister Berchtold saw the assassination as an opportunity to humiliate Serbia and strengthen Austria-Hungary's prestige in the Balkans.",
-          "feared": "Emperor Franz Joseph believed Russian and Serbian Pan-Slavist agitation sought to weaken the Triple Alliance and destroy his empire.",
+          "feared": "The letter that Berchtold drew up for Franz Joseph to sign and send to Wilhelm II called the attack the direct consequence of agitation by Russian and Serbian Pan-Slavists whose sole aim was the weakening of the Triple Alliance and the destruction of the empire.",
           "citations": [
             {
               "source": "brit-wwi-outbreak",
@@ -1260,6 +1267,10 @@
               "source": "byu-franz-joseph-letter",
               "quote": "The attack directed against my poor nephew is the direct consequence of the agitation carried on by the Russian and Serbian Pan-Slavists whose sole aim is the weakening of the Triple Alliance and the destruction of my Empire.",
               "locator": "Autograph Letter of Franz Joseph to the Kaiser"
+            },
+            {
+              "source": "byu-blank-check",
+              "quote": "After Sarajevo, Count Leopold von Berchtold, the Austro-Hungarian Foreign Minister, drew up a letter for the Emperor Francis Joseph to sign and send to Wilhelm II to try and convince both of Serbia's responsibility."
             }
           ]
         },
@@ -1291,14 +1302,14 @@
       "title": "Germany promises support to Austria-Hungary",
       "year": 1914,
       "date_display": "Jul 5–6, 1914",
-      "lat": 52.3906,
-      "lng": 13.0645,
-      "geo_modern": "Potsdam / Berlin, Germany",
+      "lat": 52.52,
+      "lng": 13.405,
+      "geo_modern": "Berlin, Germany",
       "geo_era_label": "German Empire",
       "category": "political",
       "importance_score": 0.88,
       "summary": "On 5–6 July, Germany assured Austria-Hungary of support for action against Serbia in what became known as the blank cheque.",
-      "description": "On 5 July, Germany promised Austria-Hungary full support for a severe response to Serbia. On 6 July, Wilhelm II and Chancellor Bethmann-Hollweg reaffirmed that Germany would support whatever action Austria-Hungary considered necessary against Serbia, an assurance described as a blank cheque.",
+      "description": "On 5 July, Germany promised Austria-Hungary full support for a severe response to Serbia. On 6 July, Wilhelm II and Chancellor Bethmann-Hollweg telegrammed Berchtold that Austria-Hungary could rely on Germany to support whatever action was necessary to deal with Serbia; the BYU World War I Document Archive calls this in effect a 'blank check'.",
       "citations": [
         {
           "source": "iwm-outbreak",
@@ -1309,14 +1320,19 @@
           "source": "byu-blank-check",
           "quote": "On July 6th, Wilhelm II and his Imperial Chancellor, Theobald von Bethmann-Hollweg, telegrammed Berchtold that Austria-Hungary could rely that Germany would support whatever action was necessary to deal with Serbia -- in effect offering von Berchtold a 'blank check.'",
           "locator": "The 'Blank Check'"
+        },
+        {
+          "source": "byu-blank-check",
+          "quote": "Telegram from the Imperial Chancellor, von Bethmann-Hollweg, to the German Ambassador at Vienna. Tschirschky, July 6, 1914 Berlin, July 6, 1914",
+          "locator": "Telegram dateline"
         }
       ],
       "perspectives": [
         {
           "party": "Austria-Hungary",
           "perspective_type": "government",
-          "wanted": "Emperor Franz Joseph wanted his government to isolate and diminish Serbia.",
-          "feared": "Franz Joseph believed Russian and Serbian Pan-Slavists sought to weaken the Triple Alliance and destroy his empire.",
+          "wanted": "The letter that Foreign Minister Berchtold drew up for Franz Joseph to sign and send to Wilhelm II said that the efforts of the Austro-Hungarian government should be directed toward the isolation and diminishment of Serbia.",
+          "feared": "The Imperial War Museums writes that Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector.",
           "citations": [
             {
               "source": "byu-franz-joseph-letter",
@@ -1324,17 +1340,20 @@
               "locator": "Autograph Letter of Franz Joseph to the Kaiser"
             },
             {
-              "source": "byu-franz-joseph-letter",
-              "quote": "The attack directed against my poor nephew is the direct consequence of the agitation carried on by the Russian and Serbian Pan-Slavists whose sole aim is the weakening of the Triple Alliance and the destruction of my Empire.",
-              "locator": "Autograph Letter of Franz Joseph to the Kaiser"
+              "source": "byu-blank-check",
+              "quote": "After Sarajevo, Count Leopold von Berchtold, the Austro-Hungarian Foreign Minister, drew up a letter for the Emperor Francis Joseph to sign and send to Wilhelm II to try and convince both of Serbia's responsibility."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector."
             }
           ]
         },
         {
           "party": "Germany",
           "perspective_type": "government",
-          "wanted": "German leaders wanted to preserve Austria-Hungary, which they regarded as their only reliable ally, as a great power.",
-          "feared": "German leaders feared isolation and encirclement. Wilhelm II regarded Russian and Serbian Pan-Slavist agitation as a danger to Austria-Hungary and the Triple Alliance.",
+          "wanted": "German leaders wanted to preserve Austria-Hungary, which they regarded as their only reliable ally, as a great power. The Imperial War Museums also names Germany's ambitions as a driver of its foreign policy.",
+          "feared": "German leaders perceived Germany as isolated and had an increasing fear of 'encirclement'. Wilhelm II regarded Russian and Serbian Pan-Slavist agitation as a danger to Austria-Hungary and the Triple Alliance.",
           "citations": [
             {
               "source": "iwm-outbreak",
@@ -1437,6 +1456,34 @@
               "locator": "Europe takes sides"
             }
           ]
+        }
+      ]
+    },
+    {
+      "slug": "austria-hungary-declares-war-serbia-1914",
+      "title": "Austria-Hungary declares war on Serbia",
+      "year": 1914,
+      "date_display": "Jul 28, 1914",
+      "lat": 48.2082,
+      "lng": 16.3738,
+      "geo_modern": "Vienna, Austria",
+      "geo_era_label": "Austria-Hungary",
+      "category": "war",
+      "importance_score": 0.86,
+      "summary": "On 28 July 1914 Austria-Hungary declared war on Serbia by telegram from Vienna, and its artillery began to bombard Belgrade the next day.",
+      "description": "At 11:10 a.m. on 28 July 1914 Foreign Minister Berchtold telegraphed the Serbian prime minister Pašić from Vienna that, because the Serbian government had not answered the note of 23 July in a satisfactory manner, Austria-Hungary considered itself in a state of war with Serbia. Britannica writes that Austro-Hungarian artillery began to bombard Belgrade the next day and that Russia then ordered partial mobilization against Austria-Hungary.",
+      "citations": [
+        {
+          "source": "byu-ah-declaration-of-war",
+          "quote": "At 11:10 A.M. on July 28, 1914, Count Leopold von Berchtold, the Austro-Hungarian Minister for Foreign Affairs, sent the following telegram from Vienna to M. N. Pashitch, Serbian Prime Minister and Minister for Foreign Affairs."
+        },
+        {
+          "source": "byu-ah-declaration-of-war",
+          "quote": "The Royal Serbian Government not having answered in a satisfactory manner the note of July 23, 1914, presented by the Austro-Hungarian Minister at Belgrade, the Imperial and Royal Government are themselves compelled to see to the safeguarding of their rights and interests, and, with this object, to have recourse to force of arms. Austria-Hungary consequently considers herself henceforward in state of war with Serbia."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day. Russia then ordered partial mobilization against Austria-Hungary"
         }
       ]
     },
@@ -1854,7 +1901,7 @@
       "type": "contributing",
       "strength": 0.6,
       "confidence": "speculative",
-      "rationale": "The annexation excluded the eventual union of Bosnia and Herzegovina with Serbia, leading the Serbian government to turn toward Macedonia and consider an alliance with Bulgaria.",
+      "rationale": "The annexation excluded the eventual union of Bosnia and Herzegovina with Serbia, leading the Serbian government to turn toward Macedonia and consider an alliance with Bulgaria. Britannica writes that the Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey.",
       "citations": [
         {
           "source": "brit-balkan-wars",
@@ -1863,6 +1910,10 @@
         {
           "source": "brit-balkan-wars",
           "quote": "Deeply resentful of Austria-Hungary’s action, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, the Serbian government nevertheless realized that it could not challenge one of the great powers. It therefore turned its attention to Macedonia, where a weaker power like Turkey could more easily be attacked if an alliance could be achieved with Bulgaria."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey, which was already involved in a war with Italy."
         }
       ]
     },
@@ -1872,7 +1923,7 @@
       "type": "indirect",
       "strength": 0.4,
       "confidence": "speculative",
-      "rationale": "Britannica connects the Agadir crisis to greater freedom of action for small powers because the two great-power alliances appeared evenly balanced.",
+      "rationale": "Britannica connects the Agadir Incident of 1911 to the small powers' ability to exercise some measure of individual initiative, because the Triple Alliance and the Triple Entente were evenly balanced.",
       "citations": [
         {
           "source": "brit-balkan-wars",
@@ -1911,7 +1962,7 @@
       "type": "contributing",
       "strength": 0.7,
       "confidence": "speculative",
-      "rationale": "Young Bosnia’s growing militancy contributed recruits whom Black Hand operatives supplied with money, weapons and training for the assassination.",
+      "rationale": "Inspired by Žerajić's June 1910 attempt on Governor Varešanin, Young Bosnia became increasingly militant; in 1914 Ilić recruited from among its most radical student members, and three of them, Čabrinović, Grabež and Princip, received money, weapons and basic training from Black Hand operatives.",
       "citations": [
         {
           "source": "foster-sarajevo-incident",
@@ -1931,7 +1982,7 @@
       "type": "contributing",
       "strength": 0.8,
       "confidence": "established",
-      "rationale": "Black Hand operatives supplied the conspirators with money, weapons and training, while Apis planned the assassination because he believed it would advance the Serbs’ cause.",
+      "rationale": "Black Hand operatives gave three of the conspirators, Čabrinović, Grabež and Princip, money, weapons and basic training, and Britannica writes that Apis, head of Union or Death, plotted the assassination because he believed the Serbs' cause would be served by the Archduke's death.",
       "citations": [
         {
           "source": "foster-sarajevo-incident",
@@ -1945,6 +1996,10 @@
         {
           "source": "brit-princip",
           "quote": "Born into a Bosnian Serb peasant family, Princip was trained in terrorism by the Serbian secret society known as the Black Hand (true name Ujedinjenje ili Smrt, “Union or Death”)."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Colonel Dragutin Dimitrijević, head of Serbia’s military intelligence, was also, under the alias “Apis,” head of the secret society Union or Death, pledged to the pursuit of this pan-Serbian ambition."
         }
       ]
     },
@@ -1974,7 +2029,7 @@
       "type": "contributing",
       "strength": 0.65,
       "confidence": "established",
-      "rationale": "Serbian gains in the Balkan Wars redirected nationalist attention toward Austria-Hungary’s South Slavs, while Potiorek’s subsequent suppression of anti-Habsburg activity brought Young Bosnia under Black Hand influence.",
+      "rationale": "Britannica writes that after the Balkan Wars enlarged Serbia, Serbian nationalists turned their attention back to the idea of \"liberating\" the South Slavs of Austria-Hungary, and Foster writes that Governor Potiorek's efforts to suppress anti-Habsburg activities after Serbia's success in the Balkan Wars brought Young Bosnia under the influence of the Black Hand.",
       "citations": [
         {
           "source": "brit-wwi-outbreak",
@@ -1983,6 +2038,11 @@
         {
           "source": "foster-sarajevo-incident",
           "quote": "This was compounded by the appointment of the politically ambitious General Oskar Potiorek (1853-\n 1933) as Varešanin’s successor in 1911. The new governor’s efforts to suppress anti-Habsburg\n activities, following Serbia’s success during the Balkan Wars, brought Young Bosnia under the\n influence of the Serbian nationalist Black Hand Society.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "The new governor’s efforts to suppress anti-Habsburg activities, following Serbia’s success during the Balkan Wars, brought Young Bosnia under the influence of the Serbian nationalist Black Hand Society.",
           "locator": "Background"
         }
       ]
@@ -1993,7 +2053,7 @@
       "type": "direct",
       "strength": 0.9,
       "confidence": "established",
-      "rationale": "The assassination led Vienna to seek German backing against Serbia, and Germany promised support despite the risk of Russian involvement.",
+      "rationale": "After Sarajevo, Berchtold drew up a letter for Franz Joseph to send to Wilhelm II to try to convince both of Serbia's responsibility. Austria knew that conflict with Serbia would likely involve Russia and turned to its ally Germany, which on 5 July promised full support for a severe response against Serbia. Britannica writes that Wilhelm II had already assured Conrad of German support in October 1913 if Austria-Hungary started a preventive war against Serbia, and that this assurance was confirmed in the week after the assassination.",
       "citations": [
         {
           "source": "byu-blank-check",
@@ -2004,6 +2064,14 @@
           "source": "iwm-outbreak",
           "quote": "Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector. Austria-Hungary turned to its own ally. On 5 July, Germany promised Austria full support for a severe response against Serbia.",
           "locator": "Europe takes sides"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On 5 July, Germany promised Austria full support for a severe response against Serbia."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Conrad had already (October 1913) been assured by William II of Germany’s support if Austria-Hungary should start a preventive war against Serbia. This assurance was confirmed in the week following the assassination, before William, on July 6, set off upon his annual cruise to the North Cape, off Norway."
         }
       ]
     },
@@ -2243,12 +2311,44 @@
           "quote": "When Germany tried to oppose a French takeover of Morocco, Britain supported France."
         }
       ]
+    },
+    {
+      "cause": "austria-hungary-ultimatum-serbia-1914",
+      "effect": "austria-hungary-declares-war-serbia-1914",
+      "type": "direct",
+      "strength": 0.9,
+      "confidence": "established",
+      "rationale": "The declaration of war gives the Serbian government's failure to answer the note of 23 July in a satisfactory manner as its reason, and Britannica records the declaration on 28 July.",
+      "citations": [
+        {
+          "source": "byu-ah-declaration-of-war",
+          "quote": "The Royal Serbian Government not having answered in a satisfactory manner the note of July 23, 1914, presented by the Austro-Hungarian Minister at Belgrade, the Imperial and Royal Government are themselves compelled to see to the safeguarding of their rights and interests, and, with this object, to have recourse to force of arms. Austria-Hungary consequently considers herself henceforward in state of war with Serbia."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day."
+        }
+      ]
+    },
+    {
+      "cause": "austria-hungary-declares-war-serbia-1914",
+      "effect": "russian-general-mobilization-1914",
+      "type": "contributing",
+      "strength": 0.7,
+      "confidence": "speculative",
+      "rationale": "Britannica writes that after the declaration of war and the bombardment of Belgrade Russia ordered partial mobilization against Austria-Hungary, and that on 30 July, as Austria-Hungary ordered mobilization on its Russian frontier, Russia ordered general mobilization; Britannica is the only source cited here for this step.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day. Russia then ordered partial mobilization against Austria-Hungary, and on July 30, when Austria-Hungary was riposting conventionally with an order of mobilization on its Russian frontier, Russia ordered general mobilization."
+        }
+      ]
     }
   ],
   "chains": [
     {
       "slug": "road-to-world-war-i",
-      "title": "The road to World War I, 1878–1914",
+      "title": "Bosnia, Serbian nationalism and the outbreak of World War I, 1878–1914",
       "chain_type": "scholarly",
       "event_ids": [
         "treaty-of-berlin-of-1878",
@@ -2257,12 +2357,13 @@
         "assassination-franz-ferdinand-1914",
         "blank-cheque-1914",
         "austria-hungary-ultimatum-serbia-1914",
+        "austria-hungary-declares-war-serbia-1914",
         "russian-general-mobilization-1914",
         "germany-declares-war-russia-1914",
         "germany-invades-belgium-1914",
         "britain-declares-war-germany-1914"
       ],
-      "description": "This chain traces disputes over Bosnia and Serbian nationalism through the Sarajevo assassination to mobilization and British entry into the war. Its links distinguish documented decisions from disputed interpretations of responsibility."
+      "description": "This chain traces disputes over Bosnia and Serbian nationalism through the Sarajevo assassination to mobilization and British entry into the war."
     },
     {
       "slug": "july-crisis-1914",
@@ -2272,12 +2373,13 @@
         "assassination-franz-ferdinand-1914",
         "blank-cheque-1914",
         "austria-hungary-ultimatum-serbia-1914",
+        "austria-hungary-declares-war-serbia-1914",
         "russian-general-mobilization-1914",
         "germany-declares-war-russia-1914",
         "germany-invades-belgium-1914",
         "britain-declares-war-germany-1914"
       ],
-      "description": "The Sarajevo assassination was followed by German support for Austria-Hungary, an ultimatum to Serbia, Russian mobilization and German declarations of war. Germany's invasion of Belgium contributed to Britain's decision to enter the war."
+      "description": "The Sarajevo assassination was followed by German support for Austria-Hungary, an ultimatum to Serbia, Austria-Hungary's declaration of war on Serbia on 28 July, Russian mobilization and German declarations of war. Germany's invasion of Belgium contributed to Britain's decision to enter the war."
     },
     {
       "slug": "alliances-before-world-war-i",
