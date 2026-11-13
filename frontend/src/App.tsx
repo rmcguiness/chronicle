@@ -16,6 +16,7 @@
  *  /chain/:slug   → Shareable cause-and-effect chain
  *  /chains        → Index of chains
  */
+import { Suspense, lazy, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MotionConfig } from 'framer-motion';
@@ -37,6 +38,11 @@ import MedievalJapanPage from './pages/MedievalJapanPage';
 import { usePermalink } from './hooks/usePermalink';
 import DemoBanner, { DemoUnavailable } from './components/DemoBanner';
 import { IS_DEMO_MODE } from './config/demo';
+import ViewToggle from './components/ViewToggle';
+import { chooseMainView, canUseSpaceView, readViewEnvironment, saveMainView, type MainViewKind } from './space/viewMode';
+
+/** The 3D view (three.js) loads only when it is shown, so the 2D view and phones never download it. */
+const SpaceView = lazy(() => import('./space/SpaceView'));
 
 /** React Query client — shared across both routes via context. */
 const queryClient = new QueryClient({
@@ -56,6 +62,17 @@ function MainView() {
   // Activates hash ↔ store sync: read on mount, write on change, listen for hashchange
   usePermalink();
 
+  // Desktop + WebGL 2 starts in the 3D space view; phones and ?view=2d keep the 2D network view.
+  // The space view reads the demo snapshot, so API builds stay on 2D for now.
+  const [env] = useState(() => readViewEnvironment(IS_DEMO_MODE));
+  const [view, setView] = useState<MainViewKind>(() => chooseMainView(env));
+  const spaceAvailable = canUseSpaceView(env);
+  const switchView = (next: MainViewKind) => {
+    saveMainView(next);
+    setView(next);
+  };
+  const is3d = view === '3d';
+
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
       <a className="skip-link" href="#chronicle-search">
@@ -63,19 +80,30 @@ function MainView() {
       </a>
       <h1 className="sr-only">Chronicle — interactive timeline of historical events and their causes</h1>
 
-      {/* Network causality graph — the primary view */}
-      <main aria-label="Event network">
-        <NetworkView />
-      </main>
+      {is3d ? (
+        <main aria-label="Events in 3D space">
+          <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#000' }} aria-busy="true" />}>
+            <SpaceView onSwitchTo2D={() => switchView('2d')} />
+          </Suspense>
+        </main>
+      ) : (
+        /* Network causality graph — the 2D view */
+        <main aria-label="Event network">
+          <NetworkView />
+        </main>
+      )}
 
       {/* Top search bar */}
       <SearchBar />
 
-      {/* Category legend (top-left) */}
-      <CategoryLegend />
+      {/* Category legend (top-left); the space view has its own legend */}
+      {!is3d && <CategoryLegend />}
 
       {/* On This Day button (toolbar) */}
       <OnThisDayButton />
+
+      {/* 2D ↔ 3D switch (top-right), only where the space view can run */}
+      {spaceAvailable && !is3d && <ViewToggle onSwitch={() => switchView('3d')} />}
 
       {/* Right detail panel (slides in on event click) */}
       <EventDetailPanel />
@@ -83,12 +111,11 @@ function MainView() {
       {/* On This Day slide-in panel */}
       <OnThisDayPanel />
 
-      {/* Bottom timeline scrubber — shown in both timeline and network modes.
-          In network mode it acts as a time-range filter for visible events. */}
-      <TimelineScrubber />
+      {/* Bottom timeline scrubber for the 2D view; the space view shows the year on its own axis */}
+      {!is3d && <TimelineScrubber />}
 
-      {/* Welcome overlay — shown on first load each session */}
-      <WelcomeOverlay />
+      {/* Welcome overlay — shown on first load each session (2D view) */}
+      {!is3d && <WelcomeOverlay />}
     </div>
   );
 }

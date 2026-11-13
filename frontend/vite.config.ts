@@ -47,6 +47,8 @@ export default defineConfig(({ mode }) => ({
           'query': ['@tanstack/react-query'],
           'zustand': ['zustand'],
           'motion': ['framer-motion'],
+          // Loaded only with the 3D space view (lazy import in App.tsx).
+          'three': ['three'],
         },
       },
     },
