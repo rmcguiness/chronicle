@@ -1171,14 +1171,18 @@
         {
           "source": "brit-balkan-wars",
           "quote": "The most alarming aspect of the war was the growth of tension between Austria-Hungary and Serbia. Serbia had extensive claims upon Albanian territory. Having obtained an assurance of German support, Austria-Hungary delivered an ultimatum on October 17, 1913, to compel Serbia to withdraw from the Albanian borderlands."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey"
         }
       ],
       "perspectives": [
         {
-          "party": "Serbia",
+          "party": "Serbian government",
           "perspective_type": "government",
-          "wanted": "Serbia's government turned toward Macedonia, where it considered an attack on Ottoman territory possible with Bulgarian support.",
-          "feared": "Serbia's government believed it could not challenge Austria-Hungary, despite resenting the exclusion of a future union with Bosnia and Herzegovina.",
+          "wanted": "Serbia's government turned its attention to Macedonia, where Turkey, a weaker power, could more easily be attacked if an alliance could be achieved with Bulgaria; Britannica writes that the Balkan League was formed in the spring of 1912 to take Macedonia away from Turkey. Serbia also had extensive claims upon Albanian territory.",
+          "feared": "Serbia's government was deeply resentful of Austria-Hungary's annexation of Bosnia and Herzegovina in October 1908, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, but concluded that it could not challenge one of the great powers.",
           "citations": [
             {
               "source": "brit-balkan-wars",
@@ -1187,13 +1191,25 @@
             {
               "source": "brit-balkan-wars",
               "quote": "It therefore turned its attention to Macedonia, where a weaker power like Turkey could more easily be attacked if an alliance could be achieved with Bulgaria."
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "The Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey"
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Serbia had extensive claims upon Albanian territory"
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Austria-Hungary had in October 1908 annexed Bosnia and Herzegovina"
             }
           ]
         },
         {
           "party": "Austria-Hungary",
           "perspective_type": "government",
-          "wanted": "Vienna wanted Serbia to withdraw from the Albanian borderlands and obtained German support for its ultimatum.",
+          "wanted": "Vienna wanted to compel Serbia to withdraw from the Albanian borderlands and delivered an ultimatum on 17 October 1913 after obtaining an assurance of German support.",
           "feared": "Austria-Hungary's leaders regarded Serbia as a threat to the stability of their multiethnic empire.",
           "citations": [
             {
@@ -1207,7 +1223,8 @@
             }
           ]
         }
-      ]
+      ],
+      "geo_era_label": "Macedonia, Ottoman Empire"
     },
     {
       "slug": "assassination-franz-ferdinand-1914",
@@ -1216,12 +1233,12 @@
       "date_display": "Jun 28, 1914",
       "lat": 43.8563,
       "lng": 18.4131,
-      "geo_modern": "Sarajevo, Bosnia",
+      "geo_modern": "Sarajevo, Bosnia and Herzegovina",
       "geo_era_label": "Austro-Hungarian Empire",
       "category": "political",
       "importance_score": 0.97,
       "summary": "Gavrilo Princip killed Franz Ferdinand and Sophie in Sarajevo on 28 June 1914; anti-Serb protests and riots followed across Austria-Hungary.",
-      "description": "On 28 June 1914, Gavrilo Princip assassinated Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, and his wife Sophie in Sarajevo. Britannica writes that Serbian Prime Minister Nikola Pašić, an enemy of the Black Hand's leader Apis, had heard of the plot and warned the Austrian government, but that his message was too cautiously worded to be understood. Anti-Serb protests and riots followed throughout Austria-Hungary.",
+      "description": "On 28 June 1914, Gavrilo Princip assassinated Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, and his wife Sophie in Sarajevo. Britannica writes that Apis, the alias of Colonel Dragutin Dimitrijević, head of Serbia's military intelligence and of the secret society Union or Death, plotted the assassination, and that Serbian Prime Minister Nikola Pašić, an enemy of Apis, heard of the plot and warned the Austrian government, but his message was too cautiously worded to be understood. Anti-Serb protests and riots followed throughout Austria-Hungary.",
       "citations": [
         {
           "source": "brit-princip",
@@ -1234,14 +1251,22 @@
         {
           "source": "brit-wwi-outbreak",
           "quote": "Nikola Pašić, the Serbian prime minister and an enemy of Apis, heard of the plot and warned the Austrian government of it, but his message was too cautiously worded to be understood."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Colonel Dragutin Dimitrijević, head of Serbia’s military intelligence, was also, under the alias “Apis,” head of the secret society Union or Death"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Apis plotted his assassination."
         }
       ],
       "perspectives": [
         {
-          "party": "Young Bosnia (the assassins)",
+          "party": "Gavrilo Princip and the other assassins",
           "perspective_type": "nationalist",
-          "wanted": "Princip wanted to end Austro-Hungarian rule in the Balkans and unite the South Slavs in a federal nation, and believed that the first step must be killing a member of the Habsburg imperial family or a senior government official.",
-          "remembered": "In Yugoslavia, Princip came to be regarded as a \"national hero.\"",
+          "wanted": "Princip wanted to end Austro-Hungarian rule in the Balkans and unite the South Slavs in a federal nation, and believed that the first step must be killing a member of the Habsburg imperial family or a senior government official. Princip said he had aimed not at the duchess but at Gen. Oskar Potiorek, military governor of Bosnia. The Imperial War Museums describes him as one of several would-be young assassins intent on using violence to destroy Austro-Hungarian rule.",
+          "remembered": "Britannica writes that in Yugoslavia, the South Slav state Princip had envisioned, he came to be regarded as a \"national hero.\"",
           "citations": [
             {
               "source": "brit-princip",
@@ -1250,13 +1275,21 @@
             {
               "source": "brit-princip",
               "quote": "In Yugoslavia—the South Slav state that he had envisioned—Princip came to be regarded as a national hero."
+            },
+            {
+              "source": "brit-princip",
+              "quote": "Franz Ferdinand and Sophie were shot to death by Princip, who said he had aimed not at the duchess but at Gen. Oskar Potiorek, military governor of Bosnia."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "The assassin was 19-year-old Gavrilo Princip, one of several would-be young assassins who were intent on using violence to destroy Austria-Hungarian rule."
             }
           ]
         },
         {
           "party": "Austria-Hungary",
           "perspective_type": "government",
-          "wanted": "Conrad von Hötzendorf and Foreign Minister Berchtold saw the assassination as an opportunity to humiliate Serbia and strengthen Austria-Hungary's prestige in the Balkans.",
+          "wanted": "Britannica writes that Conrad von Hötzendorf, chief of the Austro-Hungarian general staff, and Foreign Minister Berchtold saw the crime as the occasion for measures to humiliate Serbia and so to enhance Austria-Hungary's prestige in the Balkans. The letter Berchtold drew up for Franz Joseph called the Sarajevo affair \"a well-organized conspiracy, of which the threads reach to Belgrade\" and said it was probably impossible to prove the complicity of the Serbian Government.",
           "feared": "The letter that Berchtold drew up for Franz Joseph to sign and send to Wilhelm II called the attack the direct consequence of agitation by Russian and Serbian Pan-Slavists whose sole aim was the weakening of the Triple Alliance and the destruction of the empire.",
           "citations": [
             {
@@ -1271,14 +1304,18 @@
             {
               "source": "byu-blank-check",
               "quote": "After Sarajevo, Count Leopold von Berchtold, the Austro-Hungarian Foreign Minister, drew up a letter for the Emperor Francis Joseph to sign and send to Wilhelm II to try and convince both of Serbia's responsibility."
+            },
+            {
+              "source": "byu-franz-joseph-letter",
+              "quote": "it is no longer an affair at Sarajevo of the single bloody deed of an individual but of a well-organized conspiracy, of which the threads reach to Belgrade and if, as is probable, it be impossible to prove the complicity of the Serbian Government"
             }
           ]
         },
         {
           "party": "Serbian government",
           "perspective_type": "government",
-          "wanted": "In its July reply to the ultimatum, the Serbian government said it considered it its duty to begin an investigation against everyone on its territory who had taken part in the 28 June attack.",
-          "feared": "In its reply to the ultimatum, the Serbian government said it could not be held responsible for private expressions such as newspaper articles and the peaceable work of societies, and that it was painfully surprised by claims that Serbian citizens had helped prepare the attack.",
+          "wanted": "In its reply to the ultimatum, the Serbian government said it considered it its duty to begin an investigation against everyone on its territory who had taken part in the 28 June attack. The reply said the government had expected to be invited to cooperate in the investigation of the crime and was ready to proceed against all persons about whom it received information.",
+          "feared": "In its reply, the Serbian government said that cooperation in the investigation by specially delegated Austro-Hungarian officials \"cannot be accepted, as this is a violation of the constitution and of criminal procedure,\" and that it could not be made responsible for private expressions such as newspaper articles and the peaceable work of societies. It said it was painfully surprised by claims that Serbian citizens had helped prepare the attack.",
           "citations": [
             {
               "source": "byu-serbian-reply",
@@ -1292,6 +1329,33 @@
             {
               "source": "byu-serbian-reply",
               "quote": "The Royal Government was therefore painfully surprised by the assertions that citizens of Serbia had participated in the preparations of the outrage in Sarajevo."
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "The Government expected to be invited to cooperate in the investigation of the crime, and it was ready, in order to prove its complete correctness, to proceed against all persons in regard to whom it would receive information."
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "As far as the cooperation in this investigation of specially delegated officials of the I. and R. Government is concerned, this cannot be accepted, as this is a violation of the constitution and of criminal procedure."
+            }
+          ]
+        },
+        {
+          "party": "Union or Death (Black Hand)",
+          "perspective_type": "nationalist",
+          "wanted": "Britannica writes that Union or Death was pledged to the pan-Serbian ambition of \"liberating\" the South Slavs of Austria-Hungary, and that Apis believed the Serbs' cause would be served by the death of Franz Ferdinand.",
+          "citations": [
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "Serbian nationalists turned their attention back to the idea of “liberating” the South Slavs of Austria-Hungary."
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "head of the secret society Union or Death, pledged to the pursuit of this pan-Serbian ambition."
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "Believing that the Serbs’ cause would be served by the death of the Austrian archduke Franz Ferdinand"
             }
           ]
         }
@@ -1308,8 +1372,8 @@
       "geo_era_label": "German Empire",
       "category": "political",
       "importance_score": 0.88,
-      "summary": "On 5–6 July, Germany assured Austria-Hungary of support for action against Serbia in what became known as the blank cheque.",
-      "description": "On 5 July, Germany promised Austria-Hungary full support for a severe response to Serbia. On 6 July, Wilhelm II and Chancellor Bethmann-Hollweg telegrammed Berchtold that Austria-Hungary could rely on Germany to support whatever action was necessary to deal with Serbia; the BYU World War I Document Archive calls this in effect a 'blank check'.",
+      "summary": "On 5–6 July, Germany assured Austria-Hungary of support for action against Serbia; the BYU World War I Document Archive calls this in effect a 'blank check'.",
+      "description": "On 5 July, Germany promised Austria-Hungary full support for a severe response to Serbia. On 6 July, Bethmann-Hollweg sent a telegram to the German Ambassador at Vienna, Tschirschky, saying he had replied to Count Szögyény on behalf of Wilhelm II; the BYU World War I Document Archive summarizes the German answer as telling Berchtold that Austria-Hungary could rely on Germany to support whatever action was necessary to deal with Serbia, in effect a 'blank check'.",
       "citations": [
         {
           "source": "iwm-outbreak",
@@ -1325,14 +1389,18 @@
           "source": "byu-blank-check",
           "quote": "Telegram from the Imperial Chancellor, von Bethmann-Hollweg, to the German Ambassador at Vienna. Tschirschky, July 6, 1914 Berlin, July 6, 1914",
           "locator": "Telegram dateline"
+        },
+        {
+          "source": "byu-blank-check",
+          "quote": "I replied to Count Szögyény today on behalf of His Majesty"
         }
       ],
       "perspectives": [
         {
           "party": "Austria-Hungary",
           "perspective_type": "government",
-          "wanted": "The letter that Foreign Minister Berchtold drew up for Franz Joseph to sign and send to Wilhelm II said that the efforts of the Austro-Hungarian government should be directed toward the isolation and diminishment of Serbia.",
-          "feared": "The Imperial War Museums writes that Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector.",
+          "wanted": "The letter that Foreign Minister Berchtold drew up for Franz Joseph to sign and send to Wilhelm II said that the efforts of the Austro-Hungarian government should be directed toward the isolation and diminishment of Serbia. The Imperial War Museums writes that Austria-Hungary turned to its own ally, and Britannica writes that the Austrians relied on Germany to deter Russia from intervention.",
+          "feared": "The Imperial War Museums writes that Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector. The Imperial War Museums also writes that Austria-Hungary's actions toward Serbia stemmed from fears that, if it backed down, it would lose credibility and prestige as a great power.",
           "citations": [
             {
               "source": "byu-franz-joseph-letter",
@@ -1346,13 +1414,25 @@
             {
               "source": "iwm-outbreak",
               "quote": "Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary turned to its own ally."
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "relying on Germany to deter Russia from intervention"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary's aggression towards Serbia and Russian support for Serbia in the aftermath of the assassination stemmed from fears that, if either backed down, they would lose credibility and prestige as great powers."
             }
           ]
         },
         {
           "party": "Germany",
           "perspective_type": "government",
-          "wanted": "German leaders wanted to preserve Austria-Hungary, which they regarded as their only reliable ally, as a great power. The Imperial War Museums also names Germany's ambitions as a driver of its foreign policy.",
+          "wanted": "German leaders wanted to preserve Austria-Hungary, which they regarded as their only reliable ally, as a great power. The Imperial War Museums writes: \"Germany's ambitions, its perception of its own isolation and its increasing fear of 'encirclement' drove its foreign policy.\"",
           "feared": "German leaders perceived Germany as isolated and had an increasing fear of 'encirclement'. Wilhelm II regarded Russian and Serbian Pan-Slavist agitation as a danger to Austria-Hungary and the Triple Alliance.",
           "citations": [
             {
