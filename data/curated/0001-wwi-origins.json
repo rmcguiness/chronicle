@@ -1397,7 +1397,7 @@
           "party": "Austria-Hungary",
           "perspective_type": "government",
           "wanted": "Austria-Hungary's government demanded that Serbia condemn and suppress the propaganda aimed at separating territories from the monarchy, accept the cooperation of Austro-Hungarian officials in suppressing that movement, and let Austro-Hungarian officials take part in the judicial inquiry into the 28 June conspiracy.",
-          "feared": "It believed a movement in Serbia was seeking to detach Austro-Hungarian territory.",
+          "feared": "It believed a movement in Serbia was seeking to detach Austro-Hungarian territory. The ultimatum called the intrigues a standing menace to the peace of the Monarchy, and the Imperial War Museums writes that Austria-Hungary's leaders feared that if they backed down they would lose credibility and prestige as a great power.",
           "citations": [
             {
               "source": "byu-ultimatum",
@@ -1418,13 +1418,21 @@
               "source": "byu-ultimatum",
               "quote": "Now the history of the past few years, and particularly the painful events of the 28th of June, have proved the existence of a subversive movement in Serbia, whose object it is to separate certain portions of its territory from the Austro-Hungarian Monarchy.",
               "locator": "The Austro-Hungarian Ultimatum to Serbia (English Translation)"
+            },
+            {
+              "source": "byu-ultimatum",
+              "quote": "these results impose upon the Imperial and Royal Government the obligation to put an end to those intrigues, which constitute a standing menace to the peace of the Monarchy."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary's aggression towards Serbia and Russian support for Serbia in the aftermath of the assassination stemmed from fears that, if either backed down, they would lose credibility and prestige as great powers."
             }
           ]
         },
         {
           "party": "Serbia",
           "perspective_type": "government",
-          "wanted": "Serbia’s government said it wanted its reply to preserve friendly relations with Austria-Hungary.",
+          "wanted": "Serbia's government said it was convinced its reply would dissipate any misunderstanding that threatened friendly and neighbourly relations with Austria-Hungary.",
           "feared": "It regarded the participation of Austro-Hungarian officials in its investigation as a violation of its constitution and criminal procedure.",
           "citations": [
             {
@@ -1442,7 +1450,7 @@
         {
           "party": "Russia",
           "perspective_type": "government",
-          "wanted": "Russia’s leaders saw their country as Serbia’s protector and wanted to support Serbia.",
+          "wanted": "Russia's leaders saw their country as Serbia's protector. When the ultimatum's delivery was announced on 24 July, Russia declared that Austria-Hungary must not be allowed to crush Serbia.",
           "feared": "They feared that retreat would cost Russia credibility and prestige as a great power.",
           "citations": [
             {
@@ -1454,6 +1462,10 @@
               "source": "iwm-outbreak",
               "quote": "Austria-Hungary's aggression towards Serbia and Russian support for Serbia in the aftermath of the assassination stemmed from fears that, if either backed down, they would lose credibility and prestige as great powers.",
               "locator": "Europe takes sides"
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "When the delivery was announced, on July 24, Russia declared that Austria-Hungary must not be allowed to crush Serbia."
             }
           ]
         }
@@ -1499,7 +1511,7 @@
       "category": "war",
       "importance_score": 0.88,
       "summary": "Russia ordered general mobilization on 30 July, and Germany demanded that it halt its preparations.",
-      "description": "Russia ordered general mobilization on 30 July as Austria-Hungary ordered mobilization on its Russian frontier. Germany issued an ultimatum on 31 July demanding that Russia halt its mobilization.",
+      "description": "Russia ordered partial mobilization against Austria-Hungary. On 30 July, when Austria-Hungary responded with an order of mobilization on its Russian frontier, Russia ordered general mobilization. Germany issued an ultimatum on 31 July demanding that Russia halt its mobilization.",
       "citations": [
         {
           "source": "brit-wwi-outbreak",
@@ -1514,13 +1526,17 @@
         {
           "party": "Russia",
           "perspective_type": "government",
-          "wanted": "Russia’s tsar said he wanted to avoid war while negotiations with Austria continued.",
-          "feared": "He regarded military preparations as necessary because Austria had mobilised.",
+          "wanted": "The tsar told the kaiser on 31 July, \"We are far from wishing war.\" He promised that his troops would take no provocative action while negotiations with Austria over Serbia continued, and said he hoped for the kaiser's successful mediation in Vienna.",
+          "feared": "The Imperial War Museums writes that the Russians viewed the mobilisation as a precaution in case war broke out. The tsar gave as his reason that the preparations were obligatory owing to Austria's mobilisation.",
           "citations": [
             {
               "source": "byu-willy-nicky",
-              "quote": "It is technically impossible to stop our military preparations which were obligatory owing to Austria's mobilisation. We are far from wishing war. As long as the negociations with Austria on Servia's account are taking place my troops shall not make any provocative action.",
+              "quote": "It is technically impossible to stop our military preparations which were obligatory owing to Austria's mobilisation. We are far from wishing war. As long as the negociations with Austria on Servia's account are taking place my troops shall not make any provocative action. I give you my solemn word for this. I put all my trust in Gods mercy and hope in your successful mediation in Vienna for the welfare of our countries and for the peace of Europe.",
               "locator": "Tsar to Kaiser, July 31"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "While the Russians viewed this mobilisation as a precaution in case war broke out"
             }
           ]
         },
@@ -1528,19 +1544,23 @@
           "party": "Germany",
           "perspective_type": "government",
           "wanted": "Germany’s emperor wanted Russia to stop its military measures so that European peace could be maintained.",
-          "feared": "He described those measures as a threat to Germany and Austria-Hungary.",
+          "feared": "He described those measures as a threat to Germany and Austria-Hungary. The Imperial War Museums writes that the Germans saw the mobilisation as \"an aggressive act of war directed against itself and Austria-Hungary\".",
           "citations": [
             {
               "source": "byu-willy-nicky",
               "quote": "The peace of Europe may still be maintained by you, if Russia will agree to stop the milit. measures which must threaten Germany and Austro-Hungary.",
               "locator": "Kaiser to Tsar, July 31"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "the Germans saw it as an aggressive act of war directed against itself and Austria-Hungary."
             }
           ]
         },
         {
           "party": "France",
           "perspective_type": "government",
-          "wanted": "France’s leaders wanted to stand with Russia.",
+          "wanted": "France's leaders held that France must stand or fall with Russia.",
           "feared": "They expected a German invasion.",
           "citations": [
             {
@@ -1572,6 +1592,36 @@
           "source": "iwm-outbreak",
           "quote": "On 31 July, Germany sent an ultimatum to Russia demanding it demobilise. The next day, this ultimatum expired without a reply. Germany declared war on Russia and ordered its own general mobilisation.",
           "locator": "Europe goes to war"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "The Imperial War Museums writes that Germany's war plan was time-sensitive, being based on beating France before Russia could get its army fully into action.",
+          "feared": "Mombauer writes that from the German perspective every day that Russia concentrated her troops was a lost day for the German deployment plan.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "Germany's war plan was time-sensitive, being based upon beating France before Russia could get its army fully into action."
+            },
+            {
+              "source": "mombauer-guilt-or-responsibility",
+              "quote": "From the German perspective, it hardly mattered if Russia was preparing merely a partial or an actual mobilization, because “every day that Russia concentrated her troops was indeed a lost day for the German deployment plan…"
+            }
+          ]
+        },
+        {
+          "party": "Russia",
+          "perspective_type": "government",
+          "wanted": "The tsar told the kaiser on 31 July that Russia was far from wishing war and hoped for his mediation in Vienna.",
+          "feared": "The tsar wrote that it was technically impossible to stop Russia's military preparations, which he called obligatory owing to Austria's mobilisation.",
+          "citations": [
+            {
+              "source": "byu-willy-nicky",
+              "quote": "It is technically impossible to stop our military preparations which were obligatory owing to Austria's mobilisation. We are far from wishing war. As long as the negociations with Austria on Servia's account are taking place my troops shall not make any provocative action. I give you my solemn word for this. I put all my trust in Gods mercy and hope in your successful mediation in Vienna for the welfare of our countries and for the peace of Europe."
+            }
+          ]
         }
       ]
     },
@@ -1608,7 +1658,7 @@
           "party": "Germany",
           "perspective_type": "government",
           "wanted": "Germany’s leaders wanted a rapid advance into France.",
-          "feared": "They claimed that French forces intended to cross Belgium to attack Germany.",
+          "feared": "The German government said it had reliable information that French forces intended to march through Belgian territory against Germany, and that it feared Belgium could not, without assistance, repel so considerable a French invasion.",
           "citations": [
             {
               "source": "byu-scrap-of-paper",
@@ -1619,14 +1669,18 @@
               "source": "byu-german-request-belgium",
               "quote": "RELIABLE information has been received by the German Government to the effect that French forces intend to march on the line of the Meuse by Givet and Namur. This information leaves no doubt as to the intention of France to march through Belgian territory against Germany.",
               "locator": "The German Request for Free Passage Through Belgium"
+            },
+            {
+              "source": "byu-german-request-belgium",
+              "quote": "The German Government cannot but fear that Belgium, in spite of the utmost goodwill, will be unable, without assistance, to repel so considerable a French invasion"
             }
           ]
         },
         {
           "party": "Belgium",
           "perspective_type": "government",
-          "wanted": "Belgium’s government wanted to maintain its neutrality and meet its international obligations.",
-          "feared": "It believed accepting Germany’s proposals would sacrifice national honour and betray its duty to Europe.",
+          "wanted": "Belgium’s government wanted to maintain its neutrality and meet its international obligations. Its government said the treaties of 1839, confirmed in 1870, guaranteed Belgium's independence and neutrality, and that the intentions Germany attributed to France contradicted formal French declarations of 1 August.",
+          "feared": "It believed accepting Germany’s proposals would sacrifice national honour and betray its duty to Europe. It called the threatened attack on its independence \"a flagrant violation of international law\".",
           "citations": [
             {
               "source": "byu-belgian-refusal",
@@ -1637,6 +1691,18 @@
               "source": "byu-belgian-refusal",
               "quote": "The Belgian Government, if they were to accept the proposals submitted to them, would sacrifice the honour of the nation and betray their duty towards Europe.",
               "locator": "The Belgian Refusal of Free Passage"
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The treaties of 1839, confirmed by the treaties of 1870 vouch for the independence and neutrality of Belgium under the guarantee of the Powers"
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The intentions attributed to France by Germany are in contradiction to the formal declarations made to us on August 1, in the name of the French Government."
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The attack upon her independence with which the German Government threaten her constitutes a flagrant violation of international law."
             }
           ]
         }
@@ -1666,7 +1732,7 @@
         {
           "party": "Britain",
           "perspective_type": "government",
-          "wanted": "Britain's leaders wanted to maintain Europe's balance of power and protect Britain's empire and sea trade, and Ambassador Edward Goschen told the German chancellor that Britain had to keep its solemn engagement to do its utmost to defend Belgium's neutrality.",
+          "wanted": "Britain's leaders wanted to maintain Europe's balance of power and protect Britain's empire and sea trade. On 2 August the Cabinet agreed to support Belgium if there was a substantial violation of its neutrality. The British ambassador in Berlin, Sir E. Goschen, told Chancellor von Bethmann-Hollweg that it was \"a matter of 'life and death' for the honor of Great Britain\" to keep its solemn engagement to do its utmost to defend Belgium's neutrality if attacked.",
           "feared": "They feared German domination of Europe and a challenge to Britain’s industrial and imperial position.",
           "citations": [
             {
@@ -1681,13 +1747,17 @@
             {
               "source": "byu-scrap-of-paper",
               "quote": "it was, so to speak, a matter of \"life and death\" for the honor of Great Britain that she should keep her solemn engagement to do her utmost to defend Belgium's neutrality if attacked."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "On 2 August, the Cabinet agreed to support Belgium if there was a substantial violation of its neutrality"
             }
           ]
         },
         {
           "party": "Germany",
           "perspective_type": "government",
-          "wanted": "Germany’s government wanted Britain to remain neutral in a European war.",
+          "wanted": "Germany’s government wanted Britain to remain neutral in a European war. Goschen reported that the Chancellor and Herr von Jagow wished him to understand that for strategic reasons it was a matter of life and death to Germany to advance through Belgium, and the Chancellor asked, \"But at what price will that compact have been kept? Has the British Government thought of that?\"",
           "feared": "Germany’s leaders believed their country was isolated and feared encirclement.",
           "citations": [
             {
@@ -1699,6 +1769,14 @@
               "source": "iwm-outbreak",
               "quote": "Germany's ambitions, its perception of its own isolation and its increasing fear of 'encirclement' drove its foreign policy.",
               "locator": "Europe takes sides"
+            },
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "he and Herr von Jagow wished me to understand that for strategical reasons it was a matter of life and death to Germany to advance through Belgium and violate the latter's neutrality"
+            },
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "The Chancellor said, \"But at what price will that compact have been kept? Has the British Government thought of that?\""
             }
           ]
         }
@@ -2081,7 +2159,7 @@
       "type": "direct",
       "strength": 0.85,
       "confidence": "debated",
-      "rationale": "German backing enabled Vienna's ultimatum, but Mombauer reports that it remained disputed whether Germany pressed Austria-Hungary and how far the blank check forced Vienna's hand: Fischer saw a war deliberately unleashed in Berlin, Clark is more critical of Serbia and the Entente, and MacMillan assigns the greatest responsibility to Austria-Hungary's determination to destroy Serbia, Germany's backing and Russia's impatience to mobilise.",
+      "rationale": "The Imperial War Museums says Austria-Hungary issued the ultimatum with the guarantee of German backing. Mombauer reports that it remained disputed whether Germany pressed Austria-Hungary and how far the blank check forced Vienna's hand: Fischer saw evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin, Clark is more critical of Serbia and the Entente Powers and more lenient on the actions of Germany and Austria-Hungary, and MacMillan names Austria-Hungary's determination to destroy Serbia, Germany's decision to back it and Russia's impatience to mobilise as bearing the greatest responsibility for the outbreak of the war.",
       "citations": [
         {
           "source": "iwm-outbreak",
@@ -2098,11 +2176,11 @@
         },
         {
           "source": "mombauer-guilt-or-responsibility",
-          "quote": "Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
+          "quote": "Clark's research makes several unique interventions. It crucially rejects the notion of “war guilt” and denies that historians should be engaged in finding a guilty party in the manner of a detective in a crime thriller. Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
         },
         {
           "source": "mombauer-guilt-or-responsibility",
-          "quote": "Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war."
+          "quote": "Margaret MacMillan similarly argues “that some powers and their leaders were more culpable than others. Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war.”"
         }
       ]
     },
@@ -2112,7 +2190,7 @@
       "type": "direct",
       "strength": 0.9,
       "confidence": "established",
-      "rationale": "Austro-Hungarian leaders used the assassination to justify demands against Serbia and planned an ultimatum that would permit war.",
+      "rationale": "The ultimatum cited the events of 28 June as proof of a subversive movement in Serbia. Britannica says Conrad and Berchtold saw the crime as the occasion for measures to humiliate Serbia, and that the Austrians decided to present an unacceptable ultimatum and then declare war.",
       "citations": [
         {
           "source": "byu-ultimatum",
@@ -2122,6 +2200,10 @@
         {
           "source": "brit-wwi-outbreak",
           "quote": "The Austrians decided to present an unacceptable ultimatum to Serbia and then to declare war, relying on Germany to deter Russia from intervention."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "saw the crime as the occasion for measures to humiliate Serbia"
         }
       ]
     },
@@ -2131,7 +2213,7 @@
       "type": "direct",
       "strength": 0.8,
       "confidence": "debated",
-      "rationale": "Vienna's ultimatum led Russia to oppose Serbia's defeat and was followed by mobilization, which Russian leaders viewed as precautionary while MacMillan, as quoted by Mombauer, assigns Russia's haste to mobilize a major share of responsibility for the war.",
+      "rationale": "On 24 July Russia declared that Austria-Hungary must not be allowed to crush Serbia. Austria-Hungary declared war on 28 July and began bombarding Belgrade the next day; Russia then ordered partial and, on 30 July, general mobilization, which the Russians viewed as a precaution in case war broke out. Mombauer writes that partial mobilization did not preclude continued diplomatic talks, which was Sazonov's conviction at least until Austria-Hungary declared war on Serbia. Historians weigh this step differently: MacMillan counts Russia's impatience to mobilise among the factors bearing the greatest responsibility, Clark is more critical of Serbia and the Entente Powers, and Fischer saw evidence of a premeditated war unleashed in Berlin.",
       "citations": [
         {
           "source": "brit-wwi-outbreak",
@@ -2145,6 +2227,22 @@
         {
           "source": "mombauer-guilt-or-responsibility",
           "quote": "Margaret MacMillan similarly argues “that some powers and their leaders were more culpable than others. Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war.”"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "the German historian Fritz Fischer detected what he considered to have been evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Clark's research makes several unique interventions. It crucially rejects the notion of “war guilt” and denies that historians should be engaged in finding a guilty party in the manner of a detective in a crime thriller. Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "It was crucial that the decision for partial mobilization did not preclude a continuation of diplomatic talks; this was Russian Foreign Minister Sergei Sazonov's conviction at least until Austria-Hungary declared war on Serbia."
         }
       ]
     },
@@ -2154,7 +2252,7 @@
       "type": "direct",
       "strength": 0.9,
       "confidence": "debated",
-      "rationale": "Germany declared war after its ultimatum demanding Russian demobilization expired, but historians weigh the mobilization differently: Mombauer quotes Nipperdey judging it as decisive as the blank check and MacMillan counting Russia's impatience to mobilise among the greatest responsibilities, while Neilson argues that it did not cause the war, which required German decisions to back Austria-Hungary and attack France.",
+      "rationale": "Germany declared war after its ultimatum demanding Russian demobilization expired. Historians weigh the mobilization differently: Mombauer quotes Nipperdey judging it as decisive as the blank check and MacMillan counting Russia's impatience to mobilise among the greatest responsibilities, while Neilson argues that it did not cause the war, which required German decisions to back Austria-Hungary and attack France. Fischer saw evidence of a premeditated war deliberately unleashed in Berlin, and Clark is more critical of Serbia and the Entente Powers and more lenient on Germany and Austria-Hungary.",
       "citations": [
         {
           "source": "iwm-outbreak",
@@ -2172,6 +2270,18 @@
         {
           "source": "mombauer-guilt-or-responsibility",
           "quote": "Keith Neilson has also argued forcefully that “the Russian mobilisation (of whatever extent) did not cause the war—that required the Germans to decide to support Austria-Hungary at whatever cost and to attack France. To prepare to defend oneself is not the same as throwing the first punch."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Margaret MacMillan similarly argues “that some powers and their leaders were more culpable than others. Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war.”"
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "the German historian Fritz Fischer detected what he considered to have been evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Clark's research makes several unique interventions. It crucially rejects the notion of “war guilt” and denies that historians should be engaged in finding a guilty party in the manner of a detective in a crime thriller. Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
         }
       ]
     },
@@ -2180,8 +2290,8 @@
       "effect": "germany-invades-belgium-1914",
       "type": "contributing",
       "strength": 0.85,
-      "confidence": "established",
-      "rationale": "Germany's plan to defeat France before concentrating against Russia required an advance through neutral Belgium.",
+      "confidence": "debated",
+      "rationale": "Schlieffen's 1905 plan sent German forces through neutral Belgium against the flanks and rear of the French defences. Britannica says Moltke heavily modified it before and during its use in 1914, and it reports debate about Schlieffen's intentions and the plan's implementation. The Imperial War Museums says Germany's 1914 war plan required German troops to invade Belgium to get to France.",
       "citations": [
         {
           "source": "brit-schlieffen-plan",
@@ -2191,16 +2301,24 @@
           "source": "iwm-outbreak",
           "quote": "After declaring war on France, Germany was now determined to execute its war plan to defeat France first and then concentrate its forces against Russia. The plan required German troops invade Belgium to get to France.",
           "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "The plan was heavily modified by Schlieffen’s successor, Helmuth von Moltke, prior to and during its implementation in World War I."
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "Further summaries have been discovered over subsequent decades, opening new debates about Schlieffen’s true intentions and the implementation of his plan."
         }
       ]
     },
     {
       "cause": "germany-declares-war-russia-1914",
       "effect": "germany-invades-belgium-1914",
-      "type": "direct",
-      "strength": 0.8,
+      "type": "indirect",
+      "strength": 0.5,
       "confidence": "speculative",
-      "rationale": "War with Russia was followed by Germany's attack through Belgium because its war plan required defeating France before concentrating against Russia.",
+      "rationale": "Germany demanded passage through Belgium on 2 August, the day after it declared war on Russia. The Imperial War Museums says that after declaring war on France, Germany was determined to execute its plan to defeat France first and then concentrate against Russia, which required invading Belgium. The step from the declaration of war on Russia is an inference.",
       "citations": [
         {
           "source": "brit-wwi-outbreak",
@@ -2210,6 +2328,10 @@
           "source": "iwm-outbreak",
           "quote": "After declaring war on France, Germany was now determined to execute its war plan to defeat France first and then concentrate its forces against Russia. The plan required German troops invade Belgium to get to France.",
           "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On the evening of 2 August 1914, Germany demanded that its troops be allowed to pass through Belgian territory. Belgium refused."
         }
       ]
     },
@@ -2256,8 +2378,8 @@
       "effect": "britain-declares-war-germany-1914",
       "type": "indirect",
       "strength": 0.5,
-      "confidence": "debated",
-      "rationale": "Anglo-French friendship encouraged British support for France without imposing an alliance obligation, while Mombauer contrasts Clark's attribution of responsibility to Grey with Otte's emphasis on his diplomatic efforts.",
+      "confidence": "speculative",
+      "rationale": "Britannica says the Entente paved the way for Anglo-French diplomatic cooperation against German pressures but in no sense created an alliance, and that Britain had no express obligation to fight for Russia or France in 1914. Grey told Parliament to let every man construe for himself how far that friendship entailed an obligation. The Imperial War Museums says that from 1 August Britain mobilised the navy and promised to protect the French coast. No cited source says the Entente contributed to the declaration of war, so the link is an inference. Mombauer contrasts Clark's attribution of some responsibility to Grey with Otte's emphasis on his diplomatic efforts.",
       "citations": [
         {
           "source": "brit-entente-cordiale",
@@ -2271,6 +2393,14 @@
         {
           "source": "mombauer-guilt-or-responsibility",
           "quote": "Clark has also put Britain and Edward Grey center stage, attributing some degree of responsibility to the foreign secretary. By contrast, Thomas Otte believes that “there is no reason to doubt [Grey's] genuine intentions” of wanting to diffuse the July Crisis: “Asquith and Grey remained committed to exploring all remaining diplomatic options”"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "no express obligation to fight either for Russia or for France"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "They mobilised the navy and promised to protect the French coast from German aggression through the Channel."
         }
       ]
     },
@@ -2336,7 +2466,7 @@
       "type": "contributing",
       "strength": 0.7,
       "confidence": "speculative",
-      "rationale": "Britannica writes that after the declaration of war and the bombardment of Belgrade Russia ordered partial mobilization against Austria-Hungary, and that on 30 July, as Austria-Hungary ordered mobilization on its Russian frontier, Russia ordered general mobilization; Britannica is the only source cited here for this step.",
+      "rationale": "Britannica writes that after the declaration of war and the bombardment of Belgrade Russia ordered partial mobilization against Austria-Hungary, and that on 30 July, when Austria-Hungary responded with an order of mobilization on its Russian frontier, Russia ordered general mobilization; Britannica is the only source cited here for this step.",
       "citations": [
         {
           "source": "brit-wwi-outbreak",
