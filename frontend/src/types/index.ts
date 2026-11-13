@@ -10,6 +10,14 @@ export type EventCategory =
 
 export type ConnectionType = 'causes' | 'leads_to' | 'enables' | 'context';
 
+/**
+ * How well a causal link is supported (curated, cited links only).
+ * established: two or more independent sources agree and no notable dispute is known.
+ * debated: sources or historians disagree about the link or its weight.
+ * speculative: one source, or an inference; popular "butterfly effect" steps land here.
+ */
+export type LinkConfidence = 'established' | 'debated' | 'speculative';
+
 export type SourceType =
   | 'primary'
   | 'secondary'
@@ -60,6 +68,8 @@ export interface HistoricalEvent {
   wikipedia_slug?: string;
   /** Wikidata item ID, e.g. "Q83224". */
   wikidata_id?: string;
+  /** Distinct sources cited by a curated (data/curated/) event and its perspectives. */
+  source_count?: number;
 }
 
 export interface Source {
@@ -75,6 +85,8 @@ export interface Source {
   original_url?: string;
   archive_url?: string;
   ipfs_cid?: string;
+  /** Page, section or document part the quote comes from. */
+  locator?: string;
 }
 
 export interface Perspective {
@@ -91,6 +103,14 @@ export interface Perspective {
   upvotes?: number;
   downvotes?: number;
   sources: Source[];
+  /** Curated per-party perspectives (data/curated/): the party whose view this is. */
+  party?: string;
+  /** What this party wanted. */
+  wanted?: string;
+  /** What this party believed or feared. */
+  feared?: string;
+  /** How this party has remembered or framed the event, when a source supports it. */
+  remembered?: string;
 }
 
 export interface EventDetail extends HistoricalEvent {
@@ -114,6 +134,9 @@ export interface EventDetail extends HistoricalEvent {
   title_alt?: string[];
   perspectives: Perspective[];
   connected_events: ConnectedEvent[];
+  /** Curated events: a short sourced account, and the citations behind it. */
+  description?: string;
+  citations?: Source[];
 }
 
 // ─── Wikipedia integration ───────────────────────────────────────────────────
@@ -143,6 +166,9 @@ export interface ConnectedEvent {
   direction: 'cause' | 'effect';
   strength?: number;
   description?: string;
+  confidence?: LinkConfidence;
+  rationale?: string;
+  citations?: Source[];
 }
 
 export interface CausalityLink {
@@ -152,6 +178,10 @@ export interface CausalityLink {
   connection_type: ConnectionType;
   strength: number;
   description?: string;
+  /** Curated links only: how well the link is supported, why, and by which sources. */
+  confidence?: LinkConfidence;
+  rationale?: string;
+  citations?: Source[];
 }
 
 export interface CanvasViewport {

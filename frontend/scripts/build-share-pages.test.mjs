@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chainPage, escapeHtml, eventPage, injectMeta, metaTags, siteOrigin } from './build-share-pages.mjs';
+import { cardSteps } from '../../api/_lib/cards.js';
 
 const event = {
   id: 'battle-of-hastings-1066',
@@ -31,6 +32,29 @@ describe('share page meta', () => {
     const page = chainPage({ slug: 'x-to-b', title: 'From Hastings to Domesday', event_ids: [event.id, 'b'] }, byId, 'https://e.app');
     expect(page.image).toBe('https://e.app/og/chain/x-to-b.png');
     expect(page.description).toContain('Battle of Hastings (1066) → Domesday Book (1086)');
+  });
+
+  it('uses a curated chain description and its confidence tally', () => {
+    const byId = new Map([[event.id, event], ['b', { title: 'Domesday Book', year_approx: 1086 }]]);
+    const chain = {
+      slug: 'x-to-b', title: 'From Hastings to Domesday', event_ids: [event.id, 'b'],
+      chain_type: 'scholarly', description: 'The conquest led to a survey of England.',
+      confidence: { established: 1, debated: 0, speculative: 0 }, source_count: 2,
+    };
+    const page = chainPage(chain, byId, 'https://e.app');
+    expect(page.description).toBe('The conquest led to a survey of England. Links rated: 1 established; 2 sources cited.');
+    const generated = chainPage({ ...chain, chain_type: 'generated', description: undefined }, byId, 'https://e.app');
+    expect(generated.description).not.toContain('Links rated');
+  });
+
+  it('keeps long chains readable on a card', () => {
+    const events = Array.from({ length: 10 }, (_, i) => ({ title: `E${i}` }));
+    const links = Array.from({ length: 9 }, (_, i) => ({ connection_type: 'direct', i }));
+    const steps = cardSteps(events, links);
+    expect(steps.events.map((e) => e.title)).toEqual(['E0', 'E1', 'E6', 'E7', 'E8', 'E9']);
+    expect(steps.links[1]).toEqual({ gap: 4 });
+    expect(steps.links).toHaveLength(steps.events.length - 1);
+    expect(cardSteps(events.slice(0, 5), links.slice(0, 4)).events).toHaveLength(5);
   });
 
   it('replaces the title and escapes attribute values', () => {

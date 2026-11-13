@@ -37,6 +37,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from chains import find_chains  # noqa: E402
+from curated import curated_data  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SEED_DIR = ROOT / "backend" / "scripts"
@@ -156,6 +157,10 @@ def collect_events() -> dict[str, dict[str, Any]]:
             if ev.get("lat") is None or ev.get("lng") is None or ev.get("year") is None:
                 continue
             events.setdefault(ev["slug"], ev)
+    # Cited batches in data/curated/ update or add events field by field.
+    for slug, cev in CURATED["events"].items():
+        base = dict(events.get(slug, {}))
+        events[slug] = {**base, **cev}
     return events
 
 
@@ -181,6 +186,23 @@ def _resolve_fragment(fragment: str, by_title: list[tuple[str, str, float]]) -> 
 def collect_links(events: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     by_title = [(s, e["title"], float(e.get("importance_score", 0.5))) for s, e in events.items()]
     links: dict[tuple[str, str], dict[str, Any]] = {}
+    retracted = CURATED["retracted"]
+    # Curated links go first so they replace any seed link between the same two events.
+    for raw in CURATED["links"]:
+        cause, effect = raw["cause"], raw["effect"]
+        if cause not in events or effect not in events or (cause, effect) in retracted:
+            continue
+        links[(cause, effect)] = {
+            "cause": cause,
+            "effect": effect,
+            "connection_type": LINK_TYPE_MAP.get(str(raw["type"]), "context"),
+            "strength": round(float(raw["strength"]), 3),
+            "description": raw.get("rationale"),
+            "confidence": raw["confidence"],
+            "rationale": raw.get("rationale"),
+            "citations": raw.get("citations", []),
+            "curated": True,
+        }
     for module_name, attr in LINK_SOURCES:
         module = _load(module_name)
         if module is None:
@@ -199,7 +221,7 @@ def collect_links(events: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
                 effect = e_frag if e_frag in events else _resolve_fragment(str(e_frag), by_title)
             else:
                 continue
-            if not cause or not effect or cause == effect:
+            if not cause or not effect or cause == effect or (cause, effect) in retracted:
                 continue
             links.setdefault(
                 (cause, effect),
@@ -215,6 +237,9 @@ def collect_links(events: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 VERBOSE = bool(os.environ.get("CHRONICLE_EXPORT_VERBOSE"))
+
+# Cited batches from data/curated/ (scripts/curated.py); loaded once at import.
+CURATED = curated_data()
 
 # No single category may fill more than this share of the snapshot.
 MAX_CATEGORY_SHARE = 0.45
@@ -292,7 +317,13 @@ def merge_duplicates(
     for link in links:
         degree[link["cause"]] += 1
         degree[link["effect"]] += 1
-    rank = lambda s: (-degree.get(s, 0), -float(events[s].get("importance_score", 0.5)), s)  # noqa: E731
+    # Curated events always survive a merge; otherwise the better-connected one wins.
+    rank = lambda s: (  # noqa: E731
+        not events[s].get("curated"),
+        -degree.get(s, 0),
+        -float(events[s].get("importance_score", 0.5)),
+        s,
+    )
     canonical: dict[str, str] = {}
     kept_by_year: dict[int, list[str]] = defaultdict(list)
     for slug in sorted(events, key=rank):
@@ -303,7 +334,11 @@ def merge_duplicates(
             for k in kept_by_year.get(y, [])
         ]
         # Compare in rank order so the best-connected match wins, as before.
-        match = next((k for k in sorted(nearby, key=rank) if is_duplicate(events[slug], events[k])), None)
+        both_curated = lambda k: events[slug].get("curated") and events[k].get("curated")  # noqa: E731
+        match = next(
+            (k for k in sorted(nearby, key=rank) if not both_curated(k) and is_duplicate(events[slug], events[k])),
+            None,
+        )
         if match:
             canonical[slug] = match
             if VERBOSE:
@@ -335,8 +370,13 @@ def select_subset(
     # still shows politics, culture, science and natural events across the canvas.
     cap = max(1, int(limit * MAX_CATEGORY_SHARE))
     per_cat: dict[str, int] = defaultdict(int)
-    chosen: set[str] = set()
+    # Cited (curated) events are always in the demo.
+    chosen: set[str] = {s for s in events if events[s].get("curated")}
+    for s in chosen:
+        per_cat[_norm_category(events[s].get("category"))] += 1
     for s in ranked:
+        if s in chosen:
+            continue
         cat = _norm_category(events[s].get("category"))
         if per_cat[cat] >= cap:
             continue
@@ -348,6 +388,72 @@ def select_subset(
     # Order events chronologically for readability / stable diffs.
     ordered = sorted(chosen, key=lambda s: (events[s]["year"], s))
     return ordered, kept
+
+
+def _party_perspective(slug: str, i: int, p: dict[str, Any]) -> dict[str, Any]:
+    """A curated per-party perspective in the frontend Perspective shape."""
+    vtype = str(p.get("perspective_type") or "government")
+    return {
+        "id": f"{slug}-p{i + 1}",
+        "label": p["party"],
+        "party": p["party"],
+        "perspective_type": vtype if vtype in PERSPECTIVE_TYPES else "government",
+        "viewpoint_type": vtype,
+        "summary": p.get("wanted") or "",
+        "narrative": "",
+        "wanted": p.get("wanted"),
+        "feared": p.get("feared"),
+        **({"remembered": p["remembered"]} if p.get("remembered") else {}),
+        # Curated perspectives are cited, not scored; order is the batch author's.
+        "evidence_score": 0.0,
+        "sources": p.get("citations", []),
+    }
+
+
+def _source_count(ev: dict[str, Any]) -> int:
+    """Distinct source URLs cited by a curated event and its perspectives."""
+    urls = {c.get("original_url") or c.get("title") for c in ev.get("citations", [])}
+    for p in ev.get("perspectives") or []:
+        urls |= {c.get("original_url") or c.get("title") for c in p.get("citations", [])}
+    return len(urls - {None, ""})
+
+
+def _chain_evidence(link_ids: list[str], links: list[dict[str, Any]]) -> dict[str, Any]:
+    """Confidence tally and distinct-source count for the links of a chain."""
+    by_id = {l["id"]: l for l in links}
+    tally = {"established": 0, "debated": 0, "speculative": 0, "unrated": 0}
+    urls: set[str] = set()
+    for lid in link_ids:
+        link = by_id.get(lid, {})
+        tally[link.get("confidence", "unrated")] += 1
+        urls |= {c.get("original_url") or c.get("title", "") for c in link.get("citations", [])}
+    return {"confidence": tally, "source_count": len(urls - {""})}
+
+
+def curated_chains(events: list[dict[str, Any]], links: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Hand-built chains from data/curated/, kept only when every event and link made the snapshot."""
+    have_events = {e["id"] for e in events}
+    have_links = {l["id"] for l in links}
+    out = []
+    for c in CURATED["chains"]:
+        ids = c["event_ids"]
+        link_ids = [f"{a}__{b}" for a, b in zip(ids, ids[1:])]
+        if not set(ids) <= have_events or not set(link_ids) <= have_links:
+            print(f"  [skip] curated chain {c['slug']}: missing events or links", file=sys.stderr)
+            continue
+        out.append(
+            {
+                "slug": c["slug"],
+                "title": c["title"],
+                "chain_type": c["chain_type"],
+                **({"description": c["description"]} if c.get("description") else {}),
+                "event_ids": ids,
+                "link_ids": link_ids,
+                "score": 1.0,
+                **_chain_evidence(link_ids, links),
+            }
+        )
+    return out
 
 
 def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
@@ -368,7 +474,11 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
         raw_cat = str(ev.get("category") or "political").lower()
         importance = float(ev.get("importance_score", 0.5))
         perspectives = []
-        for i, p in enumerate((ev.get("perspectives") or [])[:3]):
+        raw_perspectives = ev.get("perspectives") or []
+        if ev.get("curated") and raw_perspectives and raw_perspectives[0].get("party"):
+            perspectives = [_party_perspective(slug, i, p) for i, p in enumerate(raw_perspectives)]
+            raw_perspectives = []
+        for i, p in enumerate(raw_perspectives[:3]):
             vtype = str(p.get("viewpoint_type") or "academic")
             perspectives.append(
                 {
@@ -409,14 +519,23 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
                 "category": _norm_category(raw_cat),
                 "importance_score": round(importance, 3),
                 "perspective_count": len(ev.get("perspectives") or []),
+                **({"source_count": _source_count(ev)} if ev.get("curated") else {}),
                 "is_bce": year < 0,
                 **({"summary": ev["summary"]} if ev.get("summary") else {}),
                 **({"wikipedia_slug": ev["wikipedia_slug"]} if ev.get("wikipedia_slug") else {}),
                 **({"wikidata_id": ev["wikidata_id"]} if ev.get("wikidata_id") else {}),
             }
         )
+        detail: dict[str, Any] = {}
         if perspectives:
-            details[slug] = {"perspectives": perspectives}
+            detail["perspectives"] = perspectives
+        if ev.get("curated"):
+            if ev.get("description"):
+                detail["description"] = ev["description"]
+            if ev.get("citations"):
+                detail["citations"] = ev["citations"]
+        if detail:
+            details[slug] = detail
 
     out_links = [
         {
@@ -426,11 +545,22 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
             "connection_type": l["connection_type"],
             "strength": l["strength"],
             **({"description": l["description"]} if l.get("description") else {}),
+            **(
+                {"confidence": l["confidence"], "rationale": l["rationale"], "citations": l["citations"]}
+                if l.get("curated")
+                else {}
+            ),
         }
         for l in sorted(kept_links, key=lambda l: (l["cause"], l["effect"]))
     ]
 
-    chains = find_chains(out_events, out_links, limit=CHAIN_LIMIT)
+    chains = curated_chains(out_events, out_links)
+    taken = {c["slug"] for c in chains}
+    # A generated chain that only walks part of a curated chain repeats it with less context.
+    curated_steps = [set(c["link_ids"]) for c in chains]
+    for c in find_chains(out_events, out_links, limit=CHAIN_LIMIT):
+        if c["slug"] not in taken and not any(set(c["link_ids"]) <= steps for steps in curated_steps):
+            chains.append({**c, "chain_type": "generated", **_chain_evidence(c["link_ids"], out_links)})
 
     return {
         "version": 1,
@@ -443,6 +573,11 @@ def build_snapshot(min_year: int, limit: int) -> dict[str, Any]:
             "source_events": len(events),
             "source_links": len(links),
             "chains": len(chains),
+            "curated_events": sum(1 for e in out_events if e.get("source_count") is not None),
+            "cited_links": sum(1 for l in out_links if l.get("citations")),
+            "cited_perspectives": sum(
+                1 for d in details.values() for p in d.get("perspectives", []) if p.get("party")
+            ),
         },
         "events": out_events,
         "links": out_links,

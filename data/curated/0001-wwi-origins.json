@@ -1,0 +1,2616 @@
+{
+  "batch": "wwi-origins",
+  "title": "Origins of the First World War, 1839-1914",
+  "drafted_by": {
+    "events and links up to 1911, alliances chain": "Grok Bot (orchestrating agent); Claude Opus and GPT-6-Astra both hit plan usage limits before this part was drafted",
+    "events and links 1912-1914, road and July Crisis chains": "GPT-6-Astra (Codex, ultra reasoning), after Claude Opus hit its session limit"
+  },
+  "reviewed_by": "Grok Bot: every quote checked as a verbatim substring of the cached source text and refetched live where the site allows. GPT-6-Astra (Codex, ultra reasoning) reviewed the batch against the cached sources on 2026-11-11 and Grok Bot applied the findings the sources support; a Claude Opus (max) review of this batch is pending because Claude hit its session limit.",
+  "sources": {
+    "brit-anglo-russian-entente": {
+      "title": "Anglo-Russian Entente",
+      "author": "Britannica Editors",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/Anglo-Russian-Entente",
+      "accessed": "2026-11-11"
+    },
+    "brit-balkan-wars": {
+      "title": "Balkan Wars",
+      "author": "Britannica Editors",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/Balkan-Wars",
+      "accessed": "2026-11-11"
+    },
+    "brit-congress-of-berlin": {
+      "title": "Congress of Berlin",
+      "author": "Britannica Editors",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/Congress-of-Berlin",
+      "accessed": "2026-11-11"
+    },
+    "brit-entente-cordiale": {
+      "title": "Entente Cordiale",
+      "author": "Britannica Editors",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/Entente-Cordiale",
+      "accessed": "2026-11-11"
+    },
+    "brit-franz-ferdinand": {
+      "title": "Franz Ferdinand, archduke of Austria-Este",
+      "author": "Fid Backhouse and others",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/biography/Franz-Ferdinand-Archduke-of-Austria-Este",
+      "accessed": "2026-11-11"
+    },
+    "brit-moroccan-crises": {
+      "title": "Moroccan crises",
+      "author": "Britannica Editors",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/Moroccan-crises",
+      "accessed": "2026-11-11"
+    },
+    "brit-princip": {
+      "title": "Gavrilo Princip",
+      "author": "Britannica Editors",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/biography/Gavrilo-Princip",
+      "accessed": "2026-11-11"
+    },
+    "brit-schlieffen-plan": {
+      "title": "Schlieffen Plan",
+      "author": "Raymond Limbach",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/Schlieffen-Plan",
+      "accessed": "2026-11-11"
+    },
+    "brit-wwi-outbreak": {
+      "title": "World War I: The outbreak of war",
+      "author": "Dennis E. Showalter",
+      "publication": "Encyclopaedia Britannica",
+      "source_type": "tertiary",
+      "url": "https://www.britannica.com/event/World-War-I/Outbreak",
+      "accessed": "2026-11-11"
+    },
+    "byu-belgian-neutrality-treaties": {
+      "title": "Treaties and Documents Relative to the Neutrality of the Netherlands and Belgium",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1839",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/Treaties_and_Documents_Relative_to_the_Neutrality_of_the_Netherlands_and_Belgium",
+      "accessed": "2026-11-11"
+    },
+    "byu-belgian-refusal": {
+      "title": "The Belgian Refusal of Free Passage",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Belgian_Refusal_of_Free_Passage",
+      "accessed": "2026-11-11"
+    },
+    "byu-black-hand-constitution": {
+      "title": "Constitution of the Black Hand",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1911",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/Constitution_of_the_Black_Hand",
+      "accessed": "2026-11-11"
+    },
+    "byu-blank-check": {
+      "title": "The 'Blank Check'",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_%27Blank_Check%27",
+      "accessed": "2026-11-11"
+    },
+    "byu-bosnia-annexation": {
+      "title": "The Annexation of Bosnia and Herzegovina by Austria-Hungary",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1908",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Annexation_of_Bosnia_and_Herzegovina_by_Austria-Hungary",
+      "accessed": "2026-11-11"
+    },
+    "byu-dual-alliance": {
+      "title": "The Dual Alliance Between Austria-Hungary and Germany",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1879",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Dual_Alliance_Between_Austria-Hungary_and_Germany",
+      "accessed": "2026-11-11"
+    },
+    "byu-first-moroccan-crisis": {
+      "title": "The First Moroccan Crisis",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1905",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_First_Moroccan_Crisis",
+      "accessed": "2026-11-11"
+    },
+    "byu-franco-russian-convention": {
+      "title": "The Franco-Russian Alliance Military Convention",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1892",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Franco-Russian_Alliance_Military_Convention",
+      "accessed": "2026-11-11"
+    },
+    "byu-franz-joseph-letter": {
+      "title": "Autograph Letter of Franz Joseph to the Kaiser",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/Autograph_Letter_of_Franz_Joseph_to_the_Kaiser",
+      "accessed": "2026-11-11"
+    },
+    "byu-german-request-belgium": {
+      "title": "The German Request for Free Passage Through Belgium",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_German_Request_for_Free_Passage_Through_Belgium",
+      "accessed": "2026-11-11"
+    },
+    "byu-grey-speech": {
+      "title": "Sir Edward Grey's Speech Before Parliament",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/Sir_Edward_Grey%27s_Speech_Before_Parliament",
+      "accessed": "2026-11-11"
+    },
+    "byu-mansion-house-speech": {
+      "title": "Agadir Crisis: Lloyd George's Mansion House Speech",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1911",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/Agadir_Crisis:_Lloyd_George%27s_Mansion_House_Speech",
+      "accessed": "2026-11-11"
+    },
+    "byu-narodna-odbrana": {
+      "title": "The Narodna Odbrana",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1911",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Narodna_Odbrana",
+      "accessed": "2026-11-11"
+    },
+    "byu-schlieffen-plan": {
+      "title": "The Schlieffen Plan",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1929",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Schlieffen_Plan",
+      "accessed": "2026-11-11"
+    },
+    "byu-scrap-of-paper": {
+      "title": "Origin of the Term \"A Scrap of Paper\"",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/Origin_of_the_Term_%22A_Scrap_of_Paper%22",
+      "accessed": "2026-11-11"
+    },
+    "byu-serbian-reply": {
+      "title": "The Serbian Response to the Austro-Hungarian Ultimatum (English Translation)",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Serbian_Response_to_the_Austro-Hungarian_Ultimatum_(English_Translation)",
+      "accessed": "2026-11-11"
+    },
+    "byu-triple-alliance": {
+      "title": "The Triple Alliance (The English Translation)",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1882",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Triple_Alliance_(The_English_Translation)",
+      "accessed": "2026-11-11"
+    },
+    "byu-ultimatum": {
+      "title": "The Austro-Hungarian Ultimatum to Serbia (English Translation)",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Austro-Hungarian_Ultimatum_to_Serbia_(English_Translation)",
+      "accessed": "2026-11-11"
+    },
+    "byu-willy-nicky": {
+      "title": "The Willy-Nicky Telegrams",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "publication_date": "1914",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Willy-Nicky_Telegrams",
+      "accessed": "2026-11-11"
+    },
+    "foster-sarajevo-incident": {
+      "title": "Sarajevo Incident (Version 1.1), 1914-1918-online. International Encyclopedia of the First World War",
+      "author": "Samuel Foster",
+      "publication": "Freie Universität Berlin (via University of East Anglia repository)",
+      "publication_date": "2019",
+      "source_type": "secondary",
+      "url": "https://ueaeprints.uea.ac.uk/id/eprint/72080/1/1914_1918_Online_sarajevo_incident_2019_02_14_V1.1.pdf",
+      "accessed": "2026-11-11"
+    },
+    "iwm-outbreak": {
+      "title": "Outbreak of the First World War",
+      "author": "Imperial War Museums",
+      "publication": "Imperial War Museums",
+      "source_type": "secondary",
+      "url": "https://www.iwm.org.uk/history/the-causes-of-the-first-world-war",
+      "accessed": "2026-11-11"
+    },
+    "mombauer-guilt-or-responsibility": {
+      "title": "Guilt or Responsibility? The Hundred-Year Debate on the Origins of World War I",
+      "author": "Annika Mombauer",
+      "publication": "Central European History 48(4), Cambridge University Press",
+      "publication_date": "2015",
+      "source_type": "secondary",
+      "url": "https://www.cambridge.org/core/journals/central-european-history/article/guilt-or-responsibility-the-hundredyear-debate-on-the-origins-of-world-war-i/35B5E58FD27F872B9B2AF3D5DB552661",
+      "accessed": "2026-11-11"
+    },
+    "byu-ah-declaration-of-war": {
+      "title": "The Austro-Hungarian Declaration of War on Serbia",
+      "publication": "World War I Document Archive, Brigham Young University Library",
+      "source_type": "primary",
+      "url": "https://wwi.lib.byu.edu/index.php/The_Austro-Hungarian_Declaration_of_War_on_Serbia",
+      "accessed": "2026-11-11"
+    }
+  },
+  "events": [
+    {
+      "slug": "treaty-of-london-1839",
+      "title": "Treaty of London guarantees Belgian neutrality",
+      "year": 1839,
+      "date_display": "Apr 19, 1839",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "geo_modern": "London, United Kingdom",
+      "geo_era_label": "United Kingdom",
+      "category": "political",
+      "importance_score": 0.72,
+      "summary": "Treaties signed in London on 19 April 1839 recognised Belgium as an independent and perpetually neutral state, with Britain among the signatory powers.",
+      "description": "Treaties signed in London on 19 April 1839 by Britain, Austria, France, Prussia, Russia and the Netherlands settled the separation of Belgium from the Netherlands, and the King of the Netherlands undertook to convert the annexed articles, including Article VII, into a treaty with the King of the Belgians. The five powers placed those articles under their guarantee. Article VII stated that Belgium would form an independent and perpetually neutral state. The Imperial War Museums states that on the evening of 2 August 1914 Germany demanded passage for its troops through Belgian territory and that Belgium refused; the Belgian reply cited the treaties of 1839. The Imperial War Museums also states that Germany's violation of Belgian neutrality and British fears of German domination in Europe brought Britain into the war on 4 August.",
+      "citations": [
+        {
+          "source": "byu-belgian-neutrality-treaties",
+          "quote": "TREATIES RELATIVE TO THE NETHERLANDS AND BELGIUM signed at London, April 19, 1839.",
+          "locator": "Appendix A"
+        },
+        {
+          "source": "byu-belgian-neutrality-treaties",
+          "quote": "Her Majesty the Queen of the United Kingdom of Great Britain and Ireland, His Majesty the Emperor of Austria, King of Hungary and Bohemia, His Majesty the King of the French, His Majesty the King of Prussia, and His Majesty the Emperor of all the Russias, having taken into consideration their Treaty concluded with His Majesty the King of the Belgians, on the 15th of November 1831; and His Majesty the King of the Netherlands, Grand Duke of Luxembourg, being disposed to conclude a definite arrangement on the basis of the 24 Articles agreed upon by the Plenipotentiaries of Great Britain, Austria, France, Prussia, and Russia on the 14th of October, 1831; their said Majesties have named for their Plenipotentiaries, that is to say: * * * Who, after having communicated to each other their Full Powers, found in good and due form, have agreed upon the following Articles: ARTICLE I His Majesty the King of the Netherlands, Grand Duke of Luxembourg, engages to cause to be immediately converted into a Treaty with His Majesty the King of the Belgians, the Articles annexed to the present Act, and agreed upon by common consent, under the auspices of the Courts of Great Britain, Austria, France, Prussia and Russia. ARTICLE II Her Majesty the Queen of the United Kingdom of Great Britain and Ireland, His Majesty the Emperor of Austria, King of Hungary and Bohemia, His Majesty the King of the French, His Majesty the King of Prussia, and His Majesty the Emperor of all the Russias declare, that the Articles mentioned in the preceding Article, are considered as having the same force and validity as if they were textually inserted in the present Act, and that they are thus placed under the guarantee of their said Majesties.",
+          "locator": "Article II"
+        },
+        {
+          "source": "byu-belgian-neutrality-treaties",
+          "quote": "The union which has existed between Holland and Belgium, in virtue of the Treaty of Vienna, of the 31st of May, 1815, is acknowledged by His Majesty the King of the Netherlands, Grand Duke of Luxembourg, to be dissolved.",
+          "locator": "Article III"
+        },
+        {
+          "source": "byu-belgian-neutrality-treaties",
+          "quote": "Belgium within the limits specified in Articles I, II and IV shall form an independent and perpetually neutral State.",
+          "locator": "Article VII"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "This would be in direct violation of Belgium’s neutrality, which had been guaranteed in a treaty signed by major European powers, including Britain, in 1839."
+        },
+        {
+          "source": "byu-belgian-refusal",
+          "quote": "The treaties of 1839, confirmed by the treaties of 1870 vouch for the independence and neutrality of Belgium under the guarantee of the Powers"
+        },
+        {
+          "source": "byu-belgian-refusal",
+          "quote": "The Belgian Government, if they were to accept the proposals submitted to them, would sacrifice the honour of the nation and betray their duty towards Europe."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Germany's violation of Belgian neutrality and British fears of German domination in Europe brought Britain and its empire into the war on 4 August."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On the evening of 2 August 1914, Germany demanded that its troops be allowed to pass through Belgian territory. Belgium refused."
+        }
+      ]
+    },
+    {
+      "slug": "treaty-of-berlin-of-1878",
+      "title": "Congress of Berlin revises the Russo-Turkish peace",
+      "year": 1878,
+      "date_display": "Jun 13 – Jul 13, 1878",
+      "lat": 52.52,
+      "lng": 13.405,
+      "geo_modern": "Berlin, Germany",
+      "geo_era_label": "German Empire",
+      "category": "political",
+      "importance_score": 0.85,
+      "summary": "The Congress of Berlin replaced the Treaty of San Stefano, reduced Russia's gains under it and allowed Austria-Hungary to occupy Bosnia and Herzegovina.",
+      "description": "The major European powers met in Berlin from 13 June to 13 July 1878 and replaced the Treaty of San Stefano, signed by Russia and Turkey after the Russo-Turkish War of 1877–78. Britannica writes that the revised settlement satisfied British interests by denying Russia the means to extend its naval power, allowed Austria-Hungary to occupy Bosnia and Herzegovina, and left Russia humiliated by substantially reducing the gains it had made at San Stefano, and that the congress failed to consider adequately the aspirations of the Balkan peoples. Foster writes that over the following decades Austria-Hungary's presence in Bosnia brought it into conflict with regional actors, of whom Serbian nationalists were the most antagonistic.",
+      "citations": [
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "Congress of Berlin, (June 13–July 13, 1878), diplomatic meeting of the major European powers at which the Treaty of Berlin replaced the Treaty of San Stefano, which had been signed by Russia and Turkey (March 3, 1878) at the conclusion of the Russo-Turkish War of 1877–78."
+        },
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "to satisfy the interests of Great Britain (by denying Russia the means to extend its naval power and by maintaining the Ottoman Empire as a European power)"
+        },
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "to satisfy the interests of Austria-Hungary (by allowing it to occupy Bosnia and Herzegovina and thereby increase its influence in the Balkans)"
+        },
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "the congress left Russia humiliated by substantially reducing the gains that it had made under the San Stefano treaty"
+        },
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "the congress failed to consider adequately the aspirations of the Balkan peoples themselves"
+        },
+        {
+          "source": "byu-bosnia-annexation",
+          "quote": "Article 25 of the Treaty of Berlin (July 13,1878) gave Austria-Hungary the right to occupy and administer the two provinces of Bosnia and Herzegovina."
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Over the following decades, the Dual Monarchy’s presence in the territory, still nominally under the rule of the Ottoman Sultan, brought it into conflict with various regional actors.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Among these, Serbian nationalists proved the most antagonistic, perceiving Bosnia-Herzegovina’s large Serb minority as an integral part of a historic “Greater Serbia”.",
+          "locator": "Background"
+        },
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "the congress solved an international crisis caused by the San Stefano treaty by revising the peace settlement"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Austria-Hungary",
+          "perspective_type": "government",
+          "wanted": "Britannica writes that the congress revised the peace to satisfy Austria-Hungary's interests by allowing it to occupy Bosnia and Herzegovina and so increase its influence in the Balkans.",
+          "citations": [
+            {
+              "source": "brit-congress-of-berlin",
+              "quote": "to satisfy the interests of Austria-Hungary (by allowing it to occupy Bosnia and Herzegovina and thereby increase its influence in the Balkans)"
+            }
+          ]
+        },
+        {
+          "party": "Britain",
+          "perspective_type": "government",
+          "wanted": "Britannica writes that the congress revised the peace to satisfy British interests by denying Russia the means to extend its naval power and by keeping the Ottoman Empire a European power.",
+          "citations": [
+            {
+              "source": "brit-congress-of-berlin",
+              "quote": "to satisfy the interests of Great Britain (by denying Russia the means to extend its naval power and by maintaining the Ottoman Empire as a European power)"
+            }
+          ]
+        },
+        {
+          "party": "Serbian nationalists",
+          "perspective_type": "nationalist",
+          "wanted": "Foster writes that Serbian nationalists, the most antagonistic of the regional actors, perceived Bosnia-Herzegovina's large Serb minority as an integral part of a historic \"Greater Serbia\".",
+          "citations": [
+            {
+              "source": "foster-sarajevo-incident",
+              "quote": "Among these, Serbian nationalists proved the most antagonistic, perceiving Bosnia-Herzegovina’s large Serb minority as an integral part of a historic “Greater Serbia”",
+              "locator": "Background"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "dual-alliance-1879",
+      "title": "Dual Alliance between Germany and Austria-Hungary",
+      "year": 1879,
+      "date_display": "Oct 7, 1879",
+      "lat": 48.2082,
+      "lng": 16.3738,
+      "geo_modern": "Vienna, Austria",
+      "geo_era_label": "Austria-Hungary",
+      "category": "political",
+      "importance_score": 0.8,
+      "summary": "Germany and Austria-Hungary signed a secret treaty on 7 October 1879, promising each other full military support if either was attacked by Russia.",
+      "description": "On 7 October 1879 Germany and Austria-Hungary signed a secret treaty. Each promised to help the other with its full military strength if Russia attacked either of them. If another power attacked one of them, the other would remain at least benevolently neutral, and the full mutual-assistance obligation would apply if Russia supported that attacker by active cooperation or by military measures that threatened the party attacked. The Imperial War Museums states that Germany allied with Austria-Hungary in 1879 and that Italy joined three years later.",
+      "citations": [
+        {
+          "source": "byu-dual-alliance",
+          "quote": "7 October, 1879 The Dual Alliance Between Austria-Hungary and Germany",
+          "locator": "Heading"
+        },
+        {
+          "source": "byu-dual-alliance",
+          "quote": "one of the two Empires be attacked by Russia the High Contracting Parties are bound to come to the assistance one of the other with the whole war strength of their Empires",
+          "locator": "Article 1"
+        },
+        {
+          "source": "byu-dual-alliance",
+          "quote": "Should one of the High Contracting Parties be attacked by another Power, the other High Contracting Party binds itself hereby, not only not to support the aggressor against its high Ally, but to observe at least a benevolent neutral attitude towards its fellow Contracting Party.",
+          "locator": "Article 2"
+        },
+        {
+          "source": "byu-dual-alliance",
+          "quote": "Should, however, the attacking party in such a case be supported by Russia, either by an active cooperation or by military measures which constitute a menace to the Party attacked, then the obligation stipulated in Article 1 of this Treaty, for reciprocal assistance with the whole fighting force, becomes equally operative",
+          "locator": "Article 2"
+        },
+        {
+          "source": "byu-dual-alliance",
+          "quote": "be kept secret by the two High Contracting Parties",
+          "locator": "Article 4"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "This new power bloc at the heart of central Europe strengthened further when Germany formed an alliance in 1879 with neighbouring Austria-Hungary, which Italy joined three years later."
+        },
+        {
+          "source": "byu-dual-alliance",
+          "quote": "Done at Vienna, October 7, 1879"
+        }
+      ]
+    },
+    {
+      "slug": "triple-alliance-1882",
+      "title": "Italy joins Germany and Austria-Hungary in the Triple Alliance",
+      "year": 1882,
+      "date_display": "May 20, 1882",
+      "lat": 48.2082,
+      "lng": 16.3738,
+      "geo_modern": "Vienna, Austria",
+      "geo_era_label": "Austria-Hungary",
+      "category": "political",
+      "importance_score": 0.8,
+      "summary": "On 20 May 1882 Italy, Germany and Austria-Hungary signed a secret treaty of mutual help against unprovoked French attacks on Italy or Germany and, under further conditions, other great powers.",
+      "description": "The Triple Alliance treaty, signed in Vienna on 20 May 1882, bound Germany and Austria-Hungary to help Italy if France attacked it without direct provocation, and Italy to help Germany in the same case. If one or two of the parties, without direct provocation on their part, were attacked by and engaged in war with two or more great powers that had not signed the treaty, the obligation applied to all three. The treaty was to be kept secret.",
+      "citations": [
+        {
+          "source": "byu-triple-alliance",
+          "quote": "In case Italy, without direct provocation on her part, should be attacked by France for any reason whatsoever, the two other Contracting Parties shall be bound to lend help and assistance with all their forces to the Party attacked.",
+          "locator": "Article 2"
+        },
+        {
+          "source": "byu-triple-alliance",
+          "quote": "This same obligation shall devolve upon Italy in case of any aggression without direct provocation by France against Germany.",
+          "locator": "Article 2"
+        },
+        {
+          "source": "byu-triple-alliance",
+          "quote": "If one, or two, of the High Contracting Parties, without direct provocation on their part, should chance to be attacked and to be engaged in a war with two or more Great Powers non-signatory to the present Treaty, the casus foederis will arise simultaneously for all the High Contracting Parties.",
+          "locator": "Article 3"
+        },
+        {
+          "source": "byu-triple-alliance",
+          "quote": "The High Contracting Parties mutually promise secrecy as to the contents and existence of the present Treaty.",
+          "locator": "Article 6"
+        },
+        {
+          "source": "byu-triple-alliance",
+          "quote": "Done at Vienna, the twentieth day of the month of May of the year one thousand eight hundred and eighty-two.",
+          "locator": "Signing clause"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Germany formed an alliance in 1879 with neighbouring Austria-Hungary, which Italy joined three years later."
+        }
+      ]
+    },
+    {
+      "slug": "franco-russian-alliance-1894",
+      "title": "France and Russia form a military alliance",
+      "year": 1894,
+      "date_display": "1892–1894",
+      "lat": 59.9343,
+      "lng": 30.3351,
+      "geo_era_label": "Russian Empire",
+      "category": "political",
+      "importance_score": 0.8,
+      "summary": "France and Russia signed a secret military convention on 18 August 1892 that committed both to mobilise at once if the Triple Alliance or any of its members mobilised.",
+      "description": "France and Russia signed a secret military convention on 18 August 1892, stating that its purpose was a defensive war against an attack by the forces of the Triple Alliance. If Germany, or Italy supported by Germany, attacked France, or if Germany, or Austria supported by Germany, attacked Russia, the other would employ all its available forces to attack Germany, so that Germany would have to fight in the east and the west at once. If the Triple Alliance or any one of its members mobilised, both countries would mobilise at once, and all the clauses were to be kept absolutely secret. The Imperial War Museums attributes the alliance to fear of Germany's growing strength and dates it to 1893; Britannica dates the French commitment to Russia to 1894.",
+      "citations": [
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "18 August, 1892 The Franco-Russian Alliance Military Convention",
+          "locator": "Heading"
+        },
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "having no other object than to meet the necessities of a defensive war, provoked by an attack of the forces of the Triple Alliance against either of them"
+        },
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "If France is attacked by Germany, or by Italy supported by Germany, Russia shall employ all her available forces to attack Germany. If Russia is attacked by Germany, or by Austria supported by Germany, France shall employ all her available forces to attack Germany.",
+          "locator": "Article 1"
+        },
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "In case the forces of the Triple Alliance, or of any one of the Powers belonging to it, should be mobilized, France and Russia, at the first news of this event and without previous agreement being necessary, shall mobilize immediately and simultaneously the whole of their forces",
+          "locator": "Article 2"
+        },
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "These forces shall engage to the full with such speed that Germany will have to fight simultaneously on the East and on the West.",
+          "locator": "Article 3"
+        },
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "All the clauses enumerated above shall be kept absolutely secret.",
+          "locator": "Article 7"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Fear of Germany’s growing strength encouraged Russia and France to enter into alliance in 1893."
+        },
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "did not entangle Great Britain with a French commitment to Russia (1894)"
+        }
+      ]
+    },
+    {
+      "slug": "entente-cordiale-1904",
+      "title": "Entente Cordiale between Britain and France",
+      "year": 1904,
+      "date_display": "Apr 8, 1904",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "geo_modern": "London, United Kingdom",
+      "geo_era_label": "United Kingdom",
+      "category": "political",
+      "importance_score": 0.8,
+      "summary": "The Anglo-French agreement of 8 April 1904 settled colonial disputes, granting Britain freedom of action in Egypt and France freedom of action in Morocco.",
+      "description": "The agreement of 8 April 1904 settled a number of disputes between Britain and France, most importantly by granting Britain freedom of action in Egypt and France in Morocco. It was not an alliance and did not tie Britain to France's 1894 commitment to Russia. Britannica writes that it opened the way to Anglo-French diplomatic cooperation against German pressure in the following decade.",
+      "citations": [
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "Entente Cordiale, (April 8, 1904), Anglo-French agreement that, by settling a number of controversial matters, ended antagonisms between Great Britain and France and paved the way for their diplomatic cooperation against German pressures in the decade preceding World War I (1914–18)."
+        },
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "The most important feature of the agreement was that it granted freedom of action to Great Britain in Egypt and to France in Morocco"
+        },
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "The agreement in no sense created an alliance and did not entangle Great Britain with a French commitment to Russia (1894)."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Britain had long seen France and Russia as potential enemies, but from 1904 it negotiated agreements with them, aiming to secure its empire by settling colonial disputes."
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "France",
+          "perspective_type": "government",
+          "wanted": "Britannica writes that Delcassé, France's foreign minister from 1898, believed that a Franco-British understanding would give France some security against any German system of alliances in western Europe.",
+          "citations": [
+            {
+              "source": "brit-entente-cordiale",
+              "quote": "The Entente Cordiale was the culmination of the policy of Théophile Delcassé, France’s foreign minister from 1898, who believed that a Franco-British understanding would give France some security against any German system of alliances in western Europe"
+            }
+          ]
+        },
+        {
+          "party": "Britain",
+          "perspective_type": "government",
+          "wanted": "The Imperial War Museums writes that from 1904 Britain negotiated agreements with France and Russia, aiming to secure its empire by settling colonial disputes.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "Britain had long seen France and Russia as potential enemies, but from 1904 it negotiated agreements with them, aiming to secure its empire by settling colonial disputes"
+            }
+          ]
+        },
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "Britannica writes that German policy had long been to rely on Franco-British antagonism.",
+          "feared": "Britannica writes that the agreement was upsetting to Germany for that reason.",
+          "citations": [
+            {
+              "source": "brit-entente-cordiale",
+              "quote": "The agreement was consequently upsetting to Germany, whose policy had long been to rely on Franco-British antagonism"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "first-moroccan-crisis-1905",
+      "title": "First Moroccan Crisis begins with the Kaiser's visit to Tangier",
+      "year": 1905,
+      "date_display": "Mar 31, 1905",
+      "lat": 35.7595,
+      "lng": -5.834,
+      "geo_modern": "Tangier, Morocco",
+      "geo_era_label": "Morocco",
+      "category": "political",
+      "importance_score": 0.7,
+      "summary": "On 31 March 1905 Wilhelm II visited Tangier and declared for Morocco's independence and integrity, opposing French control; the Algeciras Conference settled the crisis in 1906.",
+      "description": "On 31 March 1905 Emperor Wilhelm II visited Tangier and declared for the independence and integrity of Morocco, where France was seeking control. A German envoy's report records that the Kaiser told the French agent he wanted free trade for Germany and complete equality of rights with other countries. The crisis ended at the Algeciras Conference in 1906, which upheld German and other national economic rights and entrusted the French and Spanish with the policing of Morocco.",
+      "citations": [
+        {
+          "source": "brit-moroccan-crises",
+          "quote": "the emperor William II visited Tangier and, from his yacht on March 31, 1905, declared for Morocco’s independence and integrity."
+        },
+        {
+          "source": "byu-first-moroccan-crisis",
+          "quote": "After overcoming the difficult technical task of landing in Tangier, there was a very fitting reception on the dock by Moroccan officials and the German colony.",
+          "locator": "Report of Councillor von Schoen"
+        },
+        {
+          "source": "brit-moroccan-crises",
+          "quote": "Moroccan crises, (1905–06, 1911), two international crises centring on France’s attempts to control Morocco and on Germany’s concurrent attempts to stem French power."
+        },
+        {
+          "source": "byu-first-moroccan-crisis",
+          "quote": "the Kaiser replied that his visit meant that His Majesty wanted free trade for Germany and complete equality of rights with other countries.",
+          "locator": "Report of Councillor von Schoen"
+        },
+        {
+          "source": "brit-moroccan-crises",
+          "quote": "was resolved in January–April 1906 at the Algeciras Conference, where German and other national economic rights were upheld and where the French and Spanish were entrusted with the policing of Morocco."
+        },
+        {
+          "source": "byu-first-moroccan-crisis",
+          "quote": "His Majesty said that he would like to treat directly with the Sultan, the free ruler of an independent country, as an equal"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "A German envoy's report records that the Kaiser said he wanted free trade for Germany and complete equality of rights with other countries, and that he would like to treat directly with the Sultan, the free ruler of an independent country, as an equal.",
+          "citations": [
+            {
+              "source": "byu-first-moroccan-crisis",
+              "quote": "the Kaiser replied that his visit meant that His Majesty wanted free trade for Germany and complete equality of rights with other countries"
+            },
+            {
+              "source": "byu-first-moroccan-crisis",
+              "quote": "His Majesty said that he would like to treat directly with the Sultan, the free ruler of an independent country, as an equal"
+            }
+          ]
+        },
+        {
+          "party": "France",
+          "perspective_type": "government",
+          "wanted": "Britannica describes the crises as centring on France's attempts to control Morocco and on Germany's concurrent attempts to stem French power.",
+          "citations": [
+            {
+              "source": "brit-moroccan-crises",
+              "quote": "two international crises centring on France’s attempts to control Morocco and on Germany’s concurrent attempts to stem French power."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "schlieffen-plan-1905",
+      "title": "Schlieffen submits his war plan",
+      "year": 1905,
+      "date_display": "1905",
+      "lat": 52.52,
+      "lng": 13.405,
+      "geo_modern": "Berlin, Germany",
+      "geo_era_label": "German Empire",
+      "category": "war",
+      "importance_score": 0.82,
+      "summary": "In 1905 Alfred von Schlieffen, chief of the German general staff, submitted a war plan that sent German forces through neutral Belgium against France; a modified version was used in 1914.",
+      "description": "Britannica describes the plan Alfred von Schlieffen proposed in 1905 as designed to let Germany win a two-front war, with France defeated first by forces passing through neutral Belgium while Russia was held off. A 1929 review in The Army Quarterly reports that the plan was worked out for war on the Western front only, because Russia was still weak after the Manchurian War, and that it provided for sending ten divisions east if Russia intervened. Britannica writes that his successor Helmuth von Moltke heavily modified the plan before and during its use in 1914, while the BYU archive note says it was adopted, slightly modified, in 1914. Britannica also writes that the victorious Allies looked upon the plan as the source of German aggression against neutral countries and that it became the basis of war guilt and reparations. Britannica notes that summaries of Schlieffen's studies found after 1956 opened new debates about his intentions and about how the plan was implemented.",
+      "citations": [
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "battle plan first proposed in 1905 by Alfred, Graf (count) von Schlieffen, chief of the German general staff, that was designed to allow Germany to wage a successful two-front war"
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "He decided that France was the enemy to be defeated first, with Russia held off until the French were annihilated."
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "Those forces were to wheel south and east after passing through neutral Belgium, turning into the flanks and rear of the hardened French defenses along the German border."
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "The plan was heavily modified by Schlieffen’s successor, Helmuth von Moltke, prior to and during its implementation in World War I."
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "Gerhard Ritter, a prominent German historian, published those studies in 1956 and concluded that the Schlieffen Plan was German doctrine prior to World War I. Further summaries have been discovered over subsequent decades, opening new debates about Schlieffen’s true intentions and the implementation of his plan."
+        },
+        {
+          "source": "byu-schlieffen-plan",
+          "quote": "It emerges incidentally that the Schlieffen plan was worked out for war on the Western front only; for when drawn up, Russia was still very weak as a result of the Manchurian War.",
+          "locator": "The Army Quarterly, July 1929"
+        },
+        {
+          "source": "byu-schlieffen-plan",
+          "quote": "There was only a general statement that in the case of Russia intervening, ten divisions should be withdrawn from the Western front and sent to the East",
+          "locator": "The Army Quarterly, July 1929"
+        },
+        {
+          "source": "byu-schlieffen-plan",
+          "quote": "submitted his plan in 1905; it was adopted, slightly modified, in 1914.",
+          "locator": "BYU archive headnote"
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "The victorious Allies looked upon the Schlieffen Plan as the source of German aggression against neutral countries, and it became the basis of war guilt and reparations."
+        }
+      ]
+    },
+    {
+      "slug": "anglo-russian-entente-1907",
+      "title": "Anglo-Russian Convention settles disputes in Asia",
+      "year": 1907,
+      "date_display": "1907",
+      "lat": 59.9343,
+      "lng": 30.3351,
+      "geo_era_label": "Russian Empire",
+      "category": "political",
+      "importance_score": 0.75,
+      "summary": "In 1907 Britain and Russia settled their disputes over Persia, Afghanistan and Tibet, an agreement that led to the Triple Entente with France.",
+      "description": "In 1907 Britain and Russia divided Persia into spheres of influence, agreed not to interfere in Tibet's internal affairs and recognised British influence over Afghanistan. Britannica writes that the agreement led to the formation of the Triple Entente. The Imperial War Museums writes that the new friendship among the three powers increased German fears of encirclement.",
+      "citations": [
+        {
+          "source": "brit-anglo-russian-entente",
+          "quote": "pact in which Britain and Russia settled their colonial disputes in Persia, Afghanistan, and Tibet."
+        },
+        {
+          "source": "brit-anglo-russian-entente",
+          "quote": "It delineated spheres of influence in Persia, stipulated that neither country would interfere in Tibet’s internal affairs, and recognized Britain’s influence over Afghanistan."
+        },
+        {
+          "source": "brit-anglo-russian-entente",
+          "quote": "The agreement led to the formation of the Triple Entente."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "The new and unlikely friendship between these three powers heightened German fears of ‘encirclement’ and deepened the divide among the European powers."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Britain had long seen France and Russia as potential enemies, but from 1904 it negotiated agreements with them, aiming to secure its empire by settling colonial disputes."
+        }
+      ]
+    },
+    {
+      "slug": "bosnian-annexation-crisis-1908",
+      "title": "Austria-Hungary annexes Bosnia and Herzegovina",
+      "year": 1908,
+      "date_display": "Oct 6, 1908",
+      "lat": 43.8563,
+      "lng": 18.4131,
+      "geo_modern": "Sarajevo, Bosnia and Herzegovina",
+      "geo_era_label": "Austria-Hungary",
+      "category": "political",
+      "importance_score": 0.85,
+      "summary": "Austria-Hungary announced the annexation of Bosnia and Herzegovina, which it had occupied since 1878, on 6 October 1908; Russia and Serbia recognised it by 1909.",
+      "description": "Article 25 of the Treaty of Berlin had given Austria-Hungary the right to occupy and administer Bosnia and Herzegovina, and on 6 October 1908 it announced their formal annexation. Foster writes that the Young Turk Revolution of July 1908 served as the catalyst and that Vienna acted while Russia was militarily weakened by the war with Japan. He also writes that Vienna had obtained Russian approval for a future annexation in 1881, and that St Petersburg reneged on that agreement after Nicholas II's accession in 1894. After an initial diplomatic backlash, Russia and Serbia formally recognised the transfer of sovereignty by 1909.",
+      "citations": [
+        {
+          "source": "byu-bosnia-annexation",
+          "quote": "Article 25 of the Treaty of Berlin (July 13,1878) gave Austria-Hungary the right to occupy and administer the two provinces of Bosnia and Herzegovina."
+        },
+        {
+          "source": "byu-bosnia-annexation",
+          "quote": "Austria-Hungary in 1908 annexed Bosnia and Herzegovina, which was announced formally on October 6, 1908."
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "The Young Turk Revolution in July 1908 subsequently served as the catalyst for direct action by the Monarchy.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Vienna took advantage of the political chaos within the Ottoman Empire and Russia’s diminished military capabilities, following the 1905 Russo-Japanese War, and announced that it would be formally annexing Bosnia-Herzegovina.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "In 1881, Vienna had sought, and initially obtained, Germany and Russia’s approval for the future political annexation of its new Balkan protectorate.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "The 1894 accession of Nicholas II, Emperor of Russia (1868-1918), however, saw St. Petersburg renege on its earlier agreements",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "by 1909, even Russia and Serbia had formally recognized Bosnia-Herzegovina’s transfer of sovereignty.",
+          "locator": "Background"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Austria-Hungary",
+          "perspective_type": "government",
+          "wanted": "Franz Joseph told Wilhelm II that the provinces had for some time wanted a constitution, that the changes in the Ottoman Empire had made this wish too strong for his government to oppose if the southern borders of the monarchy were to stay free of disturbances, and that because only a sovereign power could grant a constitution he would announce the annexation. Foster, a historian, writes that Vienna was also reasserting political dominance over Serbia.",
+          "feared": "Foster writes that Vienna sought to prevent the Young Turk Revolution from spreading northwards.",
+          "citations": [
+            {
+              "source": "byu-bosnia-annexation",
+              "quote": "While these provinces, which have progressed culturally and materially in so gratifying a manner, have expressed a desire for some time to establish a constitution, these aims now, because of the altered state of affairs in the Ottoman Empire, have asserted themselves so vigorously that my Government no longer feels that it can oppose them, especially if the peaceful development of affairs on the southern borders of the monarchy is to be free of disturbances. Since a constitution can be granted only by a sovereign power, I shall find myself forced to announce the annexation of Bosnia and Herzegovina.",
+              "locator": "Francis Joseph to Wilhelm II, September 29, 1908"
+            },
+            {
+              "source": "foster-sarajevo-incident",
+              "quote": "seeking to prevent the revolution from spreading northwards while reasserting political dominance over Serbia",
+              "locator": "Background"
+            }
+          ]
+        },
+        {
+          "party": "Serbia",
+          "perspective_type": "government",
+          "wanted": "The Serbian government was deeply resentful of the annexation, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, and realized that it could not challenge one of the great powers. Britannica writes that it therefore turned its attention to Macedonia, where a weaker power like Turkey could more easily be attacked if an alliance could be achieved with Bulgaria.",
+          "citations": [
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Deeply resentful of Austria-Hungary’s action, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, the Serbian government nevertheless realized that it could not challenge one of the great powers."
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "It therefore turned its attention to Macedonia, where a weaker power like Turkey could more easily be attacked if an alliance could be achieved with Bulgaria."
+            }
+          ]
+        },
+        {
+          "party": "Narodna Odbrana",
+          "perspective_type": "nationalist",
+          "wanted": "The society's 1911 programme called for preparation for war in all forms of national work, so that a new blow like the annexation would be met by a Serbia in which every Serb was a rifleman.",
+          "feared": "It described the annexation as one of many blows aimed at Serbia by its enemies and wrote that new enemies from the North wanted to take Serbia's freedom and language.",
+          "citations": [
+            {
+              "source": "byu-narodna-odbrana",
+              "quote": "The annexation [ of Bosnia and Herzegovina ] was only one of the blows which the enemies of Serbia have aimed at this land."
+            },
+            {
+              "source": "byu-narodna-odbrana",
+              "quote": "The object assigned to the work to be done by the people of every class is the preparation for war in all forms of national work, corresponding to the requirements of the present day."
+            },
+            {
+              "source": "byu-narodna-odbrana",
+              "quote": "A new blow, like that of the annexation, must be met by a new Serbia, in which every Serbian, from child to greybeard, is a rifleman."
+            },
+            {
+              "source": "byu-narodna-odbrana",
+              "quote": "They want to take our freedom and our language from us and to crush us."
+            },
+            {
+              "source": "byu-narodna-odbrana",
+              "quote": "Many blows preceded it, and many will follow it."
+            },
+            {
+              "source": "byu-narodna-odbrana",
+              "quote": "But new Turks come from the North, more fearful and dangerous than the old; stronger in civilization and more advanced economically, our northern enemies come against us."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "young-bosnia-militancy-1910",
+      "title": "Žerajić's attempt on Governor Varešanin; Young Bosnia grows more militant",
+      "year": 1910,
+      "date_display": "Jun 1910",
+      "lat": 43.8563,
+      "lng": 18.4131,
+      "geo_era_label": "Austria-Hungary",
+      "category": "political",
+      "importance_score": 0.65,
+      "summary": "In June 1910 the Bosnian Serb Bogdan Žerajić tried to assassinate the governor of Bosnia, General Marijan Varešanin; groups such as Young Bosnia became more militant.",
+      "description": "In June 1910 the Bosnian Serb Bogdan Žerajić attempted to assassinate General Marijan Varešanin, the Austro-Hungarian governor of Bosnia-Herzegovina. Foster writes that the attempt inspired organisations such as Young Bosnia (Mlada Bosna) to become increasingly militant. General Oskar Potiorek succeeded Varešanin as governor in 1911. Foster writes that Potiorek's efforts to suppress anti-Habsburg activities after Serbia's success in the Balkan Wars brought Young Bosnia under the influence of the Black Hand.",
+      "citations": [
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Inspired by the Bosnian Serb Bogdan Žerajić’s (1886-1910) attempted assassination of the provincial governor General Marijan Varešanin (1847-1917) in June 1910, so- called “cultural organisations”, such as “Young Bosnia” (Mlada Bosna), became increasingly militant.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "This was compounded by the appointment of the politically ambitious General Oskar Potiorek (1853- 1933) as Varešanin’s successor in 1911.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "The new governor’s efforts to suppress anti-Habsburg activities, following Serbia’s success during the Balkan Wars, brought Young Bosnia under the influence of the Serbian nationalist Black Hand Society.",
+          "locator": "Background"
+        }
+      ]
+    },
+    {
+      "slug": "black-hand-founded-1911",
+      "title": "Union or Death (the Black Hand) is founded in Serbia",
+      "year": 1911,
+      "date_display": "May 1911",
+      "lat": 44.7866,
+      "lng": 20.4489,
+      "geo_modern": "Belgrade, Serbia",
+      "geo_era_label": "Kingdom of Serbia",
+      "category": "political",
+      "importance_score": 0.78,
+      "summary": "The secret society Union or Death, known as the Black Hand, was founded in Serbia in May 1911 to pursue the unification of Serbdom, giving priority to revolutionary struggle over cultural work.",
+      "description": "Union or Death, better known as the Black Hand, was founded in Serbia in May 1911. Its constitution set the unification of all Serbs as its aim, gave priority to revolutionary struggle over cultural work and made the organisation secret. Britannica writes that it infiltrated the patriotic society Narodna Odbrana, which was active within the Serbian administration.",
+      "citations": [
+        {
+          "source": "brit-balkan-wars",
+          "quote": "the patriotic society Narodna Odbrana (“National Defense”), invigorated by the infiltration of the “Union or Death” group (founded in May 1911 and better known as the Black Hand), was active not only within the Serbian administration"
+        },
+        {
+          "source": "byu-black-hand-constitution",
+          "quote": "For the purpose of realising the national ideals - the Unification of Serbdom - an organization is hereby created",
+          "locator": "Article 1"
+        },
+        {
+          "source": "byu-black-hand-constitution",
+          "quote": "The organisation gives priority to the revolutionary struggle rather than relies on cultural striving, therefore its institution is an absolutely secret one for wider circles.",
+          "locator": "Article 2"
+        },
+        {
+          "source": "byu-black-hand-constitution",
+          "quote": "The supreme authority is vested in the Supreme Central Directorate with its headquarters at Belgrade.",
+          "locator": "Article 5"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Union or Death (Black Hand)",
+          "perspective_type": "nationalist",
+          "wanted": "The society sought Serbian unification, influence over official institutions in Serbia and revolutionary organisation wherever Serbs lived, and its constitution pledged it to fight with all means beyond Serbia's frontiers against all enemies of that idea.",
+          "citations": [
+            {
+              "source": "byu-black-hand-constitution",
+              "quote": "For the purpose of realising the national ideals - the Unification of Serbdom - an organization is hereby created",
+              "locator": "Article 1"
+            },
+            {
+              "source": "byu-black-hand-constitution",
+              "quote": "it will exercise its influence over all the official factors in Serbia - which is the Piemont of Serbdom - as also over all the strata of the State and over the entire social life in it",
+              "locator": "Article 4"
+            },
+            {
+              "source": "byu-black-hand-constitution",
+              "quote": "It will carry out a revolutionary organisation in all the territories where Serbians are living",
+              "locator": "Article 4"
+            },
+            {
+              "source": "byu-black-hand-constitution",
+              "quote": "Beyond the frontiers, it will fight with all means against all enemies of this idea",
+              "locator": "Article 4"
+            }
+          ]
+        },
+        {
+          "party": "Serbian government",
+          "perspective_type": "government",
+          "wanted": "After 1908 the Serbian government judged that it could not challenge one of the great powers and turned its attention to Macedonia.",
+          "citations": [
+            {
+              "source": "brit-balkan-wars",
+              "quote": "the Serbian government nevertheless realized that it could not challenge one of the great powers. It therefore turned its attention to Macedonia"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "agadir-crisis-1911",
+      "title": "Agadir Crisis over Morocco",
+      "year": 1911,
+      "date_display": "1911",
+      "lat": 30.4278,
+      "lng": -9.5981,
+      "geo_modern": "Agadir, Morocco",
+      "geo_era_label": "Morocco",
+      "category": "political",
+      "importance_score": 0.7,
+      "summary": "In 1911 Germany sent the gunboat Panther to Agadir to protest French influence in Morocco and the Congo; Britain warned Germany and backed France.",
+      "description": "In 1911 Germany sent the gunboat Panther to the Moroccan port of Agadir as a protest against French influence in Morocco and the Congo. On 21 July David Lloyd George, the British Chancellor of the Exchequer, said in his Mansion House speech that if a situation were forced on Britain in which peace could be preserved only by allowing Britain to be treated, where her interests were vitally affected, as if she were of no account in the Cabinet of nations, peace at that price would be a humiliation. Britannica writes that the Agadir Incident revealed that the two great-power groupings, the Triple Alliance and the Triple Entente, were evenly balanced, so that the small powers might exercise some measure of individual initiative. Britannica writes that the crisis reconfirmed Anglo-French solidarity.",
+      "citations": [
+        {
+          "source": "byu-mansion-house-speech",
+          "quote": "In 1911, Germany sent its gunboat Panther to the port of Agadir as a display of force and a protest against French influence in Morocco and the Congo."
+        },
+        {
+          "source": "byu-mansion-house-speech",
+          "quote": "Agadir Crisis: Lloyd George's Mansion House Speech 21 July, 1911",
+          "locator": "Heading"
+        },
+        {
+          "source": "byu-mansion-house-speech",
+          "quote": "David Lloyd George, then British Chancellor of the Exchequer used the occasion of his speech at Mansion House to deliver a stern warning against further German expansion."
+        },
+        {
+          "source": "byu-mansion-house-speech",
+          "quote": "if a situation were to be forced upon us in which peace could only be preserved by the surrender of the great and beneficent position Britain has won by centuries of heroism and achievement, by allowing Britain to be treated where her interests were vitally affected as if she were of no account in the Cabinet of nations, then I say emphatically that peace at that price would be a humiliation",
+          "locator": "Lloyd George, The Times, July 22, 1911"
+        },
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "Franco-British solidarity was confirmed at the Algeciras Conference (1906) and reconfirmed in the Second Moroccan Crisis (1911)."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The Agadir Incident of 1911, moreover, revealed that the two great-power groupings, the Triple Alliance and the Triple Entente, were evenly balanced, so that the small powers might exercise some measure of individual initiative."
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "The BYU archive note says Germany sent the Panther as a display of force and a protest against French influence in Morocco and the Congo, and asserted that the matter was between Germany and France alone.",
+          "citations": [
+            {
+              "source": "byu-mansion-house-speech",
+              "quote": "In 1911, Germany sent its gunboat Panther to the port of Agadir as a display of force and a protest against French influence in Morocco and the Congo. Rather than accept Germany's assertion that the matter was between Germany and France alone"
+            }
+          ]
+        },
+        {
+          "party": "Britain",
+          "perspective_type": "government",
+          "wanted": "Lloyd George said that peace preserved by allowing Britain to be treated as of no account where her interests were vitally affected would be a humiliation.",
+          "citations": [
+            {
+              "source": "byu-mansion-house-speech",
+              "quote": "if a situation were to be forced upon us in which peace could only be preserved by the surrender of the great and beneficent position Britain has won by centuries of heroism and achievement, by allowing Britain to be treated where her interests were vitally affected as if she were of no account in the Cabinet of nations, then I say emphatically that peace at that price would be a humiliation",
+              "locator": "Lloyd George, The Times, July 22, 1911"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "franz-ferdinand-reform-plans-1911",
+      "title": "Franz Ferdinand's reform plans",
+      "year": 1911,
+      "date_display": "Before 1914 (undated in the cited sources)",
+      "lat": 48.1915,
+      "lng": 16.3809,
+      "geo_era_label": "Austria-Hungary",
+      "category": "political",
+      "importance_score": 0.7,
+      "summary": "The heir to the Habsburg throne considered reforms that would have strengthened the crown and weakened the Magyars' position over Hungary's other nationalities.",
+      "description": "Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, considered political reforms that would have strengthened the crown and weakened the position of the Magyars against the other nationalities in Hungary. Britannica writes that he believed any nationalist policy pursued by one part of the population endangered the multinational empire. Foster writes that his proposals for greater autonomy for the monarchy's South Slav territories challenged Serbian nationalist ambitions.",
+      "citations": [
+        {
+          "source": "brit-franz-ferdinand",
+          "quote": "At home he thought of political reforms that would have strengthened the position of the crown and weakened that of the Magyars against the other nationalities in Hungary."
+        },
+        {
+          "source": "brit-franz-ferdinand",
+          "quote": "His plans were based on the realization that any nationalistic policy pursued by one section of the population would endanger the multinational Habsburg empire."
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Franz Ferdinand’s proposals for greater political autonomy within the Monarchy’s South Slav territories posed a direct challenge to Serbian nationalist ambitions.",
+          "locator": "Background"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Franz Ferdinand",
+          "perspective_type": "government",
+          "wanted": "He thought of political reforms that would have strengthened the position of the crown and weakened the position of the Magyars against the other nationalities in Hungary; Foster writes that he proposed greater political autonomy for the monarchy's South Slav territories. In foreign affairs he tried to restore Austro-Russian understanding without endangering the alliance with Germany.",
+          "feared": "He believed that a nationalist policy pursued by any one section of the population would endanger the multinational empire.",
+          "citations": [
+            {
+              "source": "brit-franz-ferdinand",
+              "quote": "At home he thought of political reforms that would have strengthened the position of the crown and weakened that of the Magyars against the other nationalities in Hungary."
+            },
+            {
+              "source": "brit-franz-ferdinand",
+              "quote": "His plans were based on the realization that any nationalistic policy pursued by one section of the population would endanger the multinational Habsburg empire."
+            },
+            {
+              "source": "foster-sarajevo-incident",
+              "quote": "Franz Ferdinand’s proposals for greater political autonomy within the Monarchy’s South Slav territories posed a direct challenge to Serbian nationalist ambitions.",
+              "locator": "Background"
+            },
+            {
+              "source": "brit-franz-ferdinand",
+              "quote": "In foreign affairs he tried to restore Austro-Russian understanding without endangering the alliance with Germany."
+            }
+          ]
+        },
+        {
+          "party": "Serb nationalists",
+          "perspective_type": "nationalist",
+          "wanted": "Foster writes that Serbian nationalists perceived Bosnia-Herzegovina's large Serb minority as an integral part of a historic \"Greater Serbia\".",
+          "citations": [
+            {
+              "source": "foster-sarajevo-incident",
+              "quote": "Serbian nationalists proved the most antagonistic, perceiving Bosnia-Herzegovina’s large Serb minority as an integral part of a historic “Greater Serbia”.",
+              "locator": "Background"
+            },
+            {
+              "source": "foster-sarajevo-incident",
+              "quote": "Franz Ferdinand’s proposals for greater political autonomy within the Monarchy’s South Slav territories posed a direct challenge to Serbian nationalist ambitions.",
+              "locator": "Background"
+            }
+          ],
+          "feared": "Foster writes that Franz Ferdinand's proposals for greater South Slav autonomy posed a direct challenge to Serbian nationalist ambitions."
+        }
+      ]
+    },
+    {
+      "slug": "balkan-wars-1912",
+      "title": "Balkan Wars",
+      "year": 1912,
+      "date_display": "1912–1913",
+      "lat": 41.9981,
+      "lng": 21.4254,
+      "category": "war",
+      "importance_score": 0.85,
+      "summary": "The Balkan Wars reduced Ottoman territory in Europe, enlarged Serbia and increased tensions between Serbia and Austria-Hungary.",
+      "description": "The two Balkan Wars of 1912–1913 left the Ottoman Empire with only part of Thrace and Adrianople among its European territories. Serbia emerged larger, and tensions between Serbia and Austria-Hungary increased. In October 1913, Austria-Hungary issued an ultimatum demanding Serbia's withdrawal from the Albanian borderlands.",
+      "citations": [
+        {
+          "source": "brit-balkan-wars",
+          "quote": "Balkan Wars, (1912–13), two successive military conflicts that deprived the Ottoman Empire of all its remaining territory in Europe except part of Thrace and the city of Adrianople (Edirne)."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Following the Balkan Wars of 1912-1913, Serbia emerged as a larger and more assertive presence in south-east Europe.",
+          "locator": "A distant crisis"
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The most alarming aspect of the war was the growth of tension between Austria-Hungary and Serbia. Serbia had extensive claims upon Albanian territory. Having obtained an assurance of German support, Austria-Hungary delivered an ultimatum on October 17, 1913, to compel Serbia to withdraw from the Albanian borderlands."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Serbian government",
+          "perspective_type": "government",
+          "wanted": "Serbia's government turned its attention to Macedonia, where Turkey, a weaker power, could more easily be attacked if an alliance could be achieved with Bulgaria; Britannica writes that the Balkan League was formed in the spring of 1912 to take Macedonia away from Turkey. Serbia also had extensive claims upon Albanian territory.",
+          "feared": "Serbia's government was deeply resentful of Austria-Hungary's annexation of Bosnia and Herzegovina in October 1908, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, but concluded that it could not challenge one of the great powers.",
+          "citations": [
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Deeply resentful of Austria-Hungary’s action, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, the Serbian government nevertheless realized that it could not challenge one of the great powers."
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "It therefore turned its attention to Macedonia, where a weaker power like Turkey could more easily be attacked if an alliance could be achieved with Bulgaria."
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "The Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey"
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Serbia had extensive claims upon Albanian territory"
+            },
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Austria-Hungary had in October 1908 annexed Bosnia and Herzegovina"
+            }
+          ]
+        },
+        {
+          "party": "Austria-Hungary",
+          "perspective_type": "government",
+          "wanted": "Vienna wanted to compel Serbia to withdraw from the Albanian borderlands and delivered an ultimatum on 17 October 1913 after obtaining an assurance of German support.",
+          "feared": "Austria-Hungary's leaders regarded Serbia as a threat to the stability of their multiethnic empire.",
+          "citations": [
+            {
+              "source": "brit-balkan-wars",
+              "quote": "Having obtained an assurance of German support, Austria-Hungary delivered an ultimatum on October 17, 1913, to compel Serbia to withdraw from the Albanian borderlands."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria had long seen Serbia as a threat to the stability of its multi-ethnic empire.",
+              "locator": "A distant crisis"
+            }
+          ]
+        }
+      ],
+      "geo_era_label": "Macedonia, Ottoman Empire"
+    },
+    {
+      "slug": "assassination-franz-ferdinand-1914",
+      "title": "Franz Ferdinand and Sophie are assassinated in Sarajevo",
+      "year": 1914,
+      "date_display": "Jun 28, 1914",
+      "lat": 43.8563,
+      "lng": 18.4131,
+      "geo_modern": "Sarajevo, Bosnia and Herzegovina",
+      "geo_era_label": "Austro-Hungarian Empire",
+      "category": "political",
+      "importance_score": 0.97,
+      "summary": "Gavrilo Princip killed Franz Ferdinand and Sophie in Sarajevo on 28 June 1914; anti-Serb protests and riots followed across Austria-Hungary.",
+      "description": "On 28 June 1914, Gavrilo Princip assassinated Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, and his wife Sophie in Sarajevo. Britannica writes that Apis, the alias of Colonel Dragutin Dimitrijević, head of Serbia's military intelligence and of the secret society Union or Death, plotted the assassination, and that Serbian Prime Minister Nikola Pašić, an enemy of Apis, heard of the plot and warned the Austrian government, but his message was too cautiously worded to be understood. Anti-Serb protests and riots followed throughout Austria-Hungary.",
+      "citations": [
+        {
+          "source": "brit-princip",
+          "quote": "Gavrilo Princip (born July 25 [July 13, Old Style], 1894, Obljaj, Bosnia—died April 28, 1918, Theresienstadt, Austria) was a South Slav nationalist who assassinated Archduke Franz Ferdinand, heir to the Austro-Hungarian throne, and his consort, Sophie, Duchess von Hohenberg (née Chotek), at Sarajevo, Bosnia, on June 28, 1914."
+        },
+        {
+          "source": "brit-franz-ferdinand",
+          "quote": "Anti-Serb protests and riots followed throughout Austria-Hungary in the wake of the assassination."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Nikola Pašić, the Serbian prime minister and an enemy of Apis, heard of the plot and warned the Austrian government of it, but his message was too cautiously worded to be understood."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Colonel Dragutin Dimitrijević, head of Serbia’s military intelligence, was also, under the alias “Apis,” head of the secret society Union or Death"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Apis plotted his assassination."
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Gavrilo Princip and the other assassins",
+          "perspective_type": "nationalist",
+          "wanted": "Princip wanted to end Austro-Hungarian rule in the Balkans and unite the South Slavs in a federal nation, and believed that the first step must be killing a member of the Habsburg imperial family or a senior government official. Princip said he had aimed not at the duchess but at Gen. Oskar Potiorek, military governor of Bosnia. The Imperial War Museums describes him as one of several would-be young assassins intent on using violence to destroy Austro-Hungarian rule.",
+          "remembered": "Britannica writes that in Yugoslavia, the South Slav state Princip had envisioned, he came to be regarded as a \"national hero.\"",
+          "citations": [
+            {
+              "source": "brit-princip",
+              "quote": "Wanting to destroy Austro-Hungarian rule in the Balkans and to unite the South Slav peoples into a federal nation, he believed that the first step must be the assassination of a member of the Habsburg imperial family or a high official of the government."
+            },
+            {
+              "source": "brit-princip",
+              "quote": "In Yugoslavia—the South Slav state that he had envisioned—Princip came to be regarded as a national hero."
+            },
+            {
+              "source": "brit-princip",
+              "quote": "Franz Ferdinand and Sophie were shot to death by Princip, who said he had aimed not at the duchess but at Gen. Oskar Potiorek, military governor of Bosnia."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "The assassin was 19-year-old Gavrilo Princip, one of several would-be young assassins who were intent on using violence to destroy Austria-Hungarian rule."
+            }
+          ]
+        },
+        {
+          "party": "Austria-Hungary",
+          "perspective_type": "government",
+          "wanted": "Britannica writes that Conrad von Hötzendorf, chief of the Austro-Hungarian general staff, and Foreign Minister Berchtold saw the crime as the occasion for measures to humiliate Serbia and so to enhance Austria-Hungary's prestige in the Balkans. The letter Berchtold drew up for Franz Joseph called the Sarajevo affair \"a well-organized conspiracy, of which the threads reach to Belgrade\" and said it was probably impossible to prove the complicity of the Serbian Government.",
+          "feared": "The letter that Berchtold drew up for Franz Joseph to sign and send to Wilhelm II called the attack the direct consequence of agitation by Russian and Serbian Pan-Slavists whose sole aim was the weakening of the Triple Alliance and the destruction of the empire.",
+          "citations": [
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "The chief of the Austro-Hungarian general staff, Franz, Graf (count) Conrad von Hötzendorf, and the foreign minister, Leopold, Graf von Berchtold, saw the crime as the occasion for measures to humiliate Serbia and so to enhance Austria-Hungary’s prestige in the Balkans."
+            },
+            {
+              "source": "byu-franz-joseph-letter",
+              "quote": "The attack directed against my poor nephew is the direct consequence of the agitation carried on by the Russian and Serbian Pan-Slavists whose sole aim is the weakening of the Triple Alliance and the destruction of my Empire.",
+              "locator": "Autograph Letter of Franz Joseph to the Kaiser"
+            },
+            {
+              "source": "byu-blank-check",
+              "quote": "After Sarajevo, Count Leopold von Berchtold, the Austro-Hungarian Foreign Minister, drew up a letter for the Emperor Francis Joseph to sign and send to Wilhelm II to try and convince both of Serbia's responsibility."
+            },
+            {
+              "source": "byu-franz-joseph-letter",
+              "quote": "it is no longer an affair at Sarajevo of the single bloody deed of an individual but of a well-organized conspiracy, of which the threads reach to Belgrade and if, as is probable, it be impossible to prove the complicity of the Serbian Government"
+            }
+          ]
+        },
+        {
+          "party": "Serbian government",
+          "perspective_type": "government",
+          "wanted": "In its reply to the ultimatum, the Serbian government said it considered it its duty to begin an investigation against everyone on its territory who had taken part in the 28 June attack. The reply said the government had expected to be invited to cooperate in the investigation of the crime and was ready to proceed against all persons about whom it received information.",
+          "feared": "In its reply, the Serbian government said that cooperation in the investigation by specially delegated Austro-Hungarian officials \"cannot be accepted, as this is a violation of the constitution and of criminal procedure,\" and that it could not be made responsible for private expressions such as newspaper articles and the peaceable work of societies. It said it was painfully surprised by claims that Serbian citizens had helped prepare the attack.",
+          "citations": [
+            {
+              "source": "byu-serbian-reply",
+              "quote": "The Royal Government considers it its duty as a matter of course to begin an investigation against all those persons who have participated in the outrage of June 28th and who are in its territory.",
+              "locator": "6."
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "The Royal Government cannot be made responsible for expressions of a private character, as for instance newspaper articles and the peaceable work of societies"
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "The Royal Government was therefore painfully surprised by the assertions that citizens of Serbia had participated in the preparations of the outrage in Sarajevo."
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "The Government expected to be invited to cooperate in the investigation of the crime, and it was ready, in order to prove its complete correctness, to proceed against all persons in regard to whom it would receive information."
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "As far as the cooperation in this investigation of specially delegated officials of the I. and R. Government is concerned, this cannot be accepted, as this is a violation of the constitution and of criminal procedure."
+            }
+          ]
+        },
+        {
+          "party": "Union or Death (Black Hand)",
+          "perspective_type": "nationalist",
+          "wanted": "Britannica writes that Union or Death was pledged to the pan-Serbian ambition of \"liberating\" the South Slavs of Austria-Hungary, and that Apis believed the Serbs' cause would be served by the death of Franz Ferdinand.",
+          "citations": [
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "Serbian nationalists turned their attention back to the idea of “liberating” the South Slavs of Austria-Hungary."
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "head of the secret society Union or Death, pledged to the pursuit of this pan-Serbian ambition."
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "Believing that the Serbs’ cause would be served by the death of the Austrian archduke Franz Ferdinand"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "blank-cheque-1914",
+      "title": "Germany promises support to Austria-Hungary",
+      "year": 1914,
+      "date_display": "Jul 5–6, 1914",
+      "lat": 52.52,
+      "lng": 13.405,
+      "geo_modern": "Berlin, Germany",
+      "geo_era_label": "German Empire",
+      "category": "political",
+      "importance_score": 0.88,
+      "summary": "On 5–6 July, Germany assured Austria-Hungary of support for action against Serbia; the BYU World War I Document Archive calls this in effect a 'blank check'.",
+      "description": "On 5 July, Germany promised Austria-Hungary full support for a severe response to Serbia. On 6 July, Bethmann-Hollweg sent a telegram to the German Ambassador at Vienna, Tschirschky, saying he had replied to Count Szögyény on behalf of Wilhelm II; the BYU World War I Document Archive summarizes the German answer as telling Berchtold that Austria-Hungary could rely on Germany to support whatever action was necessary to deal with Serbia, in effect a 'blank check'.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "On 5 July, Germany promised Austria full support for a severe response against Serbia.",
+          "locator": "Europe takes sides"
+        },
+        {
+          "source": "byu-blank-check",
+          "quote": "On July 6th, Wilhelm II and his Imperial Chancellor, Theobald von Bethmann-Hollweg, telegrammed Berchtold that Austria-Hungary could rely that Germany would support whatever action was necessary to deal with Serbia -- in effect offering von Berchtold a 'blank check.'",
+          "locator": "The 'Blank Check'"
+        },
+        {
+          "source": "byu-blank-check",
+          "quote": "Telegram from the Imperial Chancellor, von Bethmann-Hollweg, to the German Ambassador at Vienna. Tschirschky, July 6, 1914 Berlin, July 6, 1914",
+          "locator": "Telegram dateline"
+        },
+        {
+          "source": "byu-blank-check",
+          "quote": "I replied to Count Szögyény today on behalf of His Majesty"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Austria-Hungary",
+          "perspective_type": "government",
+          "wanted": "The letter that Foreign Minister Berchtold drew up for Franz Joseph to sign and send to Wilhelm II said that the efforts of the Austro-Hungarian government should be directed toward the isolation and diminishment of Serbia. The Imperial War Museums writes that Austria-Hungary turned to its own ally, and Britannica writes that the Austrians relied on Germany to deter Russia from intervention.",
+          "feared": "The Imperial War Museums writes that Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector. The Imperial War Museums also writes that Austria-Hungary's actions toward Serbia stemmed from fears that, if it backed down, it would lose credibility and prestige as a great power.",
+          "citations": [
+            {
+              "source": "byu-franz-joseph-letter",
+              "quote": "The efforts of my government should in consequence be directed toward isolation and the diminishment of Serbia.",
+              "locator": "Autograph Letter of Franz Joseph to the Kaiser"
+            },
+            {
+              "source": "byu-blank-check",
+              "quote": "After Sarajevo, Count Leopold von Berchtold, the Austro-Hungarian Foreign Minister, drew up a letter for the Emperor Francis Joseph to sign and send to Wilhelm II to try and convince both of Serbia's responsibility."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary turned to its own ally."
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "relying on Germany to deter Russia from intervention"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary's aggression towards Serbia and Russian support for Serbia in the aftermath of the assassination stemmed from fears that, if either backed down, they would lose credibility and prestige as great powers."
+            }
+          ]
+        },
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "German leaders wanted to preserve Austria-Hungary, which they regarded as their only reliable ally, as a great power. The Imperial War Museums writes: \"Germany's ambitions, its perception of its own isolation and its increasing fear of 'encirclement' drove its foreign policy.\"",
+          "feared": "German leaders perceived Germany as isolated and had an increasing fear of 'encirclement'. Wilhelm II regarded Russian and Serbian Pan-Slavist agitation as a danger to Austria-Hungary and the Triple Alliance.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "Germany's ambitions, its perception of its own isolation and its increasing fear of 'encirclement' drove its foreign policy. The preservation of Austria-Hungary - its only reliable ally - as a great power became an important part of German policy.",
+              "locator": "Europe takes sides"
+            },
+            {
+              "source": "byu-blank-check",
+              "quote": "In the meantime His Majesty desires to say that he is not blind to the danger which threatens Austria-Hungary and thus the Triple Alliance as a result of the Russian and Serbian Pan-Slavic agitation.",
+              "locator": "Telegram from the Imperial Chancellor, von Bethmann-Hollweg, to the German Ambassador at Vienna."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "austria-hungary-ultimatum-serbia-1914",
+      "title": "Austria-Hungary issues an ultimatum to Serbia",
+      "year": 1914,
+      "date_display": "Jul 23, 1914",
+      "lat": 44.7866,
+      "lng": 20.4489,
+      "category": "political",
+      "importance_score": 0.9,
+      "summary": "Austria-Hungary demanded Serbian concessions, rejected Serbia’s reply and declared war.",
+      "description": "Austria-Hungary issued an ultimatum to Serbia on 23 July with German backing. Serbia accepted most terms but rejected Austro-Hungarian participation in the assassination inquiry. Austria-Hungary rejected the reply and declared war on 28 July.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "With the guarantee of German backing, Austria-Hungary issued an ultimatum on 23 July, intent on starting a war with Serbia.",
+          "locator": "Austria-Hungary declares war on Serbia"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Austria rejected the Serbian reply, which conceded to all the ultimatum's terms except the involvement of Austro-Hungarian officials in an inquiry into the assassination. On 28 July, Austria-Hungary declared war on Serbia.",
+          "locator": "Austria-Hungary declares war on Serbia"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Austria-Hungary",
+          "perspective_type": "government",
+          "wanted": "Austria-Hungary's government demanded that Serbia condemn and suppress the propaganda aimed at separating territories from the monarchy, accept the cooperation of Austro-Hungarian officials in suppressing that movement, and let Austro-Hungarian officials take part in the judicial inquiry into the 28 June conspiracy.",
+          "feared": "It believed a movement in Serbia was seeking to detach Austro-Hungarian territory. The ultimatum called the intrigues a standing menace to the peace of the Monarchy, and the Imperial War Museums writes that Austria-Hungary's leaders feared that if they backed down they would lose credibility and prestige as a great power.",
+          "citations": [
+            {
+              "source": "byu-ultimatum",
+              "quote": "demand that the Serbian Government give official assurance that it will condemn the propaganda directed against Austria-Hungary, that is to say, the whole body of the efforts whose ultimate object it is to separate from the Monarchy territories that belong to it; and that it will obligate itself to suppress with all the means at its command this criminal and terroristic propaganda.",
+              "locator": "The Austro-Hungarian Ultimatum to Serbia (English Translation)"
+            },
+            {
+              "source": "byu-ultimatum",
+              "quote": "5. to agree to the cooperation in Serbia of the organs of the Imperial and Royal Government in the suppression of the subversive movement directed against the integrity of the Monarchy;",
+              "locator": "The Austro-Hungarian Ultimatum to Serbia (English Translation)"
+            },
+            {
+              "source": "byu-ultimatum",
+              "quote": "6. to institute a judicial inquiry against every participant in the conspiracy of the twenty-eighth of June who may be found in Serbian territory; the organs of the Imperial and Royal Government delegated for this purpose will take part in the proceedings held for this purpose;",
+              "locator": "The Austro-Hungarian Ultimatum to Serbia (English Translation)"
+            },
+            {
+              "source": "byu-ultimatum",
+              "quote": "Now the history of the past few years, and particularly the painful events of the 28th of June, have proved the existence of a subversive movement in Serbia, whose object it is to separate certain portions of its territory from the Austro-Hungarian Monarchy.",
+              "locator": "The Austro-Hungarian Ultimatum to Serbia (English Translation)"
+            },
+            {
+              "source": "byu-ultimatum",
+              "quote": "these results impose upon the Imperial and Royal Government the obligation to put an end to those intrigues, which constitute a standing menace to the peace of the Monarchy."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary's aggression towards Serbia and Russian support for Serbia in the aftermath of the assassination stemmed from fears that, if either backed down, they would lose credibility and prestige as great powers."
+            }
+          ]
+        },
+        {
+          "party": "Serbia",
+          "perspective_type": "government",
+          "wanted": "Serbia's government said it was convinced its reply would dissipate any misunderstanding that threatened friendly and neighbourly relations with Austria-Hungary.",
+          "feared": "It regarded the participation of Austro-Hungarian officials in its investigation as a violation of its constitution and criminal procedure.",
+          "citations": [
+            {
+              "source": "byu-serbian-reply",
+              "quote": "The Royal Government has received the communication of the Imperial and Royal Government of the 23rd inst. and is convinced that its reply will dissipate any misunderstanding which threatens to destroy the friendly and neighbourly relations between the Austrian monarchy and the kingdom of Serbia.",
+              "locator": "The Serbian Response to the Austro-Hungarian Ultimatum (English Translation)"
+            },
+            {
+              "source": "byu-serbian-reply",
+              "quote": "As far as the cooperation in this investigation of specially delegated officials of the I. and R. Government is concerned, this cannot be accepted, as this is a violation of the constitution and of criminal procedure.",
+              "locator": "6."
+            }
+          ]
+        },
+        {
+          "party": "Russia",
+          "perspective_type": "government",
+          "wanted": "Russia's leaders saw their country as Serbia's protector. When the ultimatum's delivery was announced on 24 July, Russia declared that Austria-Hungary must not be allowed to crush Serbia.",
+          "feared": "They feared that retreat would cost Russia credibility and prestige as a great power.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector.",
+              "locator": "Europe takes sides"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Austria-Hungary's aggression towards Serbia and Russian support for Serbia in the aftermath of the assassination stemmed from fears that, if either backed down, they would lose credibility and prestige as great powers.",
+              "locator": "Europe takes sides"
+            },
+            {
+              "source": "brit-wwi-outbreak",
+              "quote": "When the delivery was announced, on July 24, Russia declared that Austria-Hungary must not be allowed to crush Serbia."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "austria-hungary-declares-war-serbia-1914",
+      "title": "Austria-Hungary declares war on Serbia",
+      "year": 1914,
+      "date_display": "Jul 28, 1914",
+      "lat": 48.2082,
+      "lng": 16.3738,
+      "geo_modern": "Vienna, Austria",
+      "geo_era_label": "Austria-Hungary",
+      "category": "war",
+      "importance_score": 0.86,
+      "summary": "On 28 July 1914 Austria-Hungary declared war on Serbia by telegram from Vienna, and its artillery began to bombard Belgrade the next day.",
+      "description": "At 11:10 a.m. on 28 July 1914 Foreign Minister Berchtold telegraphed the Serbian prime minister Pašić from Vienna that, because the Serbian government had not answered the note of 23 July in a satisfactory manner, Austria-Hungary considered itself in a state of war with Serbia. Britannica writes that Austro-Hungarian artillery began to bombard Belgrade the next day and that Russia then ordered partial mobilization against Austria-Hungary.",
+      "citations": [
+        {
+          "source": "byu-ah-declaration-of-war",
+          "quote": "At 11:10 A.M. on July 28, 1914, Count Leopold von Berchtold, the Austro-Hungarian Minister for Foreign Affairs, sent the following telegram from Vienna to M. N. Pashitch, Serbian Prime Minister and Minister for Foreign Affairs."
+        },
+        {
+          "source": "byu-ah-declaration-of-war",
+          "quote": "The Royal Serbian Government not having answered in a satisfactory manner the note of July 23, 1914, presented by the Austro-Hungarian Minister at Belgrade, the Imperial and Royal Government are themselves compelled to see to the safeguarding of their rights and interests, and, with this object, to have recourse to force of arms. Austria-Hungary consequently considers herself henceforward in state of war with Serbia."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day. Russia then ordered partial mobilization against Austria-Hungary"
+        }
+      ]
+    },
+    {
+      "slug": "russian-general-mobilization-1914",
+      "title": "Russia orders general mobilization",
+      "year": 1914,
+      "date_display": "Jul 30, 1914",
+      "lat": 59.9343,
+      "lng": 30.3351,
+      "geo_modern": "St Petersburg, Russia",
+      "geo_era_label": "Russian Empire",
+      "category": "war",
+      "importance_score": 0.88,
+      "summary": "Russia ordered general mobilization on 30 July, and Germany demanded that it halt its preparations.",
+      "description": "Russia ordered partial mobilization against Austria-Hungary. On 30 July, when Austria-Hungary responded with an order of mobilization on its Russian frontier, Russia ordered general mobilization. Germany issued an ultimatum on 31 July demanding that Russia halt its mobilization.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Russia then ordered partial mobilization against Austria-Hungary, and on July 30, when Austria-Hungary was riposting conventionally with an order of mobilization on its Russian frontier, Russia ordered general mobilization."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "On July 31 Germany sent a 24-hour ultimatum requiring Russia to halt its mobilization and an 18-hour ultimatum requiring France to promise neutrality in the event of war between Russia and Germany."
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Russia",
+          "perspective_type": "government",
+          "wanted": "The tsar told the kaiser on 31 July, \"We are far from wishing war.\" He promised that his troops would take no provocative action while negotiations with Austria over Serbia continued, and said he hoped for the kaiser's successful mediation in Vienna.",
+          "feared": "The Imperial War Museums writes that the Russians viewed the mobilisation as a precaution in case war broke out. The tsar gave as his reason that the preparations were obligatory owing to Austria's mobilisation.",
+          "citations": [
+            {
+              "source": "byu-willy-nicky",
+              "quote": "It is technically impossible to stop our military preparations which were obligatory owing to Austria's mobilisation. We are far from wishing war. As long as the negociations with Austria on Servia's account are taking place my troops shall not make any provocative action. I give you my solemn word for this. I put all my trust in Gods mercy and hope in your successful mediation in Vienna for the welfare of our countries and for the peace of Europe.",
+              "locator": "Tsar to Kaiser, July 31"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "While the Russians viewed this mobilisation as a precaution in case war broke out"
+            }
+          ]
+        },
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "Germany’s emperor wanted Russia to stop its military measures so that European peace could be maintained.",
+          "feared": "He described those measures as a threat to Germany and Austria-Hungary. The Imperial War Museums writes that the Germans saw the mobilisation as \"an aggressive act of war directed against itself and Austria-Hungary\".",
+          "citations": [
+            {
+              "source": "byu-willy-nicky",
+              "quote": "The peace of Europe may still be maintained by you, if Russia will agree to stop the milit. measures which must threaten Germany and Austro-Hungary.",
+              "locator": "Kaiser to Tsar, July 31"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "the Germans saw it as an aggressive act of war directed against itself and Austria-Hungary."
+            }
+          ]
+        },
+        {
+          "party": "France",
+          "perspective_type": "government",
+          "wanted": "France's leaders held that France must stand or fall with Russia.",
+          "feared": "They expected a German invasion.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "France knew that it faced German invasion, but was clear that it must stand or fall with Russia.",
+              "locator": "Europe goes to war"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "germany-declares-war-russia-1914",
+      "title": "Germany declares war on Russia",
+      "year": 1914,
+      "date_display": "Aug 1, 1914",
+      "lat": 52.52,
+      "lng": 13.405,
+      "category": "war",
+      "importance_score": 0.9,
+      "summary": "Germany declared war on Russia on 1 August after demanding an end to Russian mobilization.",
+      "description": "Germany declared war on Russia and ordered general mobilization on 1 August. The declaration followed an ultimatum demanding that Russia stop mobilizing, which expired without a reply.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "On August 1 Germany ordered general mobilization and declared war against Russia, and France likewise ordered general mobilization."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On 31 July, Germany sent an ultimatum to Russia demanding it demobilise. The next day, this ultimatum expired without a reply. Germany declared war on Russia and ordered its own general mobilisation.",
+          "locator": "Europe goes to war"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "The Imperial War Museums writes that Germany's war plan was time-sensitive, being based on beating France before Russia could get its army fully into action.",
+          "feared": "Mombauer writes that from the German perspective every day that Russia concentrated her troops was a lost day for the German deployment plan.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "Germany's war plan was time-sensitive, being based upon beating France before Russia could get its army fully into action."
+            },
+            {
+              "source": "mombauer-guilt-or-responsibility",
+              "quote": "From the German perspective, it hardly mattered if Russia was preparing merely a partial or an actual mobilization, because “every day that Russia concentrated her troops was indeed a lost day for the German deployment plan…"
+            }
+          ]
+        },
+        {
+          "party": "Russia",
+          "perspective_type": "government",
+          "wanted": "The tsar told the kaiser on 31 July that Russia was far from wishing war and hoped for his mediation in Vienna.",
+          "feared": "The tsar wrote that it was technically impossible to stop Russia's military preparations, which he called obligatory owing to Austria's mobilisation.",
+          "citations": [
+            {
+              "source": "byu-willy-nicky",
+              "quote": "It is technically impossible to stop our military preparations which were obligatory owing to Austria's mobilisation. We are far from wishing war. As long as the negociations with Austria on Servia's account are taking place my troops shall not make any provocative action. I give you my solemn word for this. I put all my trust in Gods mercy and hope in your successful mediation in Vienna for the welfare of our countries and for the peace of Europe."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "germany-invades-belgium-1914",
+      "title": "Germany invades Belgium",
+      "year": 1914,
+      "date_display": "Aug 4, 1914",
+      "lat": 50.6326,
+      "lng": 5.5797,
+      "category": "war",
+      "importance_score": 0.9,
+      "summary": "Germany invaded Belgium on 4 August after Belgium refused passage to German troops.",
+      "description": "Germany demanded passage through Belgium on 2 August as part of its plan to attack France. Belgium refused, and German forces invaded on the morning of 4 August.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "After declaring war on France, Germany was now determined to execute its war plan to defeat France first and then concentrate its forces against Russia. The plan required German troops invade Belgium to get to France.",
+          "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On the evening of 2 August 1914, Germany demanded that its troops be allowed to pass through Belgian territory. Belgium refused.",
+          "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "byu-belgian-refusal",
+          "quote": "The German army invaded Belgium on the morning of August 4, 1914.",
+          "locator": "The Belgian Refusal of Free Passage"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "Germany’s leaders wanted a rapid advance into France.",
+          "feared": "The German government said it had reliable information that French forces intended to march through Belgian territory against Germany, and that it feared Belgium could not, without assistance, repel so considerable a French invasion.",
+          "citations": [
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "Herr von Jagow again went into the reasons why the Imperial Government had been obliged to take this step, namely, that they had to advance into France by the quickest and easiest way, so as to be able to get well ahead with their operations and endeavor to strike some decisive blow as early as possible.",
+              "locator": "Origin of the Term \"A Scrap of Paper\""
+            },
+            {
+              "source": "byu-german-request-belgium",
+              "quote": "RELIABLE information has been received by the German Government to the effect that French forces intend to march on the line of the Meuse by Givet and Namur. This information leaves no doubt as to the intention of France to march through Belgian territory against Germany.",
+              "locator": "The German Request for Free Passage Through Belgium"
+            },
+            {
+              "source": "byu-german-request-belgium",
+              "quote": "The German Government cannot but fear that Belgium, in spite of the utmost goodwill, will be unable, without assistance, to repel so considerable a French invasion"
+            }
+          ]
+        },
+        {
+          "party": "Belgium",
+          "perspective_type": "government",
+          "wanted": "Belgium’s government wanted to maintain its neutrality and meet its international obligations. Its government said the treaties of 1839, confirmed in 1870, guaranteed Belgium's independence and neutrality, and that the intentions Germany attributed to France contradicted formal French declarations of 1 August.",
+          "feared": "It believed accepting Germany’s proposals would sacrifice national honour and betray its duty to Europe. It called the threatened attack on its independence \"a flagrant violation of international law\".",
+          "citations": [
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "Belgium has always been faithful to her international obligations, she has carried out her duties in a spirit of loyal impartiality, and she has left nothing undone to maintain and enforce respect for her neutrality.",
+              "locator": "The Belgian Refusal of Free Passage"
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The Belgian Government, if they were to accept the proposals submitted to them, would sacrifice the honour of the nation and betray their duty towards Europe.",
+              "locator": "The Belgian Refusal of Free Passage"
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The treaties of 1839, confirmed by the treaties of 1870 vouch for the independence and neutrality of Belgium under the guarantee of the Powers"
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The intentions attributed to France by Germany are in contradiction to the formal declarations made to us on August 1, in the name of the French Government."
+            },
+            {
+              "source": "byu-belgian-refusal",
+              "quote": "The attack upon her independence with which the German Government threaten her constitutes a flagrant violation of international law."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "britain-declares-war-germany-1914",
+      "title": "Britain declares war on Germany",
+      "year": 1914,
+      "date_display": "Aug 4, 1914",
+      "lat": 51.5034,
+      "lng": -0.1276,
+      "geo_modern": "London, United Kingdom",
+      "geo_era_label": "United Kingdom",
+      "category": "war",
+      "importance_score": 0.88,
+      "summary": "Britain entered the war after Germany invaded Belgium and did not answer a British ultimatum to withdraw.",
+      "description": "Britain declared war on Germany on 4 August after German forces invaded Belgium. Its ultimatum demanding a withdrawal expired at 11pm without a reply.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "Germany’s invasion of Belgium tipped the balance for Britain. At 2pm on 4 August, it issued an ultimatum demanding Germany withdraw its troops. At 11pm, the deadline passed without a reply. Britain declared war.",
+          "locator": "Britain and its Empire go to war"
+        }
+      ],
+      "perspectives": [
+        {
+          "party": "Britain",
+          "perspective_type": "government",
+          "wanted": "Britain's leaders wanted to maintain Europe's balance of power and protect Britain's empire and sea trade. On 2 August the Cabinet agreed to support Belgium if there was a substantial violation of its neutrality. The British ambassador in Berlin, Sir E. Goschen, told Chancellor von Bethmann-Hollweg that it was \"a matter of 'life and death' for the honor of Great Britain\" to keep its solemn engagement to do its utmost to defend Belgium's neutrality if attacked.",
+          "feared": "They feared German domination of Europe and a challenge to Britain’s industrial and imperial position.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "Britain's foreign policy was based upon maintaining a balance of power in Europe. Britain was also determined to protect its vast global empire and its sea trade. It feared Germany's domination of the continent and its challenge to British industrial and imperial supremacy.",
+              "locator": "Britain agonises over its position"
+            },
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "Sir E. Goschen, the British Ambassador in Berlin, called on Chancellor von Bethmann-Hollweg for a final interview."
+            },
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "it was, so to speak, a matter of \"life and death\" for the honor of Great Britain that she should keep her solemn engagement to do her utmost to defend Belgium's neutrality if attacked."
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "On 2 August, the Cabinet agreed to support Belgium if there was a substantial violation of its neutrality"
+            }
+          ]
+        },
+        {
+          "party": "Germany",
+          "perspective_type": "government",
+          "wanted": "Germany’s government wanted Britain to remain neutral in a European war. Goschen reported that the Chancellor and Herr von Jagow wished him to understand that for strategic reasons it was a matter of life and death to Germany to advance through Belgium, and the Chancellor asked, \"But at what price will that compact have been kept? Has the British Government thought of that?\"",
+          "feared": "Germany’s leaders believed their country was isolated and feared encirclement.",
+          "citations": [
+            {
+              "source": "iwm-outbreak",
+              "quote": "On 29 July, Germany requested British neutrality in the event of a European war, which Britain refused.",
+              "locator": "Britain takes action"
+            },
+            {
+              "source": "iwm-outbreak",
+              "quote": "Germany's ambitions, its perception of its own isolation and its increasing fear of 'encirclement' drove its foreign policy.",
+              "locator": "Europe takes sides"
+            },
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "he and Herr von Jagow wished me to understand that for strategical reasons it was a matter of life and death to Germany to advance through Belgium and violate the latter's neutrality"
+            },
+            {
+              "source": "byu-scrap-of-paper",
+              "quote": "The Chancellor said, \"But at what price will that compact have been kept? Has the British Government thought of that?\""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "cause": "treaty-of-berlin-of-1878",
+      "effect": "bosnian-annexation-crisis-1908",
+      "type": "contributing",
+      "strength": 0.8,
+      "confidence": "established",
+      "rationale": "The Treaty of Berlin let Austria-Hungary occupy and administer Bosnia and Herzegovina, and the 1908 annexation turned that occupation into formal sovereignty.",
+      "citations": [
+        {
+          "source": "byu-bosnia-annexation",
+          "quote": "Article 25 of the Treaty of Berlin (July 13,1878) gave Austria-Hungary the right to occupy and administer the two provinces of Bosnia and Herzegovina."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "Austria-Hungary had in October 1908 annexed Bosnia and Herzegovina, territory that was legally part of the Ottoman Empire but under Austro-Hungarian occupation and administration after the Congress of Berlin (1878)."
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "The Sarajevo incident represented the culmination of a complex series of historical processes originating in Austria-Hungary’s occupation of Bosnia-Herzegovina under the Treaty of Berlin of 1878.",
+          "locator": "Background"
+        }
+      ]
+    },
+    {
+      "cause": "treaty-of-berlin-of-1878",
+      "effect": "dual-alliance-1879",
+      "type": "contributing",
+      "strength": 0.5,
+      "confidence": "speculative",
+      "rationale": "Britannica writes that the congress left Russia humiliated, and the following year Germany and Austria-Hungary signed a treaty directed against a Russian attack; none of the sources used here states that the first led to the second.",
+      "citations": [
+        {
+          "source": "brit-congress-of-berlin",
+          "quote": "the congress left Russia humiliated by substantially reducing the gains that it had made under the San Stefano treaty"
+        },
+        {
+          "source": "byu-dual-alliance",
+          "quote": "one of the two Empires be attacked by Russia the High Contracting Parties are bound to come to the assistance one of the other with the whole war strength of their Empires",
+          "locator": "Article 1"
+        }
+      ]
+    },
+    {
+      "cause": "dual-alliance-1879",
+      "effect": "triple-alliance-1882",
+      "type": "contributing",
+      "strength": 0.7,
+      "confidence": "speculative",
+      "rationale": "Italy joined the existing Austro-German alliance in 1882, according to the Imperial War Museums, the only source cited here that states this connection.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "Germany formed an alliance in 1879 with neighbouring Austria-Hungary, which Italy joined three years later."
+        }
+      ]
+    },
+    {
+      "cause": "triple-alliance-1882",
+      "effect": "franco-russian-alliance-1894",
+      "type": "contributing",
+      "strength": 0.7,
+      "confidence": "established",
+      "rationale": "The Imperial War Museums describes the Austro-German alliance that Italy joined and then attributes the Franco-Russian alliance to fear of Germany's growing strength, and the convention itself names an attack by the forces of the Triple Alliance as the war it was meant to meet.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "Fear of Germany’s growing strength encouraged Russia and France to enter into alliance in 1893."
+        },
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "having no other object than to meet the necessities of a defensive war, provoked by an attack of the forces of the Triple Alliance against either of them"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "This new power bloc at the heart of central Europe strengthened further when Germany formed an alliance in 1879 with neighbouring Austria-Hungary, which Italy joined three years later."
+        }
+      ]
+    },
+    {
+      "cause": "franco-russian-alliance-1894",
+      "effect": "schlieffen-plan-1905",
+      "type": "contributing",
+      "strength": 0.6,
+      "confidence": "speculative",
+      "rationale": "The Franco-Russian convention meant Germany would face war on two fronts at once, and Britannica describes Schlieffen's plan as designed for a two-front war; the causal connection is an inference, since neither source attributes the plan to the alliance. A 1929 review in The Army Quarterly reports that the plan was worked out for war on the Western front only, because Russia was still very weak after the Manchurian War.",
+      "citations": [
+        {
+          "source": "byu-franco-russian-convention",
+          "quote": "These forces shall engage to the full with such speed that Germany will have to fight simultaneously on the East and on the West.",
+          "locator": "Article 3"
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "designed to allow Germany to wage a successful two-front war"
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "He proposed in 1905 that Germany’s advantage over France and Russia—its likely opponents in a continental war—was that the two were separated."
+        },
+        {
+          "source": "byu-schlieffen-plan",
+          "quote": "It emerges incidentally that the Schlieffen plan was worked out for war on the Western front only; for when drawn up, Russia was still very weak as a result of the Manchurian War."
+        }
+      ]
+    },
+    {
+      "cause": "entente-cordiale-1904",
+      "effect": "first-moroccan-crisis-1905",
+      "type": "direct",
+      "strength": 0.75,
+      "confidence": "speculative",
+      "rationale": "Britannica writes that the entente gave France freedom of action in Morocco and that Germany's intervention at Tangier in 1905 was an attempt to check France there and upset the entente; Britannica is the only source cited here that states this connection, and the second Britannica article supports the crisis but does not mention the entente.",
+      "citations": [
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "The most important feature of the agreement was that it granted freedom of action to Great Britain in Egypt and to France in Morocco"
+        },
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "A German attempt to check the French in Morocco in 1905 (the Tangier Incident, or First Moroccan Crisis), and thus upset the Entente, served only to strengthen it."
+        },
+        {
+          "source": "brit-moroccan-crises",
+          "quote": "two international crises centring on France’s attempts to control Morocco and on Germany’s concurrent attempts to stem French power."
+        }
+      ]
+    },
+    {
+      "cause": "first-moroccan-crisis-1905",
+      "effect": "agadir-crisis-1911",
+      "type": "indirect",
+      "strength": 0.6,
+      "confidence": "speculative",
+      "rationale": "Both crises arose from French efforts to control Morocco and German efforts to limit French power, and the 1906 Algeciras settlement entrusted policing in Morocco to France and Spain before Germany protested French influence there again in 1911; the continuity between the two crises is an inference from these sources.",
+      "citations": [
+        {
+          "source": "brit-moroccan-crises",
+          "quote": "two international crises centring on France’s attempts to control Morocco and on Germany’s concurrent attempts to stem French power."
+        },
+        {
+          "source": "brit-moroccan-crises",
+          "quote": "was resolved in January–April 1906 at the Algeciras Conference, where German and other national economic rights were upheld and where the French and Spanish were entrusted with the policing of Morocco."
+        },
+        {
+          "source": "byu-mansion-house-speech",
+          "quote": "In 1911, Germany sent its gunboat Panther to the port of Agadir as a display of force and a protest against French influence in Morocco and the Congo."
+        }
+      ]
+    },
+    {
+      "cause": "entente-cordiale-1904",
+      "effect": "anglo-russian-entente-1907",
+      "type": "indirect",
+      "strength": 0.55,
+      "confidence": "speculative",
+      "rationale": "Britain negotiated agreements with France and then with Russia from 1904 to settle colonial disputes, and Britannica writes that the 1907 agreement led to the formation of the Triple Entente; the sources describe a shared British policy from 1904 and do not say that the 1904 agreement caused the 1907 one.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "Britain had long seen France and Russia as potential enemies, but from 1904 it negotiated agreements with them, aiming to secure its empire by settling colonial disputes."
+        },
+        {
+          "source": "brit-anglo-russian-entente",
+          "quote": "The agreement led to the formation of the Triple Entente."
+        }
+      ]
+    },
+    {
+      "cause": "bosnian-annexation-crisis-1908",
+      "effect": "black-hand-founded-1911",
+      "type": "indirect",
+      "strength": 0.5,
+      "confidence": "speculative",
+      "rationale": "The Narodna Odbrana formed around 1908 and described the annexation as a blow aimed at Serbia, and the Black Hand founded in 1911 later infiltrated it; no cached source states that the annexation led to the Black Hand's founding.",
+      "citations": [
+        {
+          "source": "byu-narodna-odbrana",
+          "quote": "A secret, patriotic society, the Narodna Odbrana or 'Defence of the People' was founded in Serbia in approximately 1908."
+        },
+        {
+          "source": "byu-narodna-odbrana",
+          "quote": "The annexation [ of Bosnia and Herzegovina ] was only one of the blows which the enemies of Serbia have aimed at this land."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "invigorated by the infiltration of the “Union or Death” group (founded in May 1911 and better known as the Black Hand), was active not only within the Serbian administration"
+        }
+      ]
+    },
+    {
+      "cause": "bosnian-annexation-crisis-1908",
+      "effect": "balkan-wars-1912",
+      "type": "contributing",
+      "strength": 0.6,
+      "confidence": "speculative",
+      "rationale": "The annexation excluded the eventual union of Bosnia and Herzegovina with Serbia, leading the Serbian government to turn toward Macedonia and consider an alliance with Bulgaria. Britannica writes that the Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey.",
+      "citations": [
+        {
+          "source": "brit-balkan-wars",
+          "quote": "Austria-Hungary had in October 1908 annexed Bosnia and Herzegovina, territory that was legally part of the Ottoman Empire but under Austro-Hungarian occupation and administration after the Congress of Berlin (1878)."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "Deeply resentful of Austria-Hungary’s action, which excluded an eventual union of the inhabitants of Bosnia and Herzegovina with Serbia, the Serbian government nevertheless realized that it could not challenge one of the great powers. It therefore turned its attention to Macedonia, where a weaker power like Turkey could more easily be attacked if an alliance could be achieved with Bulgaria."
+        },
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The Balkan League was formed under Russian auspices in the spring of 1912 to take Macedonia away from Turkey, which was already involved in a war with Italy."
+        }
+      ]
+    },
+    {
+      "cause": "agadir-crisis-1911",
+      "effect": "balkan-wars-1912",
+      "type": "indirect",
+      "strength": 0.4,
+      "confidence": "speculative",
+      "rationale": "Britannica connects the Agadir Incident of 1911 to the small powers' ability to exercise some measure of individual initiative, because the Triple Alliance and the Triple Entente were evenly balanced.",
+      "citations": [
+        {
+          "source": "brit-balkan-wars",
+          "quote": "The Agadir Incident of 1911, moreover, revealed that the two great-power groupings, the Triple Alliance and the Triple Entente, were evenly balanced, so that the small powers might exercise some measure of individual initiative."
+        }
+      ]
+    },
+    {
+      "cause": "bosnian-annexation-crisis-1908",
+      "effect": "young-bosnia-militancy-1910",
+      "type": "contributing",
+      "strength": 0.6,
+      "confidence": "speculative",
+      "rationale": "Foster writes that the early 1910s saw a continual escalation in tensions surrounding the Monarchy's actions and rising unrest within its now expanded borders, and that Young Bosnia became increasingly militant after Žerajić's attempt; the connection to the annexation is an inference.",
+      "citations": [
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "the early 1910s witnessed a continual escalation in tensions surrounding the Monarchy’s actions, coupled with rising economic and socio-political unrest within its now expanded borders.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "so- called “cultural organisations”, such as “Young Bosnia” (Mlada Bosna), became increasingly militant.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Inspired by the Bosnian Serb Bogdan Žerajić’s (1886-1910) attempted assassination of the provincial governor General Marijan Varešanin (1847-1917) in June 1910, so- called “cultural organisations”, such as “Young Bosnia” (Mlada Bosna), became increasingly militant.",
+          "locator": "Background"
+        }
+      ]
+    },
+    {
+      "cause": "young-bosnia-militancy-1910",
+      "effect": "assassination-franz-ferdinand-1914",
+      "type": "contributing",
+      "strength": 0.7,
+      "confidence": "speculative",
+      "rationale": "Inspired by Žerajić's June 1910 attempt on Governor Varešanin, Young Bosnia became increasingly militant; in 1914 Ilić recruited from among its most radical student members, and three of them, Čabrinović, Grabež and Princip, received money, weapons and basic training from Black Hand operatives.",
+      "citations": [
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Inspired by the Bosnian Serb Bogdan Žerajić’s (1886-1910) attempted\n assassination of the provincial governor General Marijan Varešanin (1847-1917) in June 1910, so-\n called “cultural organisations”, such as “Young Bosnia” (Mlada Bosna), became increasingly militant.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Over the following months, Ilić recruited from among Young Bosnia’s most radical student members.\n Three of these youths, Nedeljko Čabrinović (1895-1916), Trifko Grabež (1895-1916) and Gavrilo\n Princip (1894-1918), who were resident in Serbia’s capital Belgrade in 1914, received money,\n weapons and basic training from Black Hand operatives.",
+          "locator": "Background"
+        }
+      ]
+    },
+    {
+      "cause": "black-hand-founded-1911",
+      "effect": "assassination-franz-ferdinand-1914",
+      "type": "contributing",
+      "strength": 0.8,
+      "confidence": "established",
+      "rationale": "Black Hand operatives gave three of the conspirators, Čabrinović, Grabež and Princip, money, weapons and basic training, and Britannica writes that Apis, head of Union or Death, plotted the assassination because he believed the Serbs' cause would be served by the Archduke's death.",
+      "citations": [
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "Three of these youths, Nedeljko Čabrinović (1895-1916), Trifko Grabež (1895-1916) and Gavrilo\n Princip (1894-1918), who were resident in Serbia’s capital Belgrade in 1914, received money,\n weapons and basic training from Black Hand operatives.",
+          "locator": "Background"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Believing that the Serbs’ cause would be served by the death of the Austrian archduke Franz Ferdinand, heir presumptive to the Austrian emperor Franz Joseph, and learning that the Archduke was about to visit Bosnia on a tour of military inspection, Apis plotted his assassination."
+        },
+        {
+          "source": "brit-princip",
+          "quote": "Born into a Bosnian Serb peasant family, Princip was trained in terrorism by the Serbian secret society known as the Black Hand (true name Ujedinjenje ili Smrt, “Union or Death”)."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Colonel Dragutin Dimitrijević, head of Serbia’s military intelligence, was also, under the alias “Apis,” head of the secret society Union or Death, pledged to the pursuit of this pan-Serbian ambition."
+        }
+      ]
+    },
+    {
+      "cause": "franz-ferdinand-reform-plans-1911",
+      "effect": "assassination-franz-ferdinand-1914",
+      "type": "indirect",
+      "strength": 0.45,
+      "confidence": "speculative",
+      "rationale": "Franz Ferdinand’s proposals for greater autonomy in the monarchy’s South Slav territories challenged Serbian nationalist ambitions and may have contributed to his selection as a target.",
+      "citations": [
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "In March\n 1914, however, a new target had been chosen: Franz Ferdinand, Archduke of Austria-Este (1863-\n 1914), who would be visiting Bosnia-Herzegovina in June 1914 to observe local military\n manoeuvres.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "As the heir to the Austro-Hungarian throne, Franz Ferdinand’s proposals for greater\n political autonomy within the Monarchy’s South Slav territories posed a direct challenge to Serbian\n nationalist ambitions.",
+          "locator": "Background"
+        }
+      ]
+    },
+    {
+      "cause": "balkan-wars-1912",
+      "effect": "assassination-franz-ferdinand-1914",
+      "type": "contributing",
+      "strength": 0.65,
+      "confidence": "established",
+      "rationale": "Britannica writes that after the Balkan Wars enlarged Serbia, Serbian nationalists turned their attention back to the idea of \"liberating\" the South Slavs of Austria-Hungary, and Foster writes that Governor Potiorek's efforts to suppress anti-Habsburg activities after Serbia's success in the Balkan Wars brought Young Bosnia under the influence of the Black Hand.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "With Serbia already much aggrandized by the two Balkan Wars (1912–13, 1913), Serbian nationalists turned their attention back to the idea of “liberating” the South Slavs of Austria-Hungary."
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "This was compounded by the appointment of the politically ambitious General Oskar Potiorek (1853-\n 1933) as Varešanin’s successor in 1911. The new governor’s efforts to suppress anti-Habsburg\n activities, following Serbia’s success during the Balkan Wars, brought Young Bosnia under the\n influence of the Serbian nationalist Black Hand Society.",
+          "locator": "Background"
+        },
+        {
+          "source": "foster-sarajevo-incident",
+          "quote": "The new governor’s efforts to suppress anti-Habsburg activities, following Serbia’s success during the Balkan Wars, brought Young Bosnia under the influence of the Serbian nationalist Black Hand Society.",
+          "locator": "Background"
+        }
+      ]
+    },
+    {
+      "cause": "assassination-franz-ferdinand-1914",
+      "effect": "blank-cheque-1914",
+      "type": "direct",
+      "strength": 0.9,
+      "confidence": "established",
+      "rationale": "After Sarajevo, Berchtold drew up a letter for Franz Joseph to send to Wilhelm II to try to convince both of Serbia's responsibility. Austria knew that conflict with Serbia would likely involve Russia and turned to its ally Germany, which on 5 July promised full support for a severe response against Serbia. Britannica writes that Wilhelm II had already assured Conrad of German support in October 1913 if Austria-Hungary started a preventive war against Serbia, and that this assurance was confirmed in the week after the assassination.",
+      "citations": [
+        {
+          "source": "byu-blank-check",
+          "quote": "After Sarajevo, Count Leopold von Berchtold, the Austro-Hungarian Foreign Minister, drew up a letter for the Emperor Francis Joseph to sign and send to Wilhelm II to try and convince both of Serbia's responsibility.",
+          "locator": "The 'Blank Check'"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Austria knew that conflict with Serbia would likely involve Russia, which saw itself as Serbia's protector. Austria-Hungary turned to its own ally. On 5 July, Germany promised Austria full support for a severe response against Serbia.",
+          "locator": "Europe takes sides"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On 5 July, Germany promised Austria full support for a severe response against Serbia."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Conrad had already (October 1913) been assured by William II of Germany’s support if Austria-Hungary should start a preventive war against Serbia. This assurance was confirmed in the week following the assassination, before William, on July 6, set off upon his annual cruise to the North Cape, off Norway."
+        }
+      ]
+    },
+    {
+      "cause": "blank-cheque-1914",
+      "effect": "austria-hungary-ultimatum-serbia-1914",
+      "type": "direct",
+      "strength": 0.85,
+      "confidence": "debated",
+      "rationale": "The Imperial War Museums says Austria-Hungary issued the ultimatum with the guarantee of German backing. Mombauer reports that it remained disputed whether Germany pressed Austria-Hungary and how far the blank check forced Vienna's hand: Fischer saw evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin, Clark is more critical of Serbia and the Entente Powers and more lenient on the actions of Germany and Austria-Hungary, and MacMillan names Austria-Hungary's determination to destroy Serbia, Germany's decision to back it and Russia's impatience to mobilise as bearing the greatest responsibility for the outbreak of the war.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "With the guarantee of German backing, Austria-Hungary issued an ultimatum on 23 July, intent on starting a war with Serbia.",
+          "locator": "Austria-Hungary declares war on Serbia"
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Yet, it remained disputed whether Germany had put pressure on Austria-Hungary, and to what extent the so-called blank check had actually forced Vienna's hand."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Once again, historians focused attention on Germany's role, and the German historian Fritz Fischer detected what he considered to have been evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Clark's research makes several unique interventions. It crucially rejects the notion of “war guilt” and denies that historians should be engaged in finding a guilty party in the manner of a detective in a crime thriller. Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Margaret MacMillan similarly argues “that some powers and their leaders were more culpable than others. Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war.”"
+        }
+      ]
+    },
+    {
+      "cause": "assassination-franz-ferdinand-1914",
+      "effect": "austria-hungary-ultimatum-serbia-1914",
+      "type": "direct",
+      "strength": 0.9,
+      "confidence": "established",
+      "rationale": "The ultimatum cited the events of 28 June as proof of a subversive movement in Serbia. Britannica says Conrad and Berchtold saw the crime as the occasion for measures to humiliate Serbia, and that the Austrians decided to present an unacceptable ultimatum and then declare war.",
+      "citations": [
+        {
+          "source": "byu-ultimatum",
+          "quote": "Now the history of the past few years, and particularly the painful events of the 28th of June, have proved the existence of a subversive movement in Serbia, whose object it is to separate certain portions of its territory from the Austro-Hungarian Monarchy.",
+          "locator": "Vienna, July 22, 1914"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "The Austrians decided to present an unacceptable ultimatum to Serbia and then to declare war, relying on Germany to deter Russia from intervention."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "saw the crime as the occasion for measures to humiliate Serbia"
+        }
+      ]
+    },
+    {
+      "cause": "austria-hungary-ultimatum-serbia-1914",
+      "effect": "russian-general-mobilization-1914",
+      "type": "direct",
+      "strength": 0.8,
+      "confidence": "debated",
+      "rationale": "On 24 July Russia declared that Austria-Hungary must not be allowed to crush Serbia. Austria-Hungary declared war on 28 July and began bombarding Belgrade the next day; Russia then ordered partial and, on 30 July, general mobilization, which the Russians viewed as a precaution in case war broke out. Mombauer writes that partial mobilization did not preclude continued diplomatic talks, which was Sazonov's conviction at least until Austria-Hungary declared war on Serbia. Historians weigh this step differently: MacMillan counts Russia's impatience to mobilise among the factors bearing the greatest responsibility, Clark is more critical of Serbia and the Entente Powers, and Fischer saw evidence of a premeditated war unleashed in Berlin.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "When the delivery was announced, on July 24, Russia declared that Austria-Hungary must not be allowed to crush Serbia."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "Russia ordered its forces to prepare for war on 30 July. While the Russians viewed this mobilisation as a precaution in case war broke out, the Germans saw it as an aggressive act of war directed against itself and Austria-Hungary.",
+          "locator": "Europe goes to war"
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Margaret MacMillan similarly argues “that some powers and their leaders were more culpable than others. Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war.”"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "the German historian Fritz Fischer detected what he considered to have been evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Clark's research makes several unique interventions. It crucially rejects the notion of “war guilt” and denies that historians should be engaged in finding a guilty party in the manner of a detective in a crime thriller. Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "It was crucial that the decision for partial mobilization did not preclude a continuation of diplomatic talks; this was Russian Foreign Minister Sergei Sazonov's conviction at least until Austria-Hungary declared war on Serbia."
+        }
+      ]
+    },
+    {
+      "cause": "russian-general-mobilization-1914",
+      "effect": "germany-declares-war-russia-1914",
+      "type": "direct",
+      "strength": 0.9,
+      "confidence": "debated",
+      "rationale": "Germany declared war after its ultimatum demanding Russian demobilization expired. Historians weigh the mobilization differently: Mombauer quotes Nipperdey judging it as decisive as the blank check and MacMillan counting Russia's impatience to mobilise among the greatest responsibilities, while Neilson argues that it did not cause the war, which required German decisions to back Austria-Hungary and attack France. Fischer saw evidence of a premeditated war deliberately unleashed in Berlin, and Clark is more critical of Serbia and the Entente Powers and more lenient on Germany and Austria-Hungary.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "On 31 July, Germany sent an ultimatum to Russia demanding it demobilise. The next day, this ultimatum expired without a reply. Germany declared war on Russia and ordered its own general mobilisation.",
+          "locator": "Europe goes to war"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "Both Russia and France predictably ignored these demands. On August 1 Germany ordered general mobilization and declared war against Russia, and France likewise ordered general mobilization."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Thomas Nipperdey distributed responsibility more widely and considered “the Russian mobilization [to be] as decisive as the blank check."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Keith Neilson has also argued forcefully that “the Russian mobilisation (of whatever extent) did not cause the war—that required the Germans to decide to support Austria-Hungary at whatever cost and to attack France. To prepare to defend oneself is not the same as throwing the first punch."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Margaret MacMillan similarly argues “that some powers and their leaders were more culpable than others. Austria-Hungary's mad determination to destroy Serbia in 1914, Germany's decision to back it to the hilt, Russia's impatience to mobilise, these all seem to me to bear the greatest responsibility for the outbreak of the war.”"
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "the German historian Fritz Fischer detected what he considered to have been evidence of a premeditated war deliberately unleashed by the decision-makers in Berlin."
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Clark's research makes several unique interventions. It crucially rejects the notion of “war guilt” and denies that historians should be engaged in finding a guilty party in the manner of a detective in a crime thriller. Moreover, it focuses on, and is more critical of, Serbia and the Entente Powers, while being more lenient on the actions of Germany and Austria-Hungary."
+        }
+      ]
+    },
+    {
+      "cause": "schlieffen-plan-1905",
+      "effect": "germany-invades-belgium-1914",
+      "type": "contributing",
+      "strength": 0.85,
+      "confidence": "debated",
+      "rationale": "Schlieffen's 1905 plan sent German forces through neutral Belgium against the flanks and rear of the French defences. Britannica says Moltke heavily modified it before and during its use in 1914, and it reports debate about Schlieffen's intentions and the plan's implementation. The Imperial War Museums says Germany's 1914 war plan required German troops to invade Belgium to get to France.",
+      "citations": [
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "Those forces were to wheel south and east after passing through neutral Belgium, turning into the flanks and rear of the hardened French defenses along the German border."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "After declaring war on France, Germany was now determined to execute its war plan to defeat France first and then concentrate its forces against Russia. The plan required German troops invade Belgium to get to France.",
+          "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "The plan was heavily modified by Schlieffen’s successor, Helmuth von Moltke, prior to and during its implementation in World War I."
+        },
+        {
+          "source": "brit-schlieffen-plan",
+          "quote": "Further summaries have been discovered over subsequent decades, opening new debates about Schlieffen’s true intentions and the implementation of his plan."
+        }
+      ]
+    },
+    {
+      "cause": "germany-declares-war-russia-1914",
+      "effect": "germany-invades-belgium-1914",
+      "type": "indirect",
+      "strength": 0.5,
+      "confidence": "speculative",
+      "rationale": "Germany demanded passage through Belgium on 2 August, the day after it declared war on Russia. The Imperial War Museums says that after declaring war on France, Germany was determined to execute its plan to defeat France first and then concentrate against Russia, which required invading Belgium. The step from the declaration of war on Russia is an inference.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "On August 1 Germany ordered general mobilization and declared war against Russia, and France likewise ordered general mobilization. The next day Germany sent troops into Luxembourg and demanded from Belgium free passage for German troops across its neutral territory."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "After declaring war on France, Germany was now determined to execute its war plan to defeat France first and then concentrate its forces against Russia. The plan required German troops invade Belgium to get to France.",
+          "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "On the evening of 2 August 1914, Germany demanded that its troops be allowed to pass through Belgian territory. Belgium refused."
+        }
+      ]
+    },
+    {
+      "cause": "treaty-of-london-1839",
+      "effect": "britain-declares-war-germany-1914",
+      "type": "contributing",
+      "strength": 0.7,
+      "confidence": "established",
+      "rationale": "Britain's guarantee of Belgian neutrality under the 1839 treaty contributed to its decision to declare war when Germany invaded Belgium.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "This would be in direct violation of Belgium’s neutrality, which had been guaranteed in a treaty signed by major European powers, including Britain, in 1839.",
+          "locator": "Germany invades Belgium"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "In the night of August 3–4 German forces invaded Belgium. Thereupon, Great Britain, which had no concern with Serbia and no express obligation to fight either for Russia or for France but was expressly committed to defend Belgium, on August 4 declared war against Germany."
+        }
+      ]
+    },
+    {
+      "cause": "germany-invades-belgium-1914",
+      "effect": "britain-declares-war-germany-1914",
+      "type": "direct",
+      "strength": 0.9,
+      "confidence": "established",
+      "rationale": "Germany's invasion of Belgium led Britain to demand a withdrawal and declare war after Germany failed to reply by the deadline.",
+      "citations": [
+        {
+          "source": "iwm-outbreak",
+          "quote": "Germany’s invasion of Belgium tipped the balance for Britain. At 2pm on 4 August, it issued an ultimatum demanding Germany withdraw its troops. At 11pm, the deadline passed without a reply. Britain declared war.",
+          "locator": "Britain and its Empire go to war"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "In the night of August 3–4 German forces invaded Belgium. Thereupon, Great Britain, which had no concern with Serbia and no express obligation to fight either for Russia or for France but was expressly committed to defend Belgium, on August 4 declared war against Germany."
+        }
+      ]
+    },
+    {
+      "cause": "entente-cordiale-1904",
+      "effect": "britain-declares-war-germany-1914",
+      "type": "indirect",
+      "strength": 0.5,
+      "confidence": "speculative",
+      "rationale": "Britannica says the Entente paved the way for Anglo-French diplomatic cooperation against German pressures but in no sense created an alliance, and that Britain had no express obligation to fight for Russia or France in 1914. Grey told Parliament to let every man construe for himself how far that friendship entailed an obligation. The Imperial War Museums says that from 1 August Britain mobilised the navy and promised to protect the French coast. No cited source says the Entente contributed to the declaration of war, so the link is an inference. Mombauer contrasts Clark's attribution of some responsibility to Grey with Otte's emphasis on his diplomatic efforts.",
+      "citations": [
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "Anglo-French agreement that, by settling a number of controversial matters, ended antagonisms between Great Britain and France and paved the way for their diplomatic cooperation against German pressures in the decade preceding World War I (1914–18). The agreement in no sense created an alliance and did not entangle Great Britain with a French commitment to Russia (1894)."
+        },
+        {
+          "source": "byu-grey-speech",
+          "quote": "But how far that friendship entails obligation -- it has been a friendship between the nations and ratified by the nations -- how far that entails an obligation, let every man look into his own heart, and his own feelings, and construe the extent of the obligation for himself.",
+          "locator": "3 August 1914"
+        },
+        {
+          "source": "mombauer-guilt-or-responsibility",
+          "quote": "Clark has also put Britain and Edward Grey center stage, attributing some degree of responsibility to the foreign secretary. By contrast, Thomas Otte believes that “there is no reason to doubt [Grey's] genuine intentions” of wanting to diffuse the July Crisis: “Asquith and Grey remained committed to exploring all remaining diplomatic options”"
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "no express obligation to fight either for Russia or for France"
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "They mobilised the navy and promised to protect the French coast from German aggression through the Channel."
+        }
+      ]
+    },
+    {
+      "cause": "treaty-of-london-1839",
+      "effect": "germany-invades-belgium-1914",
+      "type": "indirect",
+      "strength": 0.4,
+      "confidence": "speculative",
+      "rationale": "Belgium invoked the 1839 treaties in refusing German passage, so the proposed connection to the invasion runs through that refusal and remains an inference.",
+      "citations": [
+        {
+          "source": "byu-belgian-refusal",
+          "quote": "The treaties of 1839, confirmed by the treaties of 1870 vouch for the independence and neutrality of Belgium under the guarantee of the Powers, and notably of the Government of His Majesty the King of Prussia.",
+          "locator": "The Belgian Refusal of Free Passage"
+        },
+        {
+          "source": "byu-belgian-refusal",
+          "quote": "The Belgian Government, if they were to accept the proposals submitted to them, would sacrifice the honour of the nation and betray their duty towards Europe.",
+          "locator": "The Belgian Refusal of Free Passage"
+        }
+      ]
+    },
+    {
+      "cause": "entente-cordiale-1904",
+      "effect": "agadir-crisis-1911",
+      "type": "contributing",
+      "strength": 0.5,
+      "confidence": "speculative",
+      "rationale": "Britannica writes that Franco-British solidarity was reconfirmed in the Second Moroccan Crisis of 1911, and the Imperial War Museums writes that Britain supported France when Germany tried to oppose a French takeover of Morocco; neither source says that the 1904 agreement caused the 1911 crisis.",
+      "citations": [
+        {
+          "source": "brit-entente-cordiale",
+          "quote": "Franco-British solidarity was confirmed at the Algeciras Conference (1906) and reconfirmed in the Second Moroccan Crisis (1911)."
+        },
+        {
+          "source": "iwm-outbreak",
+          "quote": "When Germany tried to oppose a French takeover of Morocco, Britain supported France."
+        }
+      ]
+    },
+    {
+      "cause": "austria-hungary-ultimatum-serbia-1914",
+      "effect": "austria-hungary-declares-war-serbia-1914",
+      "type": "direct",
+      "strength": 0.9,
+      "confidence": "established",
+      "rationale": "The declaration of war gives the Serbian government's failure to answer the note of 23 July in a satisfactory manner as its reason, and Britannica records the declaration on 28 July.",
+      "citations": [
+        {
+          "source": "byu-ah-declaration-of-war",
+          "quote": "The Royal Serbian Government not having answered in a satisfactory manner the note of July 23, 1914, presented by the Austro-Hungarian Minister at Belgrade, the Imperial and Royal Government are themselves compelled to see to the safeguarding of their rights and interests, and, with this object, to have recourse to force of arms. Austria-Hungary consequently considers herself henceforward in state of war with Serbia."
+        },
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day."
+        }
+      ]
+    },
+    {
+      "cause": "austria-hungary-declares-war-serbia-1914",
+      "effect": "russian-general-mobilization-1914",
+      "type": "contributing",
+      "strength": 0.7,
+      "confidence": "speculative",
+      "rationale": "Britannica writes that after the declaration of war and the bombardment of Belgrade Russia ordered partial mobilization against Austria-Hungary, and that on 30 July, when Austria-Hungary responded with an order of mobilization on its Russian frontier, Russia ordered general mobilization; Britannica is the only source cited here for this step.",
+      "citations": [
+        {
+          "source": "brit-wwi-outbreak",
+          "quote": "War was in fact declared on July 28, and Austro-Hungarian artillery began to bombard Belgrade the next day. Russia then ordered partial mobilization against Austria-Hungary, and on July 30, when Austria-Hungary was riposting conventionally with an order of mobilization on its Russian frontier, Russia ordered general mobilization."
+        }
+      ]
+    }
+  ],
+  "chains": [
+    {
+      "slug": "road-to-world-war-i",
+      "title": "Bosnia, Serbian nationalism and the outbreak of World War I, 1878–1914",
+      "chain_type": "scholarly",
+      "event_ids": [
+        "treaty-of-berlin-of-1878",
+        "bosnian-annexation-crisis-1908",
+        "black-hand-founded-1911",
+        "assassination-franz-ferdinand-1914",
+        "blank-cheque-1914",
+        "austria-hungary-ultimatum-serbia-1914",
+        "austria-hungary-declares-war-serbia-1914",
+        "russian-general-mobilization-1914",
+        "germany-declares-war-russia-1914",
+        "germany-invades-belgium-1914",
+        "britain-declares-war-germany-1914"
+      ],
+      "description": "This chain traces disputes over Bosnia and Serbian nationalism through the Sarajevo assassination to mobilization and British entry into the war."
+    },
+    {
+      "slug": "july-crisis-1914",
+      "title": "The July Crisis: from Sarajevo to a European war",
+      "chain_type": "scholarly",
+      "event_ids": [
+        "assassination-franz-ferdinand-1914",
+        "blank-cheque-1914",
+        "austria-hungary-ultimatum-serbia-1914",
+        "austria-hungary-declares-war-serbia-1914",
+        "russian-general-mobilization-1914",
+        "germany-declares-war-russia-1914",
+        "germany-invades-belgium-1914",
+        "britain-declares-war-germany-1914"
+      ],
+      "description": "The Sarajevo assassination was followed by German support for Austria-Hungary, an ultimatum to Serbia, Austria-Hungary's declaration of war on Serbia on 28 July, Russian mobilization and German declarations of war. Germany's invasion of Belgium contributed to Britain's decision to enter the war."
+    },
+    {
+      "slug": "alliances-before-world-war-i",
+      "title": "How Europe's alliances formed, 1879–1914",
+      "chain_type": "scholarly",
+      "event_ids": [
+        "dual-alliance-1879",
+        "triple-alliance-1882",
+        "franco-russian-alliance-1894",
+        "schlieffen-plan-1905",
+        "germany-invades-belgium-1914",
+        "britain-declares-war-germany-1914"
+      ],
+      "description": "This chain connects alliance treaties, German war planning, the advance through Belgium in 1914 and Britain's declaration of war. Of its links up to 1905, Italy's entry into the alliance and the step from the Franco-Russian convention to the Schlieffen Plan are rated speculative, and the step from the Triple Alliance to the Franco-Russian convention is rated established. Britannica describes the plan as designed for a two-front war, while a 1929 Army Quarterly review says it was worked out for the Western front only. The Imperial War Museums states that Germany's violation of Belgian neutrality and British fears of German domination in Europe brought Britain into the war; Britannica states that the Entente Cordiale created no alliance."
+    }
+  ],
+  "retracted_links": [
+    {
+      "cause": "berlin-conference-africa-partition-1884",
+      "effect": "assassination-franz-ferdinand-1914",
+      "reason": "No source found that links the 1884 Berlin Conference on Africa to the Sarajevo assassination; the pilot removes this generated context link."
+    }
+  ]
+}

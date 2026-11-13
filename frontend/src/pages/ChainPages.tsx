@@ -17,6 +17,8 @@ import { loadDemoSnapshot, type DemoChain, type DemoSnapshot } from '../api/demo
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '../utils/categories';
 import { shortTitle, timelineHrefForSpan, yearLabel } from '../utils/share';
 import type { CausalityLink, HistoricalEvent } from '../types';
+import { ConfidenceBadge, SourcesToggle } from '../components/Evidence';
+import { CHAIN_TYPE_LABELS, CONFIDENCE_COLORS, CONFIDENCE_HINTS, CONFIDENCE_LABELS } from '../utils/evidence';
 
 const LINK_VERB: Record<string, string> = { causes: 'caused', enables: 'enabled', context: 'led to' };
 
@@ -102,16 +104,49 @@ function Step({ event, index }: { event: HistoricalEvent; index: number }) {
 }
 
 function Connector({ link }: { link: CausalityLink | undefined }) {
+  const level = link?.confidence;
+  const lineColor = level ? `${CONFIDENCE_COLORS[level]}99` : 'rgba(148,163,184,0.35)';
   return (
     <li aria-hidden={!link?.description} style={{ display: 'flex', gap: 16, margin: '6px 0' }}>
       <span style={{ width: 18, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ width: 2, minHeight: 36, background: 'rgba(148,163,184,0.35)' }} />
+        <span
+          style={{
+            width: 0,
+            minHeight: 36,
+            borderLeft: `2px ${level === 'speculative' ? 'dashed' : 'solid'} ${lineColor}`,
+          }}
+        />
       </span>
-      <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5, padding: '6px 0' }}>
-        <strong style={{ color: '#94a3b8' }}>↓ {LINK_VERB[link?.connection_type ?? 'context'] ?? 'led to'}</strong>
-        {link?.description ? ` · ${link.description}` : ''}
-      </p>
+      <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5, padding: '6px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <strong style={{ color: '#94a3b8' }}>↓ {LINK_VERB[link?.connection_type ?? 'context'] ?? 'led to'}</strong>
+          {level && <ConfidenceBadge level={level} />}
+        </div>
+        {link?.rationale ? (
+          <p style={{ marginTop: 2 }}>{link.rationale}</p>
+        ) : link?.description ? (
+          <p style={{ marginTop: 2 }}>{link.description}</p>
+        ) : null}
+        {link?.citations && <SourcesToggle citations={link.citations} />}
+      </div>
     </li>
+  );
+}
+
+function ChainEvidenceSummary({ chain }: { chain: DemoChain }) {
+  const tally = chain.confidence;
+  if (!tally || chain.chain_type === 'generated') return null;
+  const levels = (['established', 'debated', 'speculative'] as const).filter((l) => (tally[l] ?? 0) > 0);
+  return (
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 13, color: '#94a3b8', marginBottom: 24 }}>
+      {levels.map((l) => (
+        <span key={l} title={CONFIDENCE_HINTS[l]} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: CONFIDENCE_COLORS[l] }} />
+          {tally[l]} {CONFIDENCE_LABELS[l].toLowerCase()}
+        </span>
+      ))}
+      {chain.source_count ? <span>· {chain.source_count} sources cited</span> : null}
+    </div>
   );
 }
 
@@ -143,11 +178,25 @@ export function ChainPage() {
         <Link to="/" style={navLink}>← Timeline</Link>
         <Link to="/chains" style={navLink}>All chains</Link>
       </nav>
-      <p style={{ fontSize: 13, color: '#60a5fa', fontWeight: 700, letterSpacing: 2 }}>CAUSE &amp; EFFECT CHAIN</p>
+      <p
+        style={{
+          fontSize: 13,
+          color: chain.chain_type === 'popular_internet' ? '#fbbf24' : '#60a5fa',
+          fontWeight: 700,
+          letterSpacing: 2,
+          textTransform: 'uppercase',
+        }}
+      >
+        {CHAIN_TYPE_LABELS[chain.chain_type ?? 'generated']}
+      </p>
       <h1 style={{ fontSize: 32, lineHeight: 1.15, margin: '8px 0 8px' }}>{chain.title}</h1>
-      <p style={{ color: '#94a3b8', fontSize: 15, marginBottom: 28 }}>
+      <p style={{ color: '#94a3b8', fontSize: 15, marginBottom: 12 }}>
         {events.length} linked events, {yearLabel(first.year_approx)} to {yearLabel(last.year_approx)}
       </p>
+      {chain.description && (
+        <p style={{ color: '#cbd5e1', fontSize: 15, lineHeight: 1.6, marginBottom: 12 }}>{chain.description}</p>
+      )}
+      <ChainEvidenceSummary chain={chain} />
       <ol style={{ listStyle: 'none', padding: 0 }}>
         {events.flatMap((e, i) =>
           i < events.length - 1
@@ -204,6 +253,13 @@ export function ChainsIndexPage() {
               >
                 <div style={{ fontSize: 13, color: '#94a3b8' }}>
                   {yearLabel(events[0].year_approx)} → {yearLabel(events[events.length - 1].year_approx)} · {events.length} events
+                  {c.chain_type && c.chain_type !== 'generated' && (
+                    <span style={{ color: c.chain_type === 'popular_internet' ? '#fbbf24' : '#60a5fa' }}>
+                      {' '}
+                      · {CHAIN_TYPE_LABELS[c.chain_type]}
+                      {c.source_count ? `, ${c.source_count} sources` : ''}
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 600, margin: '2px 0 6px' }}>{c.title}</div>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>

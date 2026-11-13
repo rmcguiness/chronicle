@@ -105,9 +105,16 @@ export function eventPage(e, origin, linkCount) {
 export function chainPage(chain, byId, origin) {
   const events = chain.event_ids.map((id) => byId.get(id));
   const steps = events.map((e) => `${shortTitle(e.title)} (${yearLabel(e.year_approx)})`);
+  const t = chain.confidence || {};
+  const rated = ['established', 'debated', 'speculative'].filter((l) => t[l]).map((l) => `${t[l]} ${l}`);
+  const evidence =
+    chain.chain_type && chain.chain_type !== 'generated' && rated.length
+      ? ` Links rated: ${rated.join(', ')}${chain.source_count ? `; ${chain.source_count} sources cited` : ''}.`
+      : '';
+  const lead = chain.description || `A ${events.length}-step cause and effect chain: ${steps.join(' → ')}`;
   return {
     title: `${chain.title} · ${SITE_NAME}`,
-    description: clip(`A ${events.length}-step cause and effect chain: ${steps.join(' → ')}`, 200),
+    description: clip(`${lead}${evidence}`, 240),
     url: `${origin}/chain/${chain.slug}`,
     image: `${origin}/og/chain/${chain.slug}.png`,
     imageAlt: `Cause and effect chain: ${steps.join(', then ')}`,
@@ -141,7 +148,10 @@ function main() {
     if (!c.event_ids.every((id) => byId.has(id))) continue;
     writeFileSync(path.join(DIST, 'chain', `${c.slug}.html`), injectMeta(indexHtml, metaTags(chainPage(c, byId, origin))));
   }
-  const top = [...chains].sort((a, b) => b.score - a.score)[0];
+  // The site-wide preview uses the best sourced chain, never a playful internet one.
+  const top = [...chains]
+    .filter((c) => c.chain_type !== 'popular_internet')
+    .sort((a, b) => b.score - a.score)[0];
   const indexTags = metaTags({
     title: `Cause and effect chains · ${SITE_NAME}`,
     description: `${chains.length} chains of linked historical events, from antiquity to today, drawn from the Chronicle timeline.`,

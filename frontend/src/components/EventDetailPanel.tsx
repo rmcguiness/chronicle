@@ -15,6 +15,7 @@ import { IS_DEMO_MODE, wikipediaArticleUrl, wikipediaSearchUrl } from '../config
 import type { ArticleResponse } from '../api/client';
 import type { Perspective, ConnectedEvent, Source } from '../types';
 import { useAppStore } from '../store';
+import { ConfidenceBadge, LinkEvidenceList, PartyPerspectiveCard, SourcedAccount } from './Evidence';
 import {
   CATEGORY_COLORS,
   CATEGORY_ICONS,
@@ -379,8 +380,9 @@ function ConnectedEventChip({ event }: { event: ConnectedEvent }) {
       >
         {event.title}
       </div>
-      <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#64748b', marginTop: 2 }}>
         {event.direction === 'effect' ? '→ effect' : '← cause'}
+        {event.confidence && <ConfidenceBadge level={event.confidence} />}
       </div>
     </button>
   );
@@ -558,6 +560,7 @@ export default function EventDetailPanel() {
   const selectedEventSlug = useAppStore((s) => s.selectedEventSlug);
   const detailPanelOpen = useAppStore((s) => s.detailPanelOpen);
   const setDetailPanelOpen = useAppStore((s) => s.setDetailPanelOpen);
+  const setSelectedEvent = useAppStore((s) => s.setSelectedEvent);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', selectedEventSlug],
@@ -739,28 +742,55 @@ export default function EventDetailPanel() {
               </div>
             )}
 
+            {/* ── Sourced account (curated events) ──────────────────── */}
+            {event.description && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={sectionHeaderStyle}>What happened</div>
+                <SourcedAccount description={event.description} citations={event.citations ?? []} />
+              </div>
+            )}
+
             {/* ── Article ───────────────────────────────────────────── */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={sectionHeaderStyle}>Article</div>
-              <ArticleContent
-                slug={event.slug}
-                title={event.title}
-                summary={event.summary}
-                wikipediaSlug={event.wikipedia_slug}
-              />
-            </div>
+            {!(IS_DEMO_MODE && event.description) && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={sectionHeaderStyle}>Article</div>
+                <ArticleContent
+                  slug={event.slug}
+                  title={event.title}
+                  summary={event.summary}
+                  wikipediaSlug={event.wikipedia_slug}
+                />
+              </div>
+            )}
 
             {/* ── Perspectives ──────────────────────────────────────── */}
             {event.perspectives.length > 0 && (
               <div style={{ marginBottom: 20 }}>
                 <div style={sectionHeaderStyle}>
-                  Perspectives ({event.perspectives.length})
+                  {event.perspectives.some((p) => p.party) ? 'How each side saw it' : 'Perspectives'} (
+                  {event.perspectives.length})
                 </div>
-                {event.perspectives
-                  .sort((a, b) => b.evidence_score - a.evidence_score)
-                  .map((p, i) => (
-                    <PerspectiveCard key={p.id} perspective={p} index={i} />
-                  ))}
+                {[...event.perspectives]
+                  // Party perspectives keep the batch's order; scored ones sort by evidence.
+                  .sort((a, b) => (a.party || b.party ? 0 : b.evidence_score - a.evidence_score))
+                  .map((p, i) =>
+                    p.party ? (
+                      <PartyPerspectiveCard key={p.id} perspective={p} />
+                    ) : (
+                      <PerspectiveCard key={p.id} perspective={p} index={i} />
+                    ),
+                  )}
+              </div>
+            )}
+
+            {/* ── Cited causes and effects ──────────────────────────── */}
+            {event.connected_events?.some((c) => c.rationale) && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={sectionHeaderStyle}>Causes and effects, with sources</div>
+                <LinkEvidenceList
+                  links={event.connected_events.filter((c) => c.rationale)}
+                  onSelect={(s) => setSelectedEvent(s)}
+                />
               </div>
             )}
           </>

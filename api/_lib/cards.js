@@ -31,6 +31,15 @@ export const CATEGORY_LABELS = {
   person: 'Person',
 };
 const LINK_VERB = { causes: 'caused', enables: 'enabled', context: 'led to' };
+// Cited links carry a confidence level (data/curated/); colours match the app.
+export const CONFIDENCE_COLORS = { established: '#34d399', debated: '#fbbf24', speculative: '#94a3b8' };
+const CHAIN_LABELS = {
+  scholarly: 'SOURCED CAUSE & EFFECT CHAIN',
+  popular_internet: 'POPULAR INTERNET CHAIN',
+  generated: 'CAUSE & EFFECT CHAIN',
+};
+// Longer chains collapse their middle steps so every node stays readable.
+const MAX_CARD_NODES = 7;
 
 const BG = '#070e22';
 const PANEL = '#0d1733';
@@ -208,23 +217,93 @@ export function eventCard(e) {
       h(
         'div',
         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 20, color: MUTED },
-        h('div', {}, e.connections ? `${e.connections} linked ${e.connections === 1 ? 'event' : 'events'} on the timeline` : 'On the Chronicle timeline'),
+        h(
+          'div',
+          {},
+          [
+            e.sources ? `${e.sources} ${e.sources === 1 ? 'source' : 'sources'} cited` : null,
+            e.connections ? `${e.connections} linked ${e.connections === 1 ? 'event' : 'events'} on the timeline` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ') || 'On the Chronicle timeline',
+        ),
         h('div', { color: ACCENT, fontWeight: 600 }, 'Explore the timeline →'),
       ),
     ),
   );
 }
 
+/** Line segment for a chain arrow: solid, or dashed for speculative links. */
+function arrowLine(color, dashed) {
+  if (!dashed) return h('div', { flexGrow: 1, height: 3, background: color });
+  return h(
+    'div',
+    { display: 'flex', flexGrow: 1, gap: 5 },
+    ...[0, 1, 2, 3].map(() => h('div', { flexGrow: 1, height: 3, background: color })),
+  );
+}
+
+function chainArrow(link) {
+  const level = link?.confidence;
+  const color = level === 'debated' ? CONFIDENCE_COLORS.debated : level === 'speculative' ? '#64748b' : '#475569';
+  const verb = link?.gap ? `${link.gap} more steps` : LINK_VERB[link?.connection_type] || 'led to';
+  return h(
+    'div',
+    { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 40, marginTop: 47, gap: 6 },
+    h(
+      'div',
+      { display: 'flex', alignItems: 'center', width: '100%' },
+      arrowLine(color, level === 'speculative' || link?.gap),
+      {
+        type: 'svg',
+        props: {
+          width: 14,
+          height: 16,
+          viewBox: '0 0 14 16',
+          children: { type: 'path', props: { d: 'M0 0 L14 8 L0 16 Z', fill: level === 'debated' ? color : '#64748b' } },
+        },
+      },
+    ),
+    h('div', { fontSize: 15, color: MUTED }, verb),
+    level && level !== 'established' ? h('div', { fontSize: 13, color: level === 'debated' ? color : MUTED, fontWeight: 600 }, level) : null,
+  );
+}
+
+/** Pick the nodes a card can show: all of them, or the first two and last four with a gap. */
+export function cardSteps(events, links) {
+  if (events.length <= MAX_CARD_NODES) return { events, links };
+  const head = 2;
+  const tail = MAX_CARD_NODES - head - 1;
+  const hidden = events.length - head - tail;
+  return {
+    events: [...events.slice(0, head), ...events.slice(-tail)],
+    links: [...links.slice(0, head - 1), { gap: hidden }, ...links.slice(-(tail - 1))],
+  };
+}
+
+function evidenceLine(c) {
+  const t = c.confidence || {};
+  const parts = ['established', 'debated', 'speculative'].filter((l) => t[l]).map((l) => `${t[l]} ${l}`);
+  if (c.sources) parts.push(`${c.sources} sources`);
+  return parts.join(' · ');
+}
+
 /**
  * @param {{title:string, events:{title:string,date:string,year:number,category:string}[],
- *          links:{connection_type:string}[], host:string}} c
+ *          links:{connection_type:string, confidence?:string}[], host:string,
+ *          chainType?:string, confidence?:Record<string,number>, sources?:number}} c
  */
 export function chainCard(c) {
-  const n = c.events.length;
+  const total = c.events.length;
+  const { events, links } = cardSteps(c.events, c.links);
+  const n = events.length;
   const first = c.events[0];
-  const last = c.events[n - 1];
-  const nodeW = n <= 4 ? 220 : n === 5 ? 160 : 128;
-  const titleSize = n <= 4 ? 24 : n === 5 ? 21 : 19;
+  const last = c.events[total - 1];
+  const nodeW = n <= 4 ? 220 : n === 5 ? 160 : n === 6 ? 128 : 112;
+  const titleSize = n <= 4 ? 24 : n === 5 ? 21 : n === 6 ? 19 : 17;
+  const popular = c.chainType === 'popular_internet';
+  const label = CHAIN_LABELS[c.chainType] || CHAIN_LABELS.generated;
+  const evidence = evidenceLine(c);
   return h(
     'div',
     {
@@ -237,13 +316,13 @@ export function chainCard(c) {
       background: `linear-gradient(135deg, ${BG} 0%, ${PANEL} 100%)`,
       color: TEXT,
       fontFamily: 'Inter',
-      borderTop: `10px solid ${ACCENT}`,
+      borderTop: `10px solid ${popular ? CONFIDENCE_COLORS.debated : ACCENT}`,
     },
     brand(c.host),
     h(
       'div',
       { display: 'flex', flexDirection: 'column', gap: 10 },
-      h('div', { fontSize: 22, color: ACCENT, fontWeight: 600, letterSpacing: 3 }, 'CAUSE & EFFECT CHAIN'),
+      h('div', { fontSize: 22, color: popular ? CONFIDENCE_COLORS.debated : ACCENT, fontWeight: 600, letterSpacing: 3 }, label),
       h(
         'div',
         { fontSize: c.title.length > 70 ? 38 : 46, fontWeight: 800, lineHeight: 1.1, letterSpacing: -0.5 },
@@ -253,12 +332,12 @@ export function chainCard(c) {
     h(
       'div',
       { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' },
-      ...c.events.flatMap((e, i) => {
+      ...events.flatMap((e, i) => {
         const color = CATEGORY_COLORS[e.category] || ACCENT;
         const node = h(
           'div',
           { display: 'flex', flexDirection: 'column', alignItems: 'center', width: nodeW, flexShrink: 0, gap: 10 },
-          h('div', { fontSize: 22, fontWeight: 800, color }, e.date),
+          h('div', { fontSize: n >= 7 ? 18 : 22, fontWeight: 800, color }, e.date),
           h('div', {
             width: 30,
             height: 30,
@@ -270,38 +349,17 @@ export function chainCard(c) {
           h(
             'div',
             { fontSize: titleSize, fontWeight: 600, textAlign: 'center', lineHeight: 1.2, color: TEXT },
-            clip(shortTitle(e.title), n <= 4 ? 60 : n === 5 ? 46 : 38),
+            clip(shortTitle(e.title), n <= 4 ? 60 : n === 5 ? 46 : n === 6 ? 38 : 34),
           ),
         );
-        if (i === n - 1) return [node];
-        const verb = LINK_VERB[c.links[i]?.connection_type] || 'led to';
-        const arrow = h(
-          'div',
-          { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 40, marginTop: 47, gap: 6 },
-          h(
-            'div',
-            { display: 'flex', alignItems: 'center', width: '100%' },
-            h('div', { flexGrow: 1, height: 3, background: '#475569' }),
-            {
-              type: 'svg',
-              props: {
-                width: 14,
-                height: 16,
-                viewBox: '0 0 14 16',
-                children: { type: 'path', props: { d: 'M0 0 L14 8 L0 16 Z', fill: '#64748b' } },
-              },
-            },
-          ),
-          h('div', { fontSize: 15, color: MUTED }, verb),
-        );
-        return [node, arrow];
+        return i === n - 1 ? [node] : [node, chainArrow(links[i])];
       }),
     ),
     h(
       'div',
       { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 20, color: MUTED },
-      h('div', {}, `${first.date} → ${last.date} · ${n} linked events`),
-      h('div', { color: ACCENT, fontWeight: 600 }, 'Follow the chain on the timeline →'),
+      h('div', {}, `${first.fullDate || first.date} → ${last.fullDate || last.date} · ${total} events${evidence ? ` · ${evidence}` : ''}`),
+      h('div', { color: ACCENT, fontWeight: 600 }, 'Follow the chain →'),
     ),
   );
 }
@@ -341,8 +399,15 @@ export function eventCardData(index, slug, host) {
     era: e.geo_era_label,
     related,
     connections: related.length,
+    sources: e.source_count || 0,
     host,
   };
+}
+
+/** "Jul 23" from a date_display like "Jul 23, 1914"; falls back to the year. */
+function dayLabel(e) {
+  const m = /^([A-Z][a-z]{2} \d{1,2})(?:[–-]\d{1,2})?, \d{4}$/.exec(String(e.date_display || ''));
+  return m ? m[1] : yearLabel(e.year_approx);
 }
 
 export function chainCardData(index, slug, host) {
@@ -350,15 +415,21 @@ export function chainCardData(index, slug, host) {
   if (!c) return null;
   const events = c.event_ids.map((id) => index.events.get(id)).filter(Boolean);
   if (events.length !== c.event_ids.length) return null;
+  const oneYear = new Set(events.map((e) => e.year_approx)).size === 1;
   return {
     title: c.title,
     events: events.map((e) => ({
       title: e.title,
-      date: yearLabel(e.year_approx),
+      // Within a single year (the July Crisis), the year alone tells the reader nothing.
+      date: oneYear ? dayLabel(e) : yearLabel(e.year_approx),
+      fullDate: yearLabel(e.year_approx),
       year: e.year_approx,
       category: e.category,
     })),
     links: c.link_ids.map((id) => index.links.get(id) || { connection_type: 'context' }),
+    chainType: c.chain_type || 'generated',
+    confidence: c.chain_type && c.chain_type !== 'generated' ? c.confidence : undefined,
+    sources: c.source_count || 0,
     host,
   };
 }

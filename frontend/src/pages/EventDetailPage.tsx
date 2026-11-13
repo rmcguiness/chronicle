@@ -14,7 +14,7 @@
  */
 
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
@@ -31,6 +31,8 @@ import {
 import type { Perspective, ConnectedEvent } from '../types';
 import type { WikiData } from '../types';
 import { timelineHrefForEvent } from '../utils/share';
+import { IS_DEMO_MODE } from '../config/demo';
+import { LinkEvidenceList, PartyPerspectiveCard, SourcedAccount } from '../components/Evidence';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -385,6 +387,17 @@ interface PerspectivesSectionProps {
  * @param props.perspectives - Array of perspective objects from the event detail.
  */
 function PerspectivesSection({ perspectives }: PerspectivesSectionProps) {
+  if (perspectives.length > 0 && perspectives.every((p) => p.party)) {
+    return (
+      <SectionWrapper title="How each side saw it" icon="🌐">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+          {perspectives.map((p) => (
+            <PartyPerspectiveCard key={p.id} perspective={p} />
+          ))}
+        </div>
+      </SectionWrapper>
+    );
+  }
   if (perspectives.length === 0) {
     return (
       <SectionWrapper title="Perspectives" icon="🌐">
@@ -798,6 +811,7 @@ function FallbackNotice({ message }: FallbackNoticeProps) {
 export default function EventDetailPage() {
   // `slug` is guaranteed by the React Router path `/event/:slug`
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
 
   // The Chronicle root CSS sets html/body/root to overflow:hidden for the canvas view.
   // Override to allow this page to scroll, then restore on unmount.
@@ -904,6 +918,7 @@ export default function EventDetailPage() {
   }
 
   // ── Render full page ───────────────────────────────────────────────────────
+  const cited = (event.connected_events ?? []).filter((c) => (c.citations?.length ?? 0) > 0);
   return (
     <PageShell>
       {/* 1. Hero */}
@@ -918,11 +933,22 @@ export default function EventDetailPage() {
         summary={event.summary}
       />
 
-      {/* 2. Wikipedia */}
-      {slug && <WikiSection slug={slug} />}
+      {/* 2. Sourced account (curated events) or Wikipedia */}
+      {event.description && (
+        <SectionWrapper title="What happened" icon="📜">
+          <SourcedAccount description={event.description} citations={event.citations ?? []} />
+        </SectionWrapper>
+      )}
+      {slug && !(IS_DEMO_MODE && event.description) && <WikiSection slug={slug} />}
 
       {/* 3. Perspectives */}
       <PerspectivesSection perspectives={event.perspectives ?? []} />
+
+      {cited.length > 0 && (
+        <SectionWrapper title="Causes and effects, with sources" icon="🔗">
+          <LinkEvidenceList links={cited} onSelect={(s) => navigate(`/event/${s}`)} />
+        </SectionWrapper>
+      )}
 
       {/* 4. Mini-timeline */}
       <MiniTimeline
