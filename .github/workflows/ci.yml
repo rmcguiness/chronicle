@@ -35,6 +35,12 @@ jobs:
           cmp /tmp/snapshot.json frontend/public/demo/snapshot.json || {
             echo "frontend/public/demo/snapshot.json is stale: run python3 scripts/export_demo_snapshot.py and commit it"; exit 1; }
 
+      - name: Space view layout is up to date
+        run: |
+          python scripts/compute_space_layout.py --out /tmp/space-layout.json
+          cmp /tmp/space-layout.json frontend/public/demo/space-layout.json || {
+            echo "frontend/public/demo/space-layout.json is stale: run python3 scripts/compute_space_layout.py and commit it"; exit 1; }
+
       - name: Run tests or compile check
         run: |
           cd backend

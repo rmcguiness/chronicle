@@ -146,6 +146,21 @@ The duplicate-matching rules have tests:
 python3 -m unittest discover -s scripts -p "test_*.py"
 ```
 
+### 3D space view (prototype)
+
+On desktop browsers with WebGL 2, the demo opens a 3D view where each event is a planet, time runs
+left to right, and linked events sit close together. Clicking a planet flies the camera to it and
+opens the event panel. The curated chains run as guided tours. Phones and narrow windows keep the
+2D view, and `?view=2d` or the "2D view" button switches back on desktop. The design, layout
+algorithm and frame-rate measurements are in [docs/design/SPACE_VIEW.md](docs/design/SPACE_VIEW.md).
+
+Planet positions are precomputed from the snapshot. Rerun this after regenerating the snapshot
+(CI fails if the committed layout is stale):
+
+```bash
+python3 scripts/compute_space_layout.py   # writes frontend/public/demo/space-layout.json
+```
+
 ### Events imported from Wikidata
 
 `backend/scripts/import_wikidata.py` pulls notable events from the

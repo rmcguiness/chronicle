@@ -1,0 +1,304 @@
+/* Space view (SpaceView.tsx). Pure black space; HUD panels stay small and translucent. */
+.space-root {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #dbe4ff;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.space-canvas {
+  position: absolute !important;
+  inset: 0;
+  outline: none;
+}
+.space-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(120, 160, 255, 0.6);
+}
+.space-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(219, 228, 255, 0.7);
+}
+
+.space-panel {
+  position: fixed;
+  z-index: 120;
+  background: rgba(8, 12, 24, 0.72);
+  border: 1px solid rgba(140, 170, 255, 0.14);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 12px;
+}
+.space-topleft {
+  top: 16px;
+  left: 16px;
+  width: 248px;
+  padding: 12px;
+}
+.space-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.space-heading {
+  margin: 12px 0 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(219, 228, 255, 0.5);
+}
+.space-button {
+  background: rgba(120, 150, 255, 0.1);
+  color: #dbe4ff;
+  border: 1px solid rgba(140, 170, 255, 0.25);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.space-button:hover:not(:disabled) {
+  background: rgba(120, 150, 255, 0.22);
+}
+.space-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.space-button.is-primary {
+  background: rgba(255, 225, 160, 0.16);
+  border-color: rgba(255, 225, 160, 0.45);
+}
+.space-button:focus-visible,
+.space-tour-button:focus-visible,
+.space-close:focus-visible {
+  outline: 2px solid #9db8ff;
+  outline-offset: 1px;
+}
+.space-tours,
+.space-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.space-tour-button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: #dbe4ff;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 7px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+.space-tour-button:hover {
+  background: rgba(120, 150, 255, 0.1);
+}
+.space-tour-button.is-active {
+  border-color: rgba(255, 225, 160, 0.45);
+  background: rgba(255, 225, 160, 0.08);
+}
+.space-tour-meta {
+  display: block;
+  font-size: 10px;
+  color: rgba(219, 228, 255, 0.45);
+}
+.space-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(219, 228, 255, 0.75);
+}
+.space-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.space-note {
+  margin: 8px 0 0;
+  color: rgba(219, 228, 255, 0.45);
+  font-size: 11px;
+}
+
+/* Centre hairline and year readout. When the event panel is open the view centre moves left by 240px. */
+.space-hairline {
+  position: fixed;
+  top: 64px;
+  bottom: 70px;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(140, 170, 255, 0.16) 20%, rgba(140, 170, 255, 0.16) 80%, transparent);
+  pointer-events: none;
+  z-index: 5;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.space-year {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 110;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-variant-numeric: tabular-nums;
+}
+.space-year-value {
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: #f1f4ff;
+  text-shadow: 0 0 18px rgba(120, 160, 255, 0.45);
+}
+.space-year-era {
+  margin-left: 6px;
+  font-size: 12px;
+  color: rgba(219, 228, 255, 0.55);
+}
+.space-year-range {
+  font-size: 11px;
+  color: rgba(219, 228, 255, 0.45);
+}
+
+.space-tourbar {
+  /* Above the demo banner (bottom: 96px) and the year readout. */
+  bottom: 136px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 32px));
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.space-tourbar-title {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 225, 160, 0.8);
+}
+.space-tourbar-step {
+  font-size: 13px;
+  color: #f1f4ff;
+}
+
+.space-hover {
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  pointer-events: none;
+  max-width: 60vw;
+}
+.space-hover span {
+  color: rgba(219, 228, 255, 0.6);
+}
+
+.space-help {
+  right: 16px;
+  bottom: 16px;
+  padding: 8px 28px 8px 10px;
+  color: rgba(219, 228, 255, 0.6);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.space-help-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 120;
+}
+.space-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: rgba(219, 228, 255, 0.6);
+  font-size: 16px;
+  cursor: pointer;
+}
+.space-fps {
+  position: fixed;
+  right: 16px;
+  bottom: 112px;
+  z-index: 120;
+  font: 11px ui-monospace, monospace;
+  color: #9fe3a5;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+/* In-scene labels (drei <Html>). */
+.space-label {
+  white-space: nowrap;
+  transform: translateY(-14px);
+  font-size: 11px;
+  color: rgba(225, 232, 255, 0.82);
+  text-shadow: 0 0 6px #000, 0 0 2px #000;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.space-label.is-selected {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+.space-label.is-tour {
+  color: rgba(255, 236, 196, 0.95);
+}
+.space-label-year {
+  font-size: 10px;
+  color: rgba(219, 228, 255, 0.5);
+}
+.space-label-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 225, 160, 0.6);
+  font-size: 9px;
+}
+.space-tick {
+  font-size: 10px;
+  color: rgba(150, 178, 235, 0.7);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transform: translateY(8px);
+}
+
+/* Declared after the base rules so it wins over their `left: 50%`. */
+.space-hairline.space-shifted,
+.space-year.space-shifted,
+.space-tourbar.space-shifted {
+  left: calc(50% - 240px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .space-hairline,
+  .space-year,
+  .space-tourbar {
+    transition: none;
+  }
+}
